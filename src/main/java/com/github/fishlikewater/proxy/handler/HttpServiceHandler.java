@@ -11,6 +11,8 @@ import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.Promise;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.net.ssl.SSLException;
+
 /**
  * @author zhangx
  * @version V1.0
@@ -117,13 +119,12 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
 
 
     //根据host和端口，创建一个连接web的连接
-    private Promise<Channel> createPromise(String host, int port) {
+    private Promise<Channel> createPromise(String host, int port) throws SSLException {
         final Promise<Channel> promise = ctx.executor().newPromise();
-
         b.group(ctx.channel().eventLoop())
                 .channel(NioSocketChannel.class)
                 .remoteAddress(host, port)
-                .handler(new NoneHandler(ctx.channel()))
+                .handler(new ClientServiceInitializer(ctx, host, port))
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
                 .connect()
                 .addListener(new ChannelFutureListener() {
