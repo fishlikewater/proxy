@@ -1,8 +1,9 @@
-package com.github.fishlikewater.proxy.netty;
+package com.github.fishlikewater.proxy.handler;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author zhangx
@@ -12,6 +13,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  * @Description
  * @date 2019年02月26日 21:51
  **/
+@Slf4j
 public class NoneHandler extends ChannelInboundHandlerAdapter {
 
     private Channel outChannel;
@@ -30,5 +32,9 @@ public class NoneHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
         outChannel.flush();
+    }
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.error(cause.getMessage());
     }
 }

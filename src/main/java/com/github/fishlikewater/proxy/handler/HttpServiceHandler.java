@@ -1,5 +1,6 @@
-package com.github.fishlikewater.proxy.netty;
+package com.github.fishlikewater.proxy.handler;
 
+import com.github.fishlikewater.proxy.kit.PassWordCheck;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -8,16 +9,18 @@ import io.netty.handler.codec.http.*;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.Promise;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author zhangx
  * @version V1.0
  * @mail fishlikewater@126.com
- * @ClassName HttpService
+ * @ClassName HttpServiceHandler
  * @Description
  * @date 2019年02月26日 21:50
  **/
-public class HttpService extends SimpleChannelInboundHandler<HttpObject> {
+@Slf4j
+public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> {
 
     //保留全局ctx
     private ChannelHandlerContext ctx;
@@ -28,6 +31,7 @@ public class HttpService extends SimpleChannelInboundHandler<HttpObject> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
+        //log.info("连接活动");
         this.ctx = ctx;
     }
 
@@ -43,7 +47,7 @@ public class HttpService extends SimpleChannelInboundHandler<HttpObject> {
         if (msg instanceof HttpRequest) {
             //转成 HttpRequest
             HttpRequest req = (HttpRequest) msg;
-            if (true) { //检测密码，后面讲
+            if (PassWordCheck.basicLogin(req)) { //检测密码
                 HttpMethod method = req.method();	//获取请求方式，http的有get post ...， https的是 CONNECT
                 String headerHost = req.headers().get("Host");	//获取请求头中的Host字段
                 String host = "";
@@ -60,6 +64,7 @@ public class HttpService extends SimpleChannelInboundHandler<HttpObject> {
 				*/
                 if (method.equals(HttpMethod.CONNECT)) {
                     //如果是https的连接
+                    log.info("https");
                     promise.addListener(new FutureListener<Channel>() {
                         @Override
                         public void operationComplete(Future<Channel> channelFuture) throws Exception {
@@ -69,13 +74,14 @@ public class HttpService extends SimpleChannelInboundHandler<HttpObject> {
                             ctx.writeAndFlush(resp).addListener(new ChannelFutureListener() {
                                 @Override
                                 public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                                    log.info("https响应200完成");
                                     ChannelPipeline p = ctx.pipeline();
                                     p.remove("httpcode");
                                     p.remove("httpservice");
                                 }
                             });
                             ChannelPipeline p = ctx.pipeline();
-                            //将客户端channel添加到转换数据的channel，（这个NoneHandler是自己写的）
+                            //将客户端channel添加到转换数据的channel
                             p.addLast(new NoneHandler(channelFuture.getNow()));
                         }
                     });
@@ -99,7 +105,10 @@ public class HttpService extends SimpleChannelInboundHandler<HttpObject> {
                     });
                 }
             } else {
-                ctx.writeAndFlush(true);
+                FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.PROXY_AUTHENTICATION_REQUIRED);
+                resp.headers().add("Proxy-Authenticate", "Basic realm=\"Text\"");
+                resp.headers().setInt("Content-Length", resp.content().readableBytes());
+                ctx.writeAndFlush(resp);
             }
         } else {
            // ReferenceCountUtil.release(msg);
@@ -121,8 +130,10 @@ public class HttpService extends SimpleChannelInboundHandler<HttpObject> {
                     @Override
                     public void operationComplete(ChannelFuture channelFuture) throws Exception {
                         if (channelFuture.isSuccess()) {
+                            log.info("连接目标服务器成功");
                             promise.setSuccess(channelFuture.channel());
                         } else {
+                            log.warn("连接目标服务器失败");
                             ctx.close();
                             channelFuture.cancel(true);
                         }
@@ -131,4 +142,8 @@ public class HttpService extends SimpleChannelInboundHandler<HttpObject> {
         return promise;
     }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.error(cause.getMessage());
+    }
 }
