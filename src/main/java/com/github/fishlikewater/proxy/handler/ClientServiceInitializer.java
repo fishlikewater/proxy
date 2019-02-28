@@ -6,7 +6,6 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 import javax.net.ssl.SSLEngine;
@@ -34,7 +33,7 @@ public class ClientServiceInitializer extends ChannelInitializer<Channel> {
         SslContext sslCtx = SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
         SSLEngine sslEngine = sslCtx.newEngine(ch.alloc());
         ChannelPipeline p = ch.pipeline();
+        //p.addLast("ssl", new SslHandler(sslEngine));
         p.addLast("none", new NoneHandler(ctx.channel()));
-        p.addLast("ssl", new SslHandler(sslEngine));
     }
 }

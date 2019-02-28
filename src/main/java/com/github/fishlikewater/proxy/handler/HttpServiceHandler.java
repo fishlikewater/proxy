@@ -1,17 +1,17 @@
 package com.github.fishlikewater.proxy.handler;
 
+import com.github.fishlikewater.proxy.kit.EpollKit;
 import com.github.fishlikewater.proxy.kit.PassWordCheck;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.Promise;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.net.ssl.SSLException;
 
 /**
  * @author zhangx
@@ -26,8 +26,10 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
 
     //保留全局ctx
     private ChannelHandlerContext ctx;
-    //创建一会用于连接web服务器的	Bootstrap
     private Bootstrap b = new Bootstrap();
+    private String host;
+    private int port;
+    private boolean isConn;
 
     //channelActive方法中将ctx保留为全局变量
     @Override
@@ -65,8 +67,8 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
 				根据是http还是http的不同，为promise添加不同的监听器
 				*/
                 if (method.equals(HttpMethod.CONNECT)) {
+
                     //如果是https的连接
-                    log.info("https");
                     promise.addListener(new FutureListener<Channel>() {
                         @Override
                         public void operationComplete(Future<Channel> channelFuture) throws Exception {
@@ -76,7 +78,6 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
                             ctx.writeAndFlush(resp).addListener(new ChannelFutureListener() {
                                 @Override
                                 public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                                    log.info("https响应200完成");
                                     ChannelPipeline p = ctx.pipeline();
                                     p.remove("httpcode");
                                     p.remove("httpservice");
@@ -119,10 +120,14 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
 
 
     //根据host和端口，创建一个连接web的连接
-    private Promise<Channel> createPromise(String host, int port) throws SSLException {
+    private Promise<Channel> createPromise(String host, int port) {
         final Promise<Channel> promise = ctx.executor().newPromise();
+        if (EpollKit.epollIsAvailable()) {
+            b.channel(EpollSocketChannel.class);
+        }else{
+            b.channel(NioSocketChannel.class);
+        }
         b.group(ctx.channel().eventLoop())
-                .channel(NioSocketChannel.class)
                 .remoteAddress(host, port)
                 .handler(new ClientServiceInitializer(ctx, host, port))
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
@@ -131,10 +136,10 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
                     @Override
                     public void operationComplete(ChannelFuture channelFuture) throws Exception {
                         if (channelFuture.isSuccess()) {
-                            log.info("连接目标服务器成功");
+                            //log.info("连接目标服务器成功:{}:{}", host, port);
                             promise.setSuccess(channelFuture.channel());
                         } else {
-                            log.warn("连接目标服务器失败");
+                            log.warn("连接目标服务器失败:{}:{}", host, port);
                             ctx.close();
                             channelFuture.cancel(true);
                         }
