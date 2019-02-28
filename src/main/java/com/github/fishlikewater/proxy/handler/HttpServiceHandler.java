@@ -3,6 +3,7 @@ package com.github.fishlikewater.proxy.handler;
 import com.github.fishlikewater.proxy.kit.EpollKit;
 import com.github.fishlikewater.proxy.kit.PassWordCheck;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
@@ -52,16 +53,16 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
             //转成 HttpRequest
             HttpRequest req = (HttpRequest) msg;
             if (PassWordCheck.basicLogin(req)) { //检测密码
-                HttpMethod method = req.method();	//获取请求方式，http的有get post ...， https的是 CONNECT
-                String headerHost = req.headers().get("Host");	//获取请求头中的Host字段
+                HttpMethod method = req.method();    //获取请求方式，http的有get post ...， https的是 CONNECT
+                String headerHost = req.headers().get("Host");    //获取请求头中的Host字段
                 String host = "";
-                int port = 80;									//端口默认80
-                String[] split = headerHost.split(":");			//可能有请求是 host:port的情况，
+                int port = 80;                                    //端口默认80
+                String[] split = headerHost.split(":");            //可能有请求是 host:port的情况，
                 host = split[0];
                 if (split.length > 1) {
                     port = Integer.valueOf(split[1]);
                 }
-                Promise<Channel> promise = createPromise(host, port);	//根据host和port创建连接到服务器的连接
+                Promise<Channel> promise = createPromise(host, port);    //根据host和port创建连接到服务器的连接
 
 				/*
 				根据是http还是http的不同，为promise添加不同的监听器
@@ -114,7 +115,7 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
                 ctx.writeAndFlush(resp);
             }
         } else {
-           // ReferenceCountUtil.release(msg);
+            // ReferenceCountUtil.release(msg);
         }
     }
 
@@ -124,13 +125,15 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
         final Promise<Channel> promise = ctx.executor().newPromise();
         if (EpollKit.epollIsAvailable()) {
             b.channel(EpollSocketChannel.class);
-        }else{
+        } else {
             b.channel(NioSocketChannel.class);
         }
         b.group(ctx.channel().eventLoop())
                 .remoteAddress(host, port)
-                .handler(new ClientServiceInitializer(ctx, host, port))
+                .handler(new ClientServiceInitializer(ctx))
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+                .option(ChannelOption.SO_REUSEADDR, true)
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .connect()
                 .addListener(new ChannelFutureListener() {
                     @Override
