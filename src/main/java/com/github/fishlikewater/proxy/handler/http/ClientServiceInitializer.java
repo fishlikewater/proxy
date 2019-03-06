@@ -1,4 +1,4 @@
-package com.github.fishlikewater.proxy.handler;
+package com.github.fishlikewater.proxy.handler.http;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;

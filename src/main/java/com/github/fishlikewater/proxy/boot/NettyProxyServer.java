@@ -1,5 +1,6 @@
 package com.github.fishlikewater.proxy.boot;
 
+import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.handler.ProxyServiceInitializer;
 import com.github.fishlikewater.proxy.kit.EpollKit;
 import com.github.fishlikewater.proxy.kit.NamedThreadFactory;
@@ -31,9 +32,14 @@ public class NettyProxyServer {
     private EventLoopGroup bossGroup;
     /** 处理连接后的channel*/
     private EventLoopGroup workerGroup;
-    /** channel 管理实现*/
 
-    public void start(String adress, int port){
+    private ProxyConfig proxyConfig;
+
+    public NettyProxyServer(ProxyConfig proxyConfig){
+        this.proxyConfig = proxyConfig;
+    }
+
+    public void start(){
 
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.option(ChannelOption.SO_REUSEADDR, true);
@@ -52,15 +58,15 @@ public class NettyProxyServer {
             workerGroup = new NioEventLoopGroup(0, new NamedThreadFactory("nio-worker@"));
             bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class);
         }
-        bootstrap.childHandler(new ProxyServiceInitializer());
+        bootstrap.childHandler(new ProxyServiceInitializer(proxyConfig));
         try {
             Channel ch;
-            if(adress == null){
-                ch = bootstrap.bind(port).sync().channel();
+            if(proxyConfig.getAddress() == null){
+                ch = bootstrap.bind(proxyConfig.getPort()).sync().channel();
             }else {
-                ch = bootstrap.bind(adress, port).sync().channel();
+                ch = bootstrap.bind(proxyConfig.getAddress(), proxyConfig.getPort()).sync().channel();
             }
-            log.info("start porxy this port:{} and adress:{}", port, adress);
+            log.info("start porxy this port:{} and adress:{} proxy type:{}", proxyConfig.getPort(), proxyConfig.getAddress(), proxyConfig.getType());
             ch.closeFuture().sync();
         } catch (InterruptedException e) {
             log.error("start porxy server fail", e);

@@ -1,4 +1,4 @@
-package com.github.fishlikewater.proxy.handler;
+package com.github.fishlikewater.proxy.handler.http;
 
 import com.github.fishlikewater.proxy.kit.EpollKit;
 import com.github.fishlikewater.proxy.kit.PassWordCheck;
@@ -28,9 +28,11 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
     //保留全局ctx
     private ChannelHandlerContext ctx;
     private Bootstrap b = new Bootstrap();
-    private String host;
-    private int port;
-    private boolean isConn;
+    private boolean isAuth;
+
+    public HttpServiceHandler(boolean isAuth){
+        this.isAuth = isAuth;
+    }
 
     //channelActive方法中将ctx保留为全局变量
     @Override
@@ -52,7 +54,8 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
         if (msg instanceof HttpRequest) {
             //转成 HttpRequest
             HttpRequest req = (HttpRequest) msg;
-            if (PassWordCheck.basicLogin(req)) { //检测密码
+            boolean isContinue = !isAuth || PassWordCheck.basicLogin(req);
+            if (isContinue) { //检测密码
                 HttpMethod method = req.method();    //获取请求方式，http的有get post ...， https的是 CONNECT
                 String headerHost = req.headers().get("Host");    //获取请求头中的Host字段
                 String host = "";
@@ -61,6 +64,10 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
                 host = split[0];
                 if (split.length > 1) {
                     port = Integer.valueOf(split[1]);
+                }else {
+                    if (req.uri().indexOf("https") == 0) {
+                        port = 443;
+                    }
                 }
                 Promise<Channel> promise = createPromise(host, port);    //根据host和port创建连接到服务器的连接
 
@@ -76,15 +83,21 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
                             //首先向浏览器发送一个200的响应，证明已经连接成功了，可以发送数据了
                             FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, new HttpResponseStatus(200, "OK"));
                             //向浏览器发送同意连接的响应，并在发送完成后移除httpcode和httpservice两个handler
-                            ctx.writeAndFlush(resp).addListener(new ChannelFutureListener() {
+                            channelHandlerContext.writeAndFlush(resp).addListener(new ChannelFutureListener() {
                                 @Override
                                 public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                                    ChannelPipeline p = ctx.pipeline();
-                                    p.remove("httpcode");
-                                    p.remove("httpservice");
+                                    if(channelFuture.isSuccess()){
+                                        ChannelPipeline p = channelHandlerContext.pipeline();
+                                        if(p.names().size() != 0){
+                                            p.remove("httpcode");
+                                            p.remove("httpservice");
+                                        }
+                                    }else {
+                                        channelHandlerContext.close();
+                                    }
                                 }
                             });
-                            ChannelPipeline p = ctx.pipeline();
+                            ChannelPipeline p = channelHandlerContext.pipeline();
                             //将客户端channel添加到转换数据的channel
                             p.addLast(new NoneHandler(channelFuture.getNow()));
                         }
@@ -99,7 +112,7 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
                         @Override
                         public void operationComplete(Future<Channel> channelFuture) throws Exception {
                             //移除	httpcode	httpservice 并添加	NoneHandler，并向服务器发送请求的byte数据
-                            ChannelPipeline p = ctx.pipeline();
+                            ChannelPipeline p = channelHandlerContext.pipeline();
                             p.remove("httpcode");
                             p.remove("httpservice");
                             //添加handler
@@ -115,6 +128,8 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
                 ctx.writeAndFlush(resp);
             }
         } else {
+            //log.info(msg.toString());
+            //log.warn("只支持http/https请求代理");
             // ReferenceCountUtil.release(msg);
         }
     }
@@ -139,7 +154,7 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
                     @Override
                     public void operationComplete(ChannelFuture channelFuture) throws Exception {
                         if (channelFuture.isSuccess()) {
-                            //log.info("连接目标服务器成功:{}:{}", host, port);
+                            log.info("连接目标服务器成功:{}:{}", host, port);
                             promise.setSuccess(channelFuture.channel());
                         } else {
                             log.warn("连接目标服务器失败:{}:{}", host, port);
