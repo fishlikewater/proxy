@@ -41,5 +41,7 @@ public class ProxyConfig {
 
     /** 是否开启验证*/
     private boolean auth;
+
+    private String proxyDns;
 }
 

@@ -1,5 +1,6 @@
 package com.github.fishlikewater.proxy.handler.dns;
 
+import com.github.fishlikewater.proxy.kit.MapCache;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -23,6 +24,9 @@ import java.net.InetAddress;
  * @since
  **/
 public class DnsServerHandler extends SimpleChannelInboundHandler<DatagramPacket> {
+
+    private MapCache dnsCache = MapCache.single();
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
         // 读取收到的数据
@@ -30,13 +34,19 @@ public class DnsServerHandler extends SimpleChannelInboundHandler<DatagramPacket
         byte[] req = new byte[buf.readableBytes()];
         buf.readBytes(req);
         Message indata = new Message(req);
-        System.out.println("\nindata = " + indata.toString());
         Record question = indata.getQuestion();
-        System.out.println("question = " + question);
         String domain = indata.getQuestion().getName().toString();
-        System.out.println("domain = " + domain);
-        //解析域名
-        InetAddress answerIpAddr = Address.getByName(domain);
+        Object cache = dnsCache.get(domain);
+        InetAddress answerIpAddr = null;
+        if(cache != null){
+            answerIpAddr = (InetAddress)cache;
+        }else {
+            //解析域名
+             answerIpAddr = Address.getByName(domain);
+            if(answerIpAddr.getHostName() != null){
+                dnsCache.set(domain, answerIpAddr, 60*60*24);
+            }
+        }
         Message outdata = (Message)indata.clone();
         //由于接收到的请求为A类型，因此应答也为ARecord。查看Record类的继承，发现还有AAAARecord(ipv6)，CNAMERecord等
         Record answer = new ARecord(question.getName(), question.getDClass(), 64, answerIpAddr);
