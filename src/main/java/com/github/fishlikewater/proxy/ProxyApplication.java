@@ -23,9 +23,11 @@ public class ProxyApplication {
     @EventListener
     public void deployProxy(ApplicationReadyEvent event){
         if(proxyConfig.getType() == ProxyType.dns){
-            System.setProperty("sun.net.spi.nameservice.provider.1", "dns,sun");
-            System.setProperty("sun.net.spi.nameservice.nameservers", proxyConfig.getProxyDns());
-            System.setProperty("sun.net.spi.nameservice.provider.2", "default");
+            if(proxyConfig.getProxyDns() != null){
+                System.setProperty("sun.net.spi.nameservice.provider.1", "dns,sun");
+                System.setProperty("sun.net.spi.nameservice.nameservers", proxyConfig.getProxyDns());
+                System.setProperty("sun.net.spi.nameservice.provider.2", "default");
+            }
             new NettyDnsServer(proxyConfig).start();
         }else{
             new NettyProxyServer(proxyConfig).start();
