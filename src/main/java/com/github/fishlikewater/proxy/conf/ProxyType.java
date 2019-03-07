@@ -10,5 +10,5 @@ package com.github.fishlikewater.proxy.conf;
  * @since
  **/
 public enum ProxyType{
-    http, socks;
+    http, socks,dns;
 }
