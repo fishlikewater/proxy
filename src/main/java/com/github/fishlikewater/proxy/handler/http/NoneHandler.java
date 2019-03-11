@@ -5,6 +5,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
+
 /**
  * @author zhangx
  * @version V1.0
@@ -35,6 +37,11 @@ public class NoneHandler extends ChannelInboundHandlerAdapter {
     }
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error(cause.getMessage());
+        if (cause instanceof IOException) {
+            // 远程主机强迫关闭了一个现有的连接的异常
+            ctx.close();
+        } else {
+            super.exceptionCaught(ctx, cause);
+        }
     }
 }
