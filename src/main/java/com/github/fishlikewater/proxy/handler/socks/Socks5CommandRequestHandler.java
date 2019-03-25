@@ -1,7 +1,9 @@
 package com.github.fishlikewater.proxy.handler.socks;
 
+import com.github.fishlikewater.proxy.kit.EpollKit;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.socksx.v5.*;
@@ -20,7 +22,7 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 
 			Bootstrap bootstrap = new Bootstrap();
 			bootstrap.group(ctx.channel().eventLoop())
-			.channel(NioSocketChannel.class)
+			.channel(EpollKit.epollIsAvailable()? EpollSocketChannel.class:NioSocketChannel.class)
 			.option(ChannelOption.TCP_NODELAY, true)
 			.handler(new ChannelInitializer<SocketChannel>() {
 				@Override
@@ -41,6 +43,7 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 						Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
 						ctx.writeAndFlush(commandResponse);
 					} else {
+						log.debug("连接目标服务器失败");
 						Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, Socks5AddressType.IPv4);
 						ctx.writeAndFlush(commandResponse);
 					}
