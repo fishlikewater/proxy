@@ -7,6 +7,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.socksx.v5.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
+
 @Slf4j
 public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<DefaultSocks5CommandRequest> {
 
@@ -47,6 +49,16 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 			});
 		} else {
 			ctx.fireChannelRead(msg);
+		}
+	}
+
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+		if (cause instanceof IOException) {
+			// 远程主机强迫关闭了一个现有的连接的异常
+			ctx.close();
+		} else {
+			super.exceptionCaught(ctx, cause);
 		}
 	}
 

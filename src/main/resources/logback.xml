@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration>
+<configuration scan="true" scanPeriod="60 seconds">
     <property name="log.home" value="opt\\logs\\proxy" />
 
     <!-- 彩色日志 -->
@@ -35,17 +35,15 @@
             <onMismatch>DENY</onMismatch>
         </filter>
         <!-- 循环政策：基于时间创建日志文件 -->
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <!-- 日志文件名格式 -->
-            <fileNamePattern>${log.home}/error/%d{yyyy-MM-dd}-error.log</fileNamePattern>
+            <fileNamePattern>${log.home}/error/%d{yyyy-MM-dd}.%i-error.log</fileNamePattern>
             <!-- 最大保存时间：30天-->
+            <maxFileSize>100MB</maxFileSize>
             <maxHistory>30</maxHistory>
+            <totalSizeCap>5GB</totalSizeCap>
         </rollingPolicy>
 
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <!-- 日志文件最大大小 -->
-            <MaxFileSize>100MB</MaxFileSize>
-        </triggeringPolicy>
     </appender>
 
     <!-- 文件保存日志的相关配置 INFO -->
@@ -66,17 +64,14 @@
             <onMismatch>DENY</onMismatch>
         </filter>
         <!-- 循环政策：基于时间创建日志文件 -->
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <!-- 日志文件名格式 -->
-            <fileNamePattern>${log.home}/info/%d{yyyy-MM-dd}-info.log</fileNamePattern>
+            <fileNamePattern>${log.home}/info/%d{yyyy-MM-dd}.%i-info.log</fileNamePattern>
             <!-- 最大保存时间：30天-->
+            <maxFileSize>100MB</maxFileSize>
             <maxHistory>30</maxHistory>
+            <totalSizeCap>5GB</totalSizeCap>
         </rollingPolicy>
-
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <!-- 日志文件最大大小 -->
-            <MaxFileSize>100MB</MaxFileSize>
-        </triggeringPolicy>
     </appender>
 
     <!-- 输出mybatis的sql语句,没有这句就无法输出mybatis的sql语句，name属性指定到要输出日志的dao，即mybatis要代理的dao -->

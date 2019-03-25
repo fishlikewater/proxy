@@ -50,9 +50,9 @@ fi
 JAVA_MEM_OPTS=""
 BITS=`java -version 2>&1 | grep -i 64-bit`
 if [ -n "$BITS" ]; then
-  JAVA_MEM_OPTS=" -server -Xms256m -Xm256m -Xmn120m -xXss256k -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=10 -XX:GCLogFileSize=100M"
+  JAVA_MEM_OPTS=" -server -Xms128m -Xmx256m -Xmn120m -Xss256k -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=10 -XX:GCLogFileSize=100M"
 else
-  JAVA_MEM_OPTS=" -server -Xms256m -Xms256m -XX:SurvivorRatio=2 -XX:+UseParallelGC "
+  JAVA_MEM_OPTS=" -server -Xms128m -Xmx256m -XX:SurvivorRatio=2 -XX:+UseParallelGC "
 fi
 CONFIG_FILES=" -Dspring.config.location=$CONF_DIR/application.properties "
 echo -e "Starting the $SERVER_NAME ..."
