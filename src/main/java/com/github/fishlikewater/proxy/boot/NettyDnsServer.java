@@ -48,8 +48,9 @@ public class NettyDnsServer {
                     .bind(proxyConfig.getPort())
                     .sync()
                     .channel()
-                    .closeFuture()
-                    .await();
+                    .closeFuture().addListener(t->{
+                        log.info("停止proxy dns服务");
+            }).await();
         } catch (InterruptedException e) {
             log.error("start dns server fail", e);
             bossGroup.shutdownGracefully();

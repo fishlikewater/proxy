@@ -1,17 +1,23 @@
 package com.github.fishlikewater.proxy;
 
-import com.github.fishlikewater.proxy.boot.NettyDnsServer;
+import com.github.fishlikewater.proxy.boot.NettyProxyClient;
 import com.github.fishlikewater.proxy.boot.NettyProxyServer;
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.conf.ProxyType;
+import io.netty.util.ResourceLeakDetector;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 
 @SpringBootApplication
-public class ProxyApplication {
+public class ProxyApplication implements InitializingBean, DisposableBean{
+
+    private NettyProxyServer nettyProxyServer1;
+    private NettyProxyServer nettyProxyServer2;
+    private NettyProxyClient nettyProxyClient1;
 
    @Autowired
    private ProxyConfig proxyConfig;
@@ -20,17 +26,53 @@ public class ProxyApplication {
         SpringApplication.run(ProxyApplication.class, args);
     }
 
-    @EventListener
+  /*  @EventListener
     public void deployProxy(ApplicationReadyEvent event){
-        if(proxyConfig.getType() == ProxyType.dns){
+
+    }*/
+
+    @Override
+    public void destroy() throws Exception {
+        if(nettyProxyServer1 != null){
+            nettyProxyServer1.stop();
+        }
+        if(nettyProxyServer2 != null){
+            nettyProxyServer2.stop();
+        }
+        if(nettyProxyClient1 != null){
+            nettyProxyClient1.stop();
+        }
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        if(proxyConfig.isOpenCheckMemoryLeak()){
+            System.setProperty("io.netty.leakDetection.maxRecords", "100");
+            System.setProperty("io.netty.leakDetection.acquireAndReleaseOnly", "true");
+            ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
+        }
+        ProxyType type = proxyConfig.getType();
+        if(type == ProxyType.dns){
             if(proxyConfig.getProxyDns() != null){
                 System.setProperty("sun.net.spi.nameservice.provider.1", "dns,sun");
                 System.setProperty("sun.net.spi.nameservice.nameservers", proxyConfig.getProxyDns());
                 System.setProperty("sun.net.spi.nameservice.provider.2", "default");
             }
-            new NettyDnsServer(proxyConfig).start();
-        }else{
-            new NettyProxyServer(proxyConfig).start();
+        }else if(type == ProxyType.proxy_server){
+            ProxyConfig proxyHttpConfig = new ProxyConfig();
+            BeanUtils.copyProperties(proxyConfig, proxyHttpConfig);
+            proxyHttpConfig.setType(ProxyType.proxy_server_http);
+            nettyProxyServer2 = new NettyProxyServer(proxyHttpConfig);
+            nettyProxyServer2.start();
+        }
+        proxyConfig.setType(type);
+        if(type != ProxyType.proxy_client){
+            nettyProxyServer1 = new NettyProxyServer(proxyConfig);
+            nettyProxyServer1.start();
+        }
+        if(type != ProxyType.proxy_server){
+            nettyProxyClient1 = new NettyProxyClient(proxyConfig);
+            nettyProxyClient1.run();
         }
     }
 }

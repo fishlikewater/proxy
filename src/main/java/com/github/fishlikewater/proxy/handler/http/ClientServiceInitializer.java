@@ -4,6 +4,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http.HttpClientCodec;
 
 /**
  * @author zhangx
@@ -25,6 +26,6 @@ public class ClientServiceInitializer extends ChannelInitializer<Channel> {
         //SSLEngine sslEngine = sslCtx.newEngine(ch.alloc());
         ChannelPipeline p = ch.pipeline();
         //p.addLast("ssl", new SslHandler(sslEngine));
-        p.addLast("none", new NoneHandler(ctx.channel()));
+        p.addLast("http", new HttpClientCodec());
     }
 }

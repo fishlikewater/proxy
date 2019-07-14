@@ -1,5 +1,6 @@
 package com.github.fishlikewater.proxy.handler.socks;
 
+import com.github.fishlikewater.proxy.handler.HeartBeatHandler;
 import com.github.fishlikewater.proxy.kit.EpollKit;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -7,9 +8,11 @@ import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.socksx.v5.*;
+import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<DefaultSocks5CommandRequest> {
@@ -29,6 +32,8 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 				protected void initChannel(SocketChannel ch) throws Exception {
 					//ch.pipeline().addLast(new LoggingHandler());//in out
 					//将目标服务器信息转发给客户端
+					ch.pipeline().addLast(new IdleStateHandler(0, 0, 30, TimeUnit.SECONDS));
+					ch.pipeline().addLast(new HeartBeatHandler());
 					ch.pipeline().addLast(new Dest2ClientHandler(ctx));
 				}
 			});
@@ -48,7 +53,7 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 						ctx.writeAndFlush(commandResponse);
 					}
 				}
-				
+
 			});
 		} else {
 			ctx.fireChannelRead(msg);

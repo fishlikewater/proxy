@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="60 seconds">
-    <property name="log.home" value="opt\\logs\\proxy" />
+    <property name="log.home" value="logs\\proxy" />
 
     <!-- 彩色日志 -->
     <!-- 彩色日志依赖的渲染类 -->

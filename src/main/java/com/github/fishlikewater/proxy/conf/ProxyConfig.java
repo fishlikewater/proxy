@@ -27,11 +27,17 @@ public class ProxyConfig {
     /** 监控端口*/
     private int port;
 
-    /** 验证用户名*/
+    /** 服务端 http开放端口*/
+    private int httpPort;
+
+    /** 验证用户名 */
     private String username;
 
     /** 验证密码*/
     private String password;
+
+    /** token*/
+    private String token;
 
     /** 心跳检测间隔*/
     private long timeout;
@@ -43,5 +49,25 @@ public class ProxyConfig {
     private boolean auth;
 
     private String proxyDns;
+
+    private String proxyPath;
+
+    /** 客户端 http 映射端口*/
+    private int localPort = 8081;
+
+    /** 客户端 http 映射端口*/
+    private String localAddress = "127.0.0.1";
+
+    /** 打开内存泄漏检测*/
+    private boolean isOpenCheckMemoryLeak = false;
+
+    /** 是否开启全局流量限制*/
+    private boolean isOpenGlobalTrafficLimit = false;
+
+    /** 写限制*/
+    private long writeLimit = 1024*1024;
+
+    /** 读限制*/
+    private long readLimit = 1024*1024;
 }
 

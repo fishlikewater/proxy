@@ -1,11 +1,12 @@
-package com.github.fishlikewater.proxy.handler;
+package com.github.fishlikewater.proxy.handler.proxy_client;
 
+
+import com.github.fishlikewater.proxy.boot.ConnectionListener;
+import com.github.fishlikewater.proxy.boot.NettyProxyClient;
+import com.github.fishlikewater.proxy.kit.IdUtil;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,28 +16,28 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
+
+    private NettyProxyClient client;
+
+    public HeartBeatHandler(NettyProxyClient client){
+        this.client = client;
+    }
+
     public static final MessageProbuf.Message HEARTBEAT_SEQUENCE = MessageProbuf.Message.newBuilder()
             .setLength(10)
+            .setRequestid(IdUtil.next())
             .setBody("ping")
             .setType(MessageProbuf.MessageType.HEALTH)
             .build();
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+
+        // 判断evt是否是IdleStateEvent（用于触发用户事件，包含 读空闲/写空闲/读写空闲 ）
         if (evt instanceof IdleStateEvent) {
-            IdleStateEvent event = (IdleStateEvent) evt;
-            if (event.state() == IdleState.READER_IDLE) {
-                ctx.channel().writeAndFlush(HEARTBEAT_SEQUENCE)
-                        .addListener(new ChannelFutureListener() {
-                            @Override
-                            public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                                if (!channelFuture.isSuccess()) {
-                                    log.info("关闭连接");
-                                    ctx.channel().close();
-                                }
-                            }
-                        });//(ChannelFutureListener.CLOSE_ON_FAILURE);
-            }
+            IdleStateEvent event = (IdleStateEvent) evt;        // 强制类型转换
+            ctx.channel().writeAndFlush(HEARTBEAT_SEQUENCE)
+                    .addListener(new ConnectionListener(client));//(ChannelFutureListener.CLOSE_ON_FAILURE);
         } else {
             super.userEventTriggered(ctx, evt);
         }

@@ -1,6 +1,7 @@
 package com.github.fishlikewater.proxy.boot;
 
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
+import com.github.fishlikewater.proxy.conf.ProxyType;
 import com.github.fishlikewater.proxy.handler.ProxyServiceInitializer;
 import com.github.fishlikewater.proxy.kit.EpollKit;
 import com.github.fishlikewater.proxy.kit.NamedThreadFactory;
@@ -28,18 +29,22 @@ import lombok.extern.slf4j.Slf4j;
  **/
 @Slf4j
 public class NettyProxyServer {
-    /** 处理连接*/
+    /**
+     * 处理连接
+     */
     private EventLoopGroup bossGroup;
-    /** 处理连接后的channel*/
+    /**
+     * 处理连接后的channel
+     */
     private EventLoopGroup workerGroup;
 
     private ProxyConfig proxyConfig;
 
-    public NettyProxyServer(ProxyConfig proxyConfig){
+    public NettyProxyServer(ProxyConfig proxyConfig) {
         this.proxyConfig = proxyConfig;
     }
 
-    public void start(){
+    public void start() {
 
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.option(ChannelOption.SO_REUSEADDR, true);
@@ -61,30 +66,53 @@ public class NettyProxyServer {
         bootstrap.childHandler(new ProxyServiceInitializer(proxyConfig));
         try {
             Channel ch;
-            if(proxyConfig.getAddress() == null){
+            if (proxyConfig.getAddress() == null) {
                 ch = bootstrap.bind(proxyConfig.getPort()).sync().channel();
-            }else {
-                ch = bootstrap.bind(proxyConfig.getAddress(), proxyConfig.getPort()).sync().channel();
+            } else {
+                if (proxyConfig.getType() == ProxyType.proxy_server_http) {
+                    ch = bootstrap.bind(proxyConfig.getAddress(), proxyConfig.getHttpPort()).sync().channel();
+                    log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyConfig.getHttpPort(), proxyConfig.getAddress(), proxyConfig.getType());
+                } else {
+                    ch = bootstrap.bind(proxyConfig.getAddress(), proxyConfig.getPort()).sync().channel();
+                    log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyConfig.getPort(), proxyConfig.getAddress(), proxyConfig.getType());
+                }
             }
-            log.info("start porxy this port:{} and adress:{} proxy type:{}", proxyConfig.getPort(), proxyConfig.getAddress(), proxyConfig.getType());
-            ch.closeFuture().sync();
+            ch.closeFuture().addListener(t -> {
+                log.info("⬢ {}服务开始关闭", proxyConfig.getType());
+            });
         } catch (InterruptedException e) {
-            log.error("start porxy server fail", e);
-        }finally {
-            workerGroup.shutdownGracefully();
-            bossGroup.shutdownGracefully();
+            log.error("⬢ start "+proxyConfig.getType()+" server fail", e);
+        }
+    }
+
+    /**
+     * 关闭服务
+     */
+    public void stop() {
+        log.info("⬢ {} shutdown ...", proxyConfig.getType());
+        try {
+            if (this.bossGroup != null) {
+                this.bossGroup.shutdownGracefully().sync();
+            }
+            if (this.workerGroup != null) {
+                this.workerGroup.shutdownGracefully().sync();
+            }
+            log.info("⬢ {} shutdown successful", proxyConfig.getType());
+        } catch (Exception e) {
+            log.error("⬢ proxyConfig.getType()"+" shutdown error", e);
         }
     }
 
     /**
      * 数据交换连接客户端
+     *
      * @return
      */
-    private Bootstrap getBootstrap(){
+    private Bootstrap getBootstrap() {
         Bootstrap bootstrap = new Bootstrap();
         if (EpollKit.epollIsAvailable()) {
             bootstrap.channel(EpollSocketChannel.class);
-        }else{
+        } else {
             bootstrap.channel(NioSocketChannel.class);
         }
         bootstrap.group(bossGroup)

@@ -3,7 +3,6 @@ package com.github.fishlikewater.proxy.kit;
 import io.netty.handler.codec.http.HttpRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import java.util.Base64;
 
@@ -16,7 +15,6 @@ import java.util.Base64;
  * @Date 2019年02月27日 12:51
  * @since
  **/
-@Component
 @Slf4j
 public class PassWordCheck {
 
