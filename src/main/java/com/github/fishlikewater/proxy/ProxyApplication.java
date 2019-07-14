@@ -70,7 +70,7 @@ public class ProxyApplication implements InitializingBean, DisposableBean{
             nettyProxyServer1 = new NettyProxyServer(proxyConfig);
             nettyProxyServer1.start();
         }
-        if(type != ProxyType.proxy_server){
+        if(type == ProxyType.proxy_client){
             nettyProxyClient1 = new NettyProxyClient(proxyConfig);
             nettyProxyClient1.run();
         }

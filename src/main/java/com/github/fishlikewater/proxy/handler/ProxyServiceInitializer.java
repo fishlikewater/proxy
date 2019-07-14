@@ -87,10 +87,10 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
         }
         p.addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS));
         /** http服务端 无心跳直接关闭*/
-        if(proxyConfig.getType() == ProxyType.proxy_server_http){
+        if(proxyConfig.getType() == ProxyType.proxy_server_http || proxyConfig.getType() == ProxyType.http){
             p.addLast(new HttpHeartBeatHandler());
         }else {
-            /** 其他模式 发送心跳包到客户端确实*/
+            /** 其他模式 发送心跳包到客户端确认*/
             p.addLast(new HeartBeatHandler());
         }
         /** 是否打开日志*/

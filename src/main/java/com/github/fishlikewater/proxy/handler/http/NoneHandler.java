@@ -3,6 +3,7 @@ package com.github.fishlikewater.proxy.handler.http;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -27,13 +28,13 @@ public class NoneHandler extends SimpleChannelInboundHandler {
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-        //System.out.println("交换数据");
-        outChannel.write(msg);
+        ReferenceCountUtil.retain(msg);
+        outChannel.writeAndFlush(msg);
     }
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        outChannel.flush();
+
     }
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
