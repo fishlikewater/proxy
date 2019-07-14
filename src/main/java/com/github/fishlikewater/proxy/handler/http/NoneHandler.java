@@ -2,7 +2,7 @@ package com.github.fishlikewater.proxy.handler.http;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -16,7 +16,7 @@ import java.io.IOException;
  * @date 2019年02月26日 21:51
  **/
 @Slf4j
-public class NoneHandler extends ChannelInboundHandlerAdapter {
+public class NoneHandler extends SimpleChannelInboundHandler {
 
     private Channel outChannel;
 
@@ -26,7 +26,7 @@ public class NoneHandler extends ChannelInboundHandlerAdapter {
 
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         //System.out.println("交换数据");
         outChannel.write(msg);
     }
