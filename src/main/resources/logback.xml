@@ -75,7 +75,7 @@
     </appender>
 
     <!-- 输出mybatis的sql语句,没有这句就无法输出mybatis的sql语句，name属性指定到要输出日志的dao，即mybatis要代理的dao -->
-    <logger name="com.cuit.springboot.dao" level="DEBUG" />
+    <logger name="io.netty.handler.logging" level="DEBUG" />
 
     <!-- 基于info处理日志：具体控制台或者文件对日志级别的处理还要看所在appender配置的filter，如果没有配置filter，则使用root配置 -->
     <root level="info">

@@ -54,7 +54,7 @@ if [ -n "$BITS" ]; then
 else
   JAVA_MEM_OPTS=" -server -Xms128m -Xmx256m -XX:SurvivorRatio=2 -XX:+UseParallelGC "
 fi
-CONFIG_FILES=" -Dspring.config.location=$CONF_DIR/application.properties "
+CONFIG_FILES=" -Dspring.config.location=$CONF_DIR/ "
 echo -e "Starting the $SERVER_NAME ..."
 echo java $JAVA_OPTS $JAVA_MEM_OPTS $JAVA_DEBUG_OPTS $JAVA_JMX_OPTS $CONFIG_FILES -jar $DEPLOY_DIR/bin/$JAR_NAME > $STDOUT_FILE 2>&1 &
 nohup java $JAVA_OPTS $JAVA_MEM_OPTS $JAVA_DEBUG_OPTS $JAVA_JMX_OPTS $CONFIG_FILES -jar $DEPLOY_DIR/bin/$JAR_NAME > $STDOUT_FILE 2>&1 &
