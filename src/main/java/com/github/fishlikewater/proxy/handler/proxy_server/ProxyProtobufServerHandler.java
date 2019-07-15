@@ -87,7 +87,6 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
                     }
                     break;
                 case HEALTH:
-                    log.info("client health packet");
                     break;
                 default:
                     log.info("接收到不支持的消息类型");
