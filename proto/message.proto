@@ -1,23 +1,42 @@
 syntax = "proto3";
 //option java_package = "com.fishlikewater.schedule.common.entity";
 option java_outer_classname = "MessageProbuf";
+//import "google/protobuf/any.proto";
 
-message Message{
+message Message {
     int32 length = 1;
     MessageType type = 2;
-    string requestid = 3;
-    string body = 4;
-    string extend = 5;
+    string requestId = 3;
+    Request request = 4;
+    Response response = 5;
+    Register register = 6;
+    string extend = 7;
 }
 
-enum MessageType{
-   CONNECTION = 0;
-   HEALTH = 1;
-   CLOSE = 2;
-   VALID = 3;
-   CHECK = 4;
-   RESULT = 5;
-   REFRESH = 6;
-   LOGOUT = 7;
-   LOGIN = 8;
+message Register{
+    string token = 1;
+    string path = 2;
+}
+
+message Request {
+    string httpVersion = 1;
+    string method = 2;
+    string url = 3;
+    bytes body = 4;
+    map<string, string> header = 5;
+}
+
+message Response {
+    int32 code = 1;
+    bytes body = 2;
+    map<string, string> header = 3;
+}
+
+enum MessageType {
+    INIT = 0;
+    HEALTH = 1;
+    CLOSE = 2;
+    VALID = 3;
+    REQUEST = 4;
+    RESPONSE = 5;
 }

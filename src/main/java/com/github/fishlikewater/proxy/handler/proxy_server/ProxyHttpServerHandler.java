@@ -1,12 +1,14 @@
 package com.github.fishlikewater.proxy.handler.proxy_server;
 
-import com.alibaba.fastjson.JSON;
-import com.github.fishlikewater.proxy.kit.*;
+import com.github.fishlikewater.proxy.kit.ChannelGroupKit;
+import com.github.fishlikewater.proxy.kit.IdUtil;
+import com.github.fishlikewater.proxy.kit.MessageProbuf;
+import com.google.protobuf.ByteString;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
-import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -40,25 +42,30 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
                 resp.headers().setInt("Content-Length", resp.content().readableBytes());
                 ctx.writeAndFlush(resp);
             }else {
-                Request request = new Request();
-                request.setHttpVersion(req.protocolVersion().text());
-                request.setUrl(req.uri());
-                request.setMethod(req.method().name());
+                MessageProbuf.Request.Builder builder = MessageProbuf.Request.newBuilder();
+                builder.setHttpVersion(req.protocolVersion().text());
+                builder.setUrl(req.uri());
+                builder.setMethod(req.method().name());
                 Map<String, String> header = new HashMap<>();
                 headers.entries().forEach(t->{
                     header.put(t.getKey(), t.getValue());
                 });
-                request.setHeader(header);
-                request.setBody(req.content().toString(CharsetUtil.UTF_8).getBytes());
+                builder.putAllHeader(header);
+                ByteBuf content = req.content();
+                if(content.hasArray()){
+                    builder.setBody(ByteString.copyFrom(content.array()));
+                }else {
+                    byte[] bytes = new byte[content.readableBytes()];
+                    content.readBytes(bytes);
+                    builder.setBody(ByteString.copyFrom(bytes));
+                }
                 String requestId = IdUtil.next();
-                String rmsg = JSON.toJSONString(request);
                 channel.writeAndFlush(MessageProbuf.Message.newBuilder()
-                        .setType(MessageProbuf.MessageType.CONNECTION)
-                        .setLength(rmsg.getBytes().length)
-                        .setBody(rmsg)
-                        .setRequestid(requestId));
+                        .setType(MessageProbuf.MessageType.REQUEST)
+                        .setRequest(builder.build())
+                        .setRequestId(requestId));
                 CacheUtil.put(requestId, ctx.channel(), 3);
-                request = null;
+                builder = null;
             }
 
 

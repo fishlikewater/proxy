@@ -1,17 +1,18 @@
 package com.github.fishlikewater.proxy.handler.proxy_client;
 
 
-import com.alibaba.fastjson.JSON;
 import com.github.fishlikewater.proxy.boot.NettyProxyClient;
 import com.github.fishlikewater.proxy.kit.EpollKit;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
-import com.github.fishlikewater.proxy.kit.Request;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.Promise;
@@ -61,16 +62,15 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
     protected void channelRead0(ChannelHandlerContext ctx, MessageProbuf.Message msg) throws Exception {
         MessageProbuf.MessageType type = msg.getType();
         switch (type) {
-            case CONNECTION:
-                String body = msg.getBody();
-                String requestid = msg.getRequestid();
-                Request reques = JSON.parseObject(body, Request.class);
-                FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.valueOf(reques.getHttpVersion()), HttpMethod.valueOf(reques.getMethod()), reques.getUrl());
-                reques.getHeader().entrySet().forEach(t->{
+            case REQUEST:
+                String requestid = msg.getRequestId();
+                MessageProbuf.Request request = msg.getRequest();
+                FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.valueOf(request.getHttpVersion()), HttpMethod.valueOf(request.getMethod()), request.getUrl());
+                request.getHeaderMap().entrySet().forEach(t->{
                     req.headers().set(t.getKey(), t.getValue());
                 });
                 req.headers().set("Host", client.getProxyConfig().getLocalAddress() + ":" + client.getProxyConfig().getLocalPort());
-                req.content().writeBytes(reques.getBody());
+                req.content().writeBytes(request.getBody().toByteArray());
                 Promise<Channel> promise = createPromise(client.getProxyConfig().getLocalAddress(), client.getProxyConfig().getLocalPort());
                 promise.addListener(new FutureListener<Channel>() {
                     @Override
@@ -85,14 +85,6 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 break;
             case HEALTH:
                 log.info("get receipt health packet from server");
-                break;
-            case LOGIN://登陆信息缓存
-                break;
-            case RESULT:
-                break;
-            case REFRESH:
-                break;
-            case LOGOUT://接收黑名单
                 break;
             case CLOSE:
                 ctx.channel().close();

@@ -4,6 +4,7 @@ package com.github.fishlikewater.proxy.boot;
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.handler.proxy_client.ClientHandlerInitializer;
 import com.github.fishlikewater.proxy.kit.EpollKit;
+import com.github.fishlikewater.proxy.kit.IdUtil;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import com.github.fishlikewater.proxy.kit.NamedThreadFactory;
 import io.netty.bootstrap.Bootstrap;
@@ -106,20 +107,15 @@ public class NettyProxyClient {
      */
     private void afterConnectionSuccessful(Channel channel) {
         /** 发送首先发送验证信息*/
+        MessageProbuf.Register.Builder builder = MessageProbuf.Register.newBuilder();
+        builder.setPath(proxyConfig.getProxyPath()).setToken(proxyConfig.getToken());
         MessageProbuf.Message validMessage = MessageProbuf.Message
                 .newBuilder()
-                .setBody("token")
-                .setExtend(proxyConfig.getProxyPath())
+                .setRequestId(IdUtil.next())
+                .setRegister(builder.build())
                 .setType(MessageProbuf.MessageType.VALID)
                 .build();
         channel.writeAndFlush(validMessage).addListener(f -> {
-            if (f.isSuccess()) {
-                channel.writeAndFlush(MessageProbuf.Message
-                        .newBuilder()
-                        .setBody("init")
-                        .setType(MessageProbuf.MessageType.CONNECTION)
-                        .build());
-            }
         });
     }
 

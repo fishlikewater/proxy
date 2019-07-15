@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
     public static final MessageProbuf.Message HEARTBEAT_SEQUENCE = MessageProbuf.Message.newBuilder()
             .setLength(10)
-            .setBody("ping")
+            .setExtend("ping")
             .setType(MessageProbuf.MessageType.HEALTH)
             .build();
 

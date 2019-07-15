@@ -25,8 +25,8 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
 
     public static final MessageProbuf.Message HEARTBEAT_SEQUENCE = MessageProbuf.Message.newBuilder()
             .setLength(10)
-            .setRequestid(IdUtil.next())
-            .setBody("ping")
+            .setRequestId(IdUtil.next())
+            .setExtend("ping")
             .setType(MessageProbuf.MessageType.HEALTH)
             .build();
 

@@ -1,13 +1,12 @@
 package com.github.fishlikewater.proxy.handler.proxy_client;
 
-import com.alibaba.fastjson.JSON;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
-import com.github.fishlikewater.proxy.kit.Response;
+import com.google.protobuf.ByteString;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.util.CharsetUtil;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -35,21 +34,28 @@ public class ToServerHandler extends SimpleChannelInboundHandler {
         //System.out.println("交换数据");
         if(msg instanceof FullHttpResponse){
             FullHttpResponse resp = (FullHttpResponse) msg;
-            Response response = new Response();
+            MessageProbuf.Response.Builder builder = MessageProbuf.Response.newBuilder();
             int code = resp.status().code();
             Map<String, String> header = new HashMap<>();
             resp.headers().entries().forEach(t->{
                 header.put(t.getKey(), t.getValue());
             });
-            response.setBody(resp.content().toString(CharsetUtil.UTF_8).getBytes());
-            response.setCode(code);
-            response.setHeader(header);
+            ByteBuf content = resp.content();
+            if(content.hasArray()){
+                builder.setBody(ByteString.copyFrom(content.array()));
+            }else {
+                byte[] bytes = new byte[content.readableBytes()];
+                content.readBytes(bytes);
+                builder.setBody(ByteString.copyFrom(bytes));
+            }
+            builder.setCode(code);
+            builder.putAllHeader(header);
             outChannel.write(MessageProbuf.Message.newBuilder()
-                    .setRequestid(requestId)
-                    .setBody(JSON.toJSONString(response))
-                    .setType(MessageProbuf.MessageType.RESULT)).addListener(t->{
+                    .setRequestId(requestId)
+                    .setResponse(builder.build())
+                    .setType(MessageProbuf.MessageType.RESPONSE)).addListener(t->{
             });
-            response = null;
+            builder = null;
         }
     }
 

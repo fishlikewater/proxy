@@ -1,10 +1,8 @@
 package com.github.fishlikewater.proxy.handler.proxy_server;
 
-import com.alibaba.fastjson.JSON;
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.kit.ChannelGroupKit;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
-import com.github.fishlikewater.proxy.kit.Response;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -44,16 +42,16 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
         Attribute<String> attr = ctx.channel().attr(CLIENT_PATH);
         MessageProbuf.MessageType type = msg.getType();
         /** 连接验证*/
-        String body = msg.getBody();
         if (type == MessageProbuf.MessageType.VALID) {
-            boolean validate = connectionValidate.validate(body, proxyConfig.getToken());
+            MessageProbuf.Register register = msg.getRegister();
+            boolean validate = connectionValidate.validate(register.getToken(), proxyConfig.getToken());
             if (!validate) {
                 log.info("valid fail");
                 ctx.close();
             }
             log.info("valid successful");
             /** 路由*/
-            String path = msg.getExtend();
+            String path = register.getPath();
             if (StringUtils.isEmpty(path)) {
                 /** 没有注册路由的无效连接*/
                 ctx.close();
@@ -70,29 +68,23 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
                 return;
             }
             switch (type) {
-                case CONNECTION:
-                    break;
-                case RESULT:
-                    String requestid = msg.getRequestid();
+                case RESPONSE:
+                    String requestid = msg.getRequestId();
                     Channel channel = CacheUtil.get(requestid);
                     if(channel != null && channel.isActive()){
                         ChannelPipeline pipeline = channel.pipeline();
                         FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST);
-                        Response response = JSON.parseObject(body, Response.class);
-                        response.getHeader().entrySet().forEach(t->{
+                        MessageProbuf.Response response = msg.getResponse();
+                        response.getHeaderMap().entrySet().forEach(t->{
                             resp.headers().set(t.getKey(), t.getValue());
                         });
-                        resp.content().writeBytes(response.getBody());
+                        resp.content().writeBytes(response.getBody().toByteArray());
                         resp.setStatus(HttpResponseStatus.valueOf(response.getCode()));
                         channel.writeAndFlush(resp).addListener(t->{
                             //resp.release();
                         });
                         CacheUtil.remove(requestid);
                     }
-                    break;
-                case LOGIN:
-                    break;
-                case LOGOUT:
                     break;
                 case HEALTH:
                     log.info("client health packet");

@@ -19,7 +19,7 @@
         <netty-version>4.1.31.Final</netty-version>
         <lombok-version>1.16.18</lombok-version>
         <slf4j-api-version>1.7.25</slf4j-api-version>
-        <protobuf.version>3.6.1</protobuf.version>
+        <protobuf.version>3.9.0</protobuf.version>
         <fastjson>1.2.54</fastjson>
     </properties>
 
@@ -97,31 +97,25 @@
             </resource>
         </resources>
         <plugins>
-            <!--<plugin>
+            <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>0.5.1</version>
                 <configuration>
-                    <protoSourceRoot>${project.basedir}/proto</protoSourceRoot>
+                    <protoSourceRoot>${project.basedir}/proto/</protoSourceRoot>
                     <outputDirectory>${os.detected.classifier}</outputDirectory>
                     <clearOutputDirectory>false</clearOutputDirectory>
+                    <protocExecutable>${project.basedir}/proto/protoc-3.9.0-win64/bin/protoc.exe</protocExecutable>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.google.protobuf</groupId>
-                        <artifactId>protobuf-java</artifactId>
-                        <version>${protobuf.version}</version>
-                    </dependency>
-                </dependencies>
                 <executions>
                     <execution>
                         <goals>
                             <goal>compile</goal>
-                            <goal>compile-custom</goal>
+                            <goal>test-compile</goal>
                         </goals>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
