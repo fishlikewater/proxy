@@ -56,6 +56,12 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
                 /** 没有注册路由的无效连接*/
                 ctx.close();
             } else {
+                Channel channel = ChannelGroupKit.find(path);
+                if(channel != null){
+                    log.warn("this path {} is existed", path);
+                    ctx.close();
+                    return;
+                }
                 if(StringUtils.isEmpty(attr.get())){
                     attr.setIfAbsent(path);
                 }

@@ -3,6 +3,7 @@ package com.github.fishlikewater.proxy.handler.proxy_client;
 
 import com.github.fishlikewater.proxy.boot.NettyProxyClient;
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
+import com.github.fishlikewater.proxy.handler.health.ClientHeartBeatHandler;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -41,7 +42,7 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
                 .addLast(new ProtobufVarint32LengthFieldPrepender())
                 .addLast(new ProtobufEncoder())
                 .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
-                .addLast(new HeartBeatHandler(client))
+                .addLast(new ClientHeartBeatHandler(client))
                 .addLast(new ClientMessageHandler(client));
 
 

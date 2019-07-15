@@ -1,4 +1,4 @@
-package com.github.fishlikewater.proxy.handler.proxy_client;
+package com.github.fishlikewater.proxy.handler.health;
 
 
 import com.github.fishlikewater.proxy.boot.ConnectionListener;
@@ -15,11 +15,11 @@ import lombok.extern.slf4j.Slf4j;
  * 继承ChannelInboundHandlerAdapter，从而不需要实现channelRead0方法
  */
 @Slf4j
-public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
+public class ClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
     private NettyProxyClient client;
 
-    public HeartBeatHandler(NettyProxyClient client){
+    public ClientHeartBeatHandler(NettyProxyClient client){
         this.client = client;
     }
 

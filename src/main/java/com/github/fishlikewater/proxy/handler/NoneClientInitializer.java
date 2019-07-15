@@ -1,4 +1,4 @@
-package com.github.fishlikewater.proxy.handler.http;
+package com.github.fishlikewater.proxy.handler;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -11,11 +11,10 @@ import io.netty.channel.ChannelInitializer;
  * @Description
  * @date 2019年02月26日 21:47
  **/
-public class ClientServiceInitializer extends ChannelInitializer<Channel> {
+public class NoneClientInitializer extends ChannelInitializer<Channel> {
 
     @Override
     protected void initChannel(Channel ch) throws Exception {
-        //ChannelPipeline p = ch.pipeline();
-        //p.addLast("http", new HttpClientCodec());
+
     }
 }

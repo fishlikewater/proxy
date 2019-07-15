@@ -1,13 +1,10 @@
 package com.github.fishlikewater.proxy.handler.http;
 
-import com.github.fishlikewater.proxy.kit.EpollKit;
+import com.github.fishlikewater.proxy.handler.BootStrapFactroy;
 import com.github.fishlikewater.proxy.kit.PassWordCheck;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.Future;
@@ -175,7 +172,7 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
 
         //根据host和端口，创建一个连接web的连接
         private Promise<Channel> createPromise(InetSocketAddress address) {
-            Bootstrap bootstrap = bootstrapConfig();
+            Bootstrap bootstrap = BootStrapFactroy.bootstrapConfig(ctx);
             final Promise<Channel> promise = ctx.executor().newPromise();
             bootstrap.remoteAddress(address);
             bootstrap.connect()
@@ -192,23 +189,6 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
                         }
                     });
             return promise;
-        }
-
-        private Bootstrap bootstrapConfig(){
-            if(bootstrap != null){
-                return bootstrap.clone();
-            }
-            bootstrap = new Bootstrap();
-            bootstrap.option(ChannelOption.SO_REUSEADDR, true);
-            bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-            if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
-                bootstrap.channel(EpollSocketChannel.class);
-            } else {
-                bootstrap.channel(NioSocketChannel.class);
-            }
-            bootstrap.group(ctx.channel().eventLoop().parent());
-            bootstrap.handler(new ClientServiceInitializer());
-            return bootstrap;
         }
 
         @Override

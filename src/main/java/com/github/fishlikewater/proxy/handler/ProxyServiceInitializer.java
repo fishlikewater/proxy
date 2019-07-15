@@ -2,6 +2,8 @@ package com.github.fishlikewater.proxy.handler;
 
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.conf.ProxyType;
+import com.github.fishlikewater.proxy.handler.health.HttpHeartBeatHandler;
+import com.github.fishlikewater.proxy.handler.health.ServerHeartBeatHandler;
 import com.github.fishlikewater.proxy.handler.http.HttpServiceHandler;
 import com.github.fishlikewater.proxy.handler.proxy_server.DefaultConnectionValidate;
 import com.github.fishlikewater.proxy.handler.proxy_server.ProxyHttpServerHandler;
@@ -91,7 +93,7 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
             p.addLast(new HttpHeartBeatHandler());
         }else {
             /** 其他模式 发送心跳包到客户端确认*/
-            p.addLast(new HeartBeatHandler());
+            p.addLast(new ServerHeartBeatHandler());
         }
         /** 是否打开日志*/
         if (proxyConfig.isLogging()) {

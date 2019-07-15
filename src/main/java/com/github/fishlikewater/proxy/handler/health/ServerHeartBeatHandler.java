@@ -1,4 +1,4 @@
-package com.github.fishlikewater.proxy.handler;
+package com.github.fishlikewater.proxy.handler.health;
 
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import io.netty.channel.ChannelFuture;
@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
  * 继承ChannelInboundHandlerAdapter，从而不需要实现channelRead0方法
  */
 @Slf4j
-public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
+public class ServerHeartBeatHandler extends ChannelInboundHandlerAdapter {
     public static final MessageProbuf.Message HEARTBEAT_SEQUENCE = MessageProbuf.Message.newBuilder()
             .setLength(10)
             .setExtend("ping")

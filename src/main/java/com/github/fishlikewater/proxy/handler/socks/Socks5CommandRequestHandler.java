@@ -1,50 +1,32 @@
 package com.github.fishlikewater.proxy.handler.socks;
 
-import com.github.fishlikewater.proxy.handler.HeartBeatHandler;
-import com.github.fishlikewater.proxy.kit.EpollKit;
+import com.github.fishlikewater.proxy.handler.BootStrapFactroy;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
-import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.socksx.v5.*;
-import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<DefaultSocks5CommandRequest> {
+
+	private Bootstrap bootstrap;
 
 	@Override
 	protected void channelRead0(final ChannelHandlerContext ctx, DefaultSocks5CommandRequest msg) throws Exception {
 		log.debug("目标服务器  : " + msg.type() + "," + msg.dstAddr() + "," + msg.dstPort());
 		if(msg.type().equals(Socks5CommandType.CONNECT)) {
 			log.trace("准备连接目标服务器");
-
-			Bootstrap bootstrap = new Bootstrap();
-			bootstrap.group(ctx.channel().eventLoop())
-			.channel(EpollKit.epollIsAvailable()? EpollSocketChannel.class:NioSocketChannel.class)
-			.option(ChannelOption.TCP_NODELAY, true)
-			.handler(new ChannelInitializer<SocketChannel>() {
-				@Override
-				protected void initChannel(SocketChannel ch) throws Exception {
-					//ch.pipeline().addLast(new LoggingHandler());//in out
-					//将目标服务器信息转发给客户端
-					ch.pipeline().addLast(new IdleStateHandler(0, 0, 30, TimeUnit.SECONDS));
-					ch.pipeline().addLast(new HeartBeatHandler());
-					ch.pipeline().addLast(new Dest2ClientHandler(ctx));
-				}
-			});
+			Bootstrap bootstrap = BootStrapFactroy.bootstrapConfig(ctx);
 			log.trace("连接目标服务器");
 			ChannelFuture future = bootstrap.connect(msg.dstAddr(), msg.dstPort());
 			future.addListener(new ChannelFutureListener() {
-
 				public void operationComplete(final ChannelFuture future) throws Exception {
 					if(future.isSuccess()) {
 						log.trace("成功连接目标服务器");
 						ctx.pipeline().addLast(new Client2DestHandler(future));
+						future.channel().pipeline().addLast(new Dest2ClientHandler(ctx));
 						Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
 						ctx.writeAndFlush(commandResponse);
 					} else {
