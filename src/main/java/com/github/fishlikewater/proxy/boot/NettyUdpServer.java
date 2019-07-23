@@ -1,7 +1,7 @@
 package com.github.fishlikewater.proxy.boot;
 
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
-import com.github.fishlikewater.proxy.handler.dns.DnsServerHandler;
+import com.github.fishlikewater.proxy.handler.ProxyUdpInitializer;
 import com.github.fishlikewater.proxy.kit.EpollKit;
 import com.github.fishlikewater.proxy.kit.NamedThreadFactory;
 import io.netty.bootstrap.Bootstrap;
@@ -17,19 +17,19 @@ import lombok.extern.slf4j.Slf4j;
  * @author zhangx
  * @version V1.0
  * @mail fishlikewater@126.com
- * @ClassName NettyDnsServer
+ * @ClassName NettyUdpServer
  * @Description
  * @Date 2019年03月06日 16:42
  * @since
  **/
 @Slf4j
-public class NettyDnsServer {
+public class NettyUdpServer {
 
     private EventLoopGroup bossGroup;
 
     private ProxyConfig proxyConfig;
 
-    public NettyDnsServer(ProxyConfig proxyConfig){
+    public NettyUdpServer(ProxyConfig proxyConfig){
         this.proxyConfig = proxyConfig;
     }
 
@@ -41,22 +41,34 @@ public class NettyDnsServer {
                 .group(bossGroup)
                 .option(ChannelOption.SO_BROADCAST, true)
                 .channel(clazz)
-                .handler(new DnsServerHandler());
+                .handler(new ProxyUdpInitializer(proxyConfig));
         try {
-            log.info("start dns server the port:{}", proxyConfig.getPort());
+            log.info("⬢ start {} server the port:{}",  proxyConfig.getType(), proxyConfig.getPort());
             bootstrap
                     .bind(proxyConfig.getPort())
                     .sync()
                     .channel()
                     .closeFuture().addListener(t->{
-                        log.info("停止proxy dns服务");
-            }).await();
+                        log.info("⬢ 停止{}服务", proxyConfig.getType());
+            });
         } catch (InterruptedException e) {
-            log.error("start dns server fail", e);
-            bossGroup.shutdownGracefully();
-        }finally {
-            bossGroup.shutdownGracefully();
+            log.error("⬢ start server fail", e);
         }
 
+    }
+
+    /**
+     * 关闭服务
+     */
+    public void stop() {
+        log.info("⬢ {} shutdown ...", proxyConfig.getType());
+        try {
+            if (this.bossGroup != null) {
+                this.bossGroup.shutdownGracefully().sync();
+            }
+            log.info("⬢ {} shutdown successful", proxyConfig.getType());
+        } catch (Exception e) {
+            log.error("⬢ proxyConfig.getType()"+" shutdown error", e);
+        }
     }
 }

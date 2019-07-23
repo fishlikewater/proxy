@@ -2,6 +2,7 @@ package com.github.fishlikewater.proxy;
 
 import com.github.fishlikewater.proxy.boot.NettyProxyClient;
 import com.github.fishlikewater.proxy.boot.NettyProxyServer;
+import com.github.fishlikewater.proxy.boot.NettyUdpServer;
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.conf.ProxyType;
 import io.netty.util.ResourceLeakDetector;
@@ -18,6 +19,7 @@ public class ProxyApplication implements InitializingBean, DisposableBean{
     private NettyProxyServer nettyProxyServer1;
     private NettyProxyServer nettyProxyServer2;
     private NettyProxyClient nettyProxyClient1;
+    private NettyUdpServer nettyUdpServer;
 
    @Autowired
    private ProxyConfig proxyConfig;
@@ -42,6 +44,9 @@ public class ProxyApplication implements InitializingBean, DisposableBean{
         if(nettyProxyClient1 != null){
             nettyProxyClient1.stop();
         }
+        if(nettyUdpServer != null){
+            nettyUdpServer.stop();
+        }
     }
 
     @Override
@@ -58,6 +63,9 @@ public class ProxyApplication implements InitializingBean, DisposableBean{
                 System.setProperty("sun.net.spi.nameservice.nameservers", proxyConfig.getProxyDns());
                 System.setProperty("sun.net.spi.nameservice.provider.2", "default");
             }
+            nettyUdpServer = new  NettyUdpServer(proxyConfig);
+            nettyUdpServer.start();
+            return;
         }else if(type == ProxyType.proxy_server){
             ProxyConfig proxyHttpConfig = new ProxyConfig();
             BeanUtils.copyProperties(proxyConfig, proxyHttpConfig);
