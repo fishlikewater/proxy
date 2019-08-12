@@ -51,7 +51,7 @@ public class ProxyApplication implements InitializingBean, DisposableBean{
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        if(proxyConfig.isOpenCheckMemoryLeak()){
+        if(proxyConfig.getIsOpenCheckMemoryLeak()){
             System.setProperty("io.netty.leakDetection.maxRecords", "100");
             System.setProperty("io.netty.leakDetection.acquireAndReleaseOnly", "true");
             ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);

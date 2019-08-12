@@ -9,10 +9,7 @@ import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import com.github.fishlikewater.proxy.kit.NamedThreadFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -72,6 +69,9 @@ public class NettyProxyClient {
     private Bootstrap bootstrapConfig() {
         if (clientstrap == null) clientstrap = new Bootstrap();
         clientstrap.option(ChannelOption.SO_REUSEADDR, true);
+        clientstrap.option(ChannelOption.SO_BACKLOG, 8192);
+        clientstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 6000);
+        clientstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
         clientstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
             bossGroup = new EpollEventLoopGroup(0, new NamedThreadFactory("client-epoll-boss@"));

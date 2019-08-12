@@ -1,5 +1,6 @@
 package com.github.fishlikewater.proxy.handler.http;
 
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -25,6 +26,32 @@ public class NoneHandler extends SimpleChannelInboundHandler {
         this.outChannel = outChannel;
     }
 
+
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+        boolean canWrite = ctx.channel().isWritable();
+        log.warn(ctx.channel() + " 可写性：" + canWrite);
+        //流量控制，不允许继续读
+        outChannel.config().setAutoRead(canWrite);
+        super.channelWritabilityChanged(ctx);
+    }
+
+    /**
+     *  关闭远程目标连接
+     * @param ctx
+     * @throws Exception
+     */
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        if (outChannel != null && outChannel.isActive()) {
+            outChannel.writeAndFlush(PooledByteBufAllocator.DEFAULT.buffer()).addListener(future -> {
+                outChannel.close().addListener(future1 -> {
+                    log.info("返回0字节：browser关闭连接，因此关闭到webserver连接");
+                });
+            });
+        }
+        super.channelInactive(ctx);
+    }
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {

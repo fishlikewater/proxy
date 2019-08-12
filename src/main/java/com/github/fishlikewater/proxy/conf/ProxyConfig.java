@@ -65,9 +65,27 @@ public class ProxyConfig {
     private boolean isOpenGlobalTrafficLimit = false;
 
     /** 写限制*/
-    private long writeLimit = 1024*1024;
+    private long writeLimit = 256*1024;
 
     /** 读限制*/
-    private long readLimit = 1024*1024;
+    private long readLimit = 256*1024;
+
+    public boolean getIsOpenCheckMemoryLeak() {
+        return isOpenCheckMemoryLeak;
+    }
+
+    public ProxyConfig setIsOpenCheckMemoryLeak(boolean openCheckMemoryLeak) {
+        isOpenCheckMemoryLeak = openCheckMemoryLeak;
+        return this;
+    }
+
+    public boolean getIsOpenGlobalTrafficLimit() {
+        return isOpenGlobalTrafficLimit;
+    }
+
+    public ProxyConfig setIsOpenGlobalTrafficLimit(boolean openGlobalTrafficLimit) {
+        isOpenGlobalTrafficLimit = openGlobalTrafficLimit;
+        return this;
+    }
 }
 

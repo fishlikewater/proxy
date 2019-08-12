@@ -28,6 +28,7 @@ import io.netty.handler.codec.socksx.v5.Socks5ServerEncoder;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
+import io.netty.handler.traffic.TrafficCounter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
@@ -43,34 +44,26 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
 
-/*
-    //流量统计
-    private static final EventExecutorGroup EXECUTOR_GROUOP = new DefaultEventExecutorGroup(Runtime.getRuntime().availableProcessors() * 2);
-
-    static {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    TrafficCounter trafficCounter = trafficHandler.trafficCounter();
-                    try {
-                        TimeUnit.SECONDS.sleep(5);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    final long totalRead = trafficCounter.cumulativeReadBytes();
-                    final long totalWrite = trafficCounter.cumulativeWrittenBytes();
-                    System.out.println("total read: " + (totalRead >> 10) + " KB");
-                    System.out.println("total write: " + (totalWrite >> 10) + " KB");
-                    System.out.println("流量监控: " + System.lineSeparator() + trafficCounter);
+    private Thread thread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            while (true) {
+                TrafficCounter trafficCounter = trafficHandler.trafficCounter();
+                try {
+                    TimeUnit.SECONDS.sleep(30);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+                final long totalRead = trafficCounter.cumulativeReadBytes();
+                final long totalWrite = trafficCounter.cumulativeWrittenBytes();
+                System.out.println("total read: " + (totalRead >> 10) + " KB");
+                System.out.println("total write: " + (totalWrite >> 10) + " KB");
             }
-        }).start();
-    }
-    private static final GlobalTrafficShapingHandler trafficHandler = new GlobalTrafficShapingHandler(EXECUTOR_GROUOP);
-*/
-    private ProxyConfig proxyConfig;
+        }
+    });
 
+
+    private ProxyConfig proxyConfig;
     private GlobalTrafficShapingHandler trafficHandler;
 
     public ProxyServiceInitializer(ProxyConfig proxyConfig) {
@@ -81,17 +74,19 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
     @Override
     protected void initChannel(Channel channel) throws Exception {
         ChannelPipeline p = channel.pipeline();
-        if(proxyConfig.isOpenGlobalTrafficLimit()){
-            if(trafficHandler == null){
+        if (proxyConfig.getIsOpenGlobalTrafficLimit()) {
+            if (trafficHandler == null) {
                 trafficHandler = new GlobalTrafficShapingHandler(channel.eventLoop().parent(), proxyConfig.getWriteLimit(), proxyConfig.getReadLimit());
+                log.info("开始全局流量监控");
+                thread.start();
             }
             p.addLast("globallimit", trafficHandler);
         }
         p.addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS));
         /** http服务端 无心跳直接关闭*/
-        if(proxyConfig.getType() == ProxyType.proxy_server_http || proxyConfig.getType() == ProxyType.http){
+        if (proxyConfig.getType() == ProxyType.proxy_server_http || proxyConfig.getType() == ProxyType.http) {
             p.addLast(new HttpHeartBeatHandler());
-        }else {
+        } else {
             /** 其他模式 发送心跳包到客户端确认*/
             p.addLast(new ServerHeartBeatHandler());
         }
