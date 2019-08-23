@@ -48,6 +48,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
     }
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        log.warn("this service has dropped, will retry");
         final EventLoop loop = ctx.channel().eventLoop();
         loop.schedule(new Runnable() {
             @Override

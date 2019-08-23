@@ -58,14 +58,17 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
             } else {
                 Channel channel = ChannelGroupKit.find(path);
                 if(channel != null){
-                    log.warn("this path {} is existed", path);
-                    ctx.close();
-                    return;
+                    if(channel.isActive()){
+                        log.warn("this path {} is existed", path);
+                        ctx.close();
+                        return;
+                    }
                 }
                 if(StringUtils.isEmpty(attr.get())){
                     attr.setIfAbsent(path);
                 }
                 ChannelGroupKit.add(path, ctx.channel());
+                log.info("has path {}", ChannelGroupKit.getClientChannelMap());
             }
         } else {
             if (StringUtils.isEmpty(attr.get())) {
@@ -116,6 +119,7 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+
         super.channelInactive(ctx);
     }
 
@@ -125,6 +129,7 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
      */
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+        ChannelGroupKit.add(ctx.channel());
         super.handlerAdded(ctx);
     }
 
@@ -137,9 +142,11 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
         Attribute<String> attr = ctx.channel().attr(CLIENT_PATH);
         String path = attr.get();
         if (!StringUtils.isEmpty(path)) {
+            log.info("close chanel and clean path {}", path);
             ChannelGroupKit.remove(path);
         }
-        //ChannelGroupKit.remove(ctx.channel());
+        ChannelGroupKit.remove(ctx.channel());
+        super.handlerRemoved(ctx);
     }
 
 
@@ -147,6 +154,7 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         if (cause instanceof IOException) {
             // 远程主机强迫关闭了一个现有的连接的异常
+            log.info("远程发送异常");
             ctx.close();
         } else {
             super.exceptionCaught(ctx, cause);

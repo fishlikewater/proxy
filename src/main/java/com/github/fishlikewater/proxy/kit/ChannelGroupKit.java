@@ -4,6 +4,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +19,7 @@ public class ChannelGroupKit {
 
     private static ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
+    @Getter
     private static ConcurrentHashMap<String, Channel> clientChannelMap = new ConcurrentHashMap<>();
 
     public static void add(String path, Channel channel){
