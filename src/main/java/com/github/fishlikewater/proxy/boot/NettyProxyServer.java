@@ -54,6 +54,7 @@ public class NettyProxyServer {
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 6000);
         bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
         bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
+        bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
         bootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
         if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll

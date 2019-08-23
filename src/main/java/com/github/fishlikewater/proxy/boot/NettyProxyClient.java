@@ -69,10 +69,10 @@ public class NettyProxyClient {
     private Bootstrap bootstrapConfig() {
         if (clientstrap == null) clientstrap = new Bootstrap();
         clientstrap.option(ChannelOption.SO_REUSEADDR, true);
-        //clientstrap.option(ChannelOption.SO_BACKLOG, 8192);
         clientstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 6000);
         clientstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
         clientstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        clientstrap.option(ChannelOption.TCP_NODELAY, true);
         if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
             bossGroup = new EpollEventLoopGroup(0, new NamedThreadFactory("client-epoll-boss@"));
             clientstrap.group(bossGroup).channel(EpollSocketChannel.class);

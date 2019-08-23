@@ -1,8 +1,6 @@
 package com.github.fishlikewater.proxy.handler.health;
 
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleState;
@@ -26,7 +24,8 @@ public class ServerHeartBeatHandler extends ChannelInboundHandlerAdapter {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.ALL_IDLE) {
-                ctx.channel().writeAndFlush(HEARTBEAT_SEQUENCE)
+                ctx.close();
+           /*     ctx.channel().writeAndFlush(HEARTBEAT_SEQUENCE)
                         .addListener(new ChannelFutureListener() {
                             @Override
                             public void operationComplete(ChannelFuture channelFuture) throws Exception {
@@ -35,7 +34,7 @@ public class ServerHeartBeatHandler extends ChannelInboundHandlerAdapter {
                                     ctx.channel().close();
                                 }
                             }
-                        });//(ChannelFutureListener.CLOSE_ON_FAILURE);
+                        });//(ChannelFutureListener.CLOSE_ON_FAILURE);*/
             }
         } else {
             super.userEventTriggered(ctx, evt);
