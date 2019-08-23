@@ -63,8 +63,14 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
                 channel.writeAndFlush(MessageProbuf.Message.newBuilder()
                         .setType(MessageProbuf.MessageType.REQUEST)
                         .setRequest(builder.build())
-                        .setRequestId(requestId));
-                CacheUtil.put(requestId, ctx.channel(), 3);
+                        .setRequestId(requestId)).addListener((f)->{
+                            if(f.isSuccess()){
+                                CacheUtil.put(requestId, ctx.channel(), 3);
+                            }else {
+                                log.info("转送失败,关闭该无效的channel");
+                                channel.close();
+                            }
+                });
                 builder = null;
             }
 

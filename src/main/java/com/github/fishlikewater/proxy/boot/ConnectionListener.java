@@ -35,7 +35,7 @@ public class ConnectionListener implements ChannelFutureListener {
                 public void run() {
                     client.start();
                 }
-            }, 10, TimeUnit.SECONDS);
+            }, 30, TimeUnit.SECONDS);
 
         }
     }

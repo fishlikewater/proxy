@@ -58,10 +58,12 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
             } else {
                 Channel channel = ChannelGroupKit.find(path);
                 if(channel != null){
-                    if(channel.isActive()){
+                    if(channel.isOpen()){
                         log.warn("this path {} is existed", path);
                         ctx.close();
                         return;
+                    }else {
+                        channel.close();
                     }
                 }
                 if(StringUtils.isEmpty(attr.get())){

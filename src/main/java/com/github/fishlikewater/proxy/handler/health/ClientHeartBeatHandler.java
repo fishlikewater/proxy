@@ -1,7 +1,6 @@
 package com.github.fishlikewater.proxy.handler.health;
 
 
-import com.github.fishlikewater.proxy.boot.ConnectionListener;
 import com.github.fishlikewater.proxy.boot.NettyProxyClient;
 import com.github.fishlikewater.proxy.kit.IdUtil;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
@@ -37,7 +36,12 @@ public class ClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;        // 强制类型转换
             ctx.channel().writeAndFlush(HEARTBEAT_SEQUENCE)
-                    .addListener(new ConnectionListener(client));//(ChannelFutureListener.CLOSE_ON_FAILURE);
+                    .addListener((future)->{
+                        if(!future.isSuccess()){
+                            log.warn("发送心跳包失败...");
+                        }
+
+                    });//(ChannelFutureListener.CLOSE_ON_FAILURE);
         } else {
             super.userEventTriggered(ctx, evt);
         }

@@ -25,7 +25,7 @@ public class ServerHeartBeatHandler extends ChannelInboundHandlerAdapter {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
-            if (event.state() == IdleState.READER_IDLE) {
+            if (event.state() == IdleState.ALL_IDLE) {
                 ctx.channel().writeAndFlush(HEARTBEAT_SEQUENCE)
                         .addListener(new ChannelFutureListener() {
                             @Override
