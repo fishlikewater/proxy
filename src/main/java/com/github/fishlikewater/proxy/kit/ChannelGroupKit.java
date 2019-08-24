@@ -39,4 +39,21 @@ public class ChannelGroupKit {
     public static void remove(Channel channel){
         group.remove(channel);
     }
+
+
+    private static final MessageProbuf.Message respSuccessVailMsg = MessageProbuf.Message.newBuilder()
+                                .setType(MessageProbuf.MessageType.VALID).setExtend("SUCCESS").build();
+
+    public static void sendVailSuccess(Channel channel){
+        channel.writeAndFlush(respSuccessVailMsg);
+    }
+
+    public static void sendVailFail(Channel channel, String failCause){
+        MessageProbuf.Message respFailVailMsg = MessageProbuf.Message.newBuilder()
+                .setType(MessageProbuf.MessageType.VALID).setExtend(failCause).build();
+        channel.writeAndFlush(respFailVailMsg).addListener(f->{
+            channel.close();
+        });
+    }
+
 }

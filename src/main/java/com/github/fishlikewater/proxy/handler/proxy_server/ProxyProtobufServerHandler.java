@@ -47,20 +47,21 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
             boolean validate = connectionValidate.validate(register.getToken(), proxyConfig.getToken());
             if (!validate) {
                 log.info("valid fail");
-                ctx.close();
+                ChannelGroupKit.sendVailFail(ctx.channel(), "token验证失败");
+                return;
             }
             log.info("valid successful");
             /** 路由*/
             String path = register.getPath();
             if (StringUtils.isEmpty(path)) {
                 /** 没有注册路由的无效连接*/
-                ctx.close();
+                ChannelGroupKit.sendVailFail(ctx.channel(), "请配置路由");
             } else {
                 Channel channel = ChannelGroupKit.find(path);
                 if(channel != null){
-                    if(channel.isOpen()){
+                    if(channel.isActive()){
                         log.warn("this path {} is existed", path);
-                        ctx.close();
+                        ChannelGroupKit.sendVailFail(ctx.channel(), "路由已被其他链接使用");
                         return;
                     }else {
                         channel.close();
@@ -70,12 +71,13 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
                     attr.setIfAbsent(path);
                 }
                 ChannelGroupKit.add(path, ctx.channel());
-                log.info("has path {}", ChannelGroupKit.getClientChannelMap());
+                ChannelGroupKit.sendVailSuccess(ctx.channel());
+                log.info("register path {} successful", path);
             }
         } else {
             if (StringUtils.isEmpty(attr.get())) {
                /** 连接后没有经过验证的请求 直接关闭*/
-                ctx.close();
+                ChannelGroupKit.sendVailFail(ctx.channel(), "非法请求");
                 return;
             }
             switch (type) {
@@ -99,6 +101,8 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
                     break;
                 case HEALTH:
                     break;
+                case CLOSE:
+                    ctx.close();
                 default:
                     log.info("接收到不支持的消息类型");
                     //ctx.channel().writeAndFlush(MessageProbuf.Message.newBuilder().setType())

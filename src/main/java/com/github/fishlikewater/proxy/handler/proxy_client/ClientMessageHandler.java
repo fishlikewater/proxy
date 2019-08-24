@@ -84,6 +84,14 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                     }
                 });
                 break;
+            case VALID:
+                String extend = msg.getExtend();
+                if(!"SUCCESS".equals(extend)){
+                    log.warn(extend);
+                }else {
+                    log.info("验证成功");
+                }
+                break;
             case HEALTH:
                 log.info("get receipt health packet from server");
                 break;

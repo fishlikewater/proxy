@@ -15,8 +15,7 @@ public class HttpHeartBeatHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
-            log.info("关闭连接");
-            ctx.channel().close();
+            ctx.close();
         } else {
             super.userEventTriggered(ctx, evt);
         }

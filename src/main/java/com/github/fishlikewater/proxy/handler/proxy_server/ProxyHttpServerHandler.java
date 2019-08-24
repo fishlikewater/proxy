@@ -65,9 +65,9 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
                         .setRequest(builder.build())
                         .setRequestId(requestId)).addListener((f)->{
                             if(f.isSuccess()){
-                                CacheUtil.put(requestId, ctx.channel(), 3);
+                                CacheUtil.put(requestId, ctx.channel(), 10);
                             }else {
-                                log.info("转送失败,关闭该无效的channel");
+                                log.info("转送失败");
                             }
                 });
                 builder = null;
