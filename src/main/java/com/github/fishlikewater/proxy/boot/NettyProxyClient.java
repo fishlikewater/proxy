@@ -2,6 +2,7 @@ package com.github.fishlikewater.proxy.boot;
 
 
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
+import com.github.fishlikewater.proxy.handler.proxy_client.ChannelKit;
 import com.github.fishlikewater.proxy.handler.proxy_client.ClientHandlerInitializer;
 import com.github.fishlikewater.proxy.kit.EpollKit;
 import com.github.fishlikewater.proxy.kit.IdUtil;
@@ -94,6 +95,7 @@ public class NettyProxyClient {
             this.channel = future.channel();
             log.info("start {} this port:{} and adress:{}", proxyConfig.getType(), proxyConfig.getPort(), proxyConfig.getAddress());
             afterConnectionSuccessful(channel);
+            ChannelKit.setChannel(this.channel);
             //future.channel().closeFuture().sync();
         } catch (Exception e) {
             log.error("start {} server fail", proxyConfig.getType());

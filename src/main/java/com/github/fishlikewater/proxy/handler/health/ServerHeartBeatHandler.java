@@ -24,6 +24,7 @@ public class ServerHeartBeatHandler extends ChannelInboundHandlerAdapter {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.ALL_IDLE) {
+                log.info("服务端主动关闭连接");
                 ctx.close();
            /*     ctx.channel().writeAndFlush(HEARTBEAT_SEQUENCE)
                         .addListener(new ChannelFutureListener() {

@@ -7,10 +7,12 @@ import com.github.fishlikewater.proxy.handler.health.ClientHeartBeatHandler;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 
 import java.util.concurrent.TimeUnit;
@@ -36,7 +38,12 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
 
     @Override
     protected void initChannel(Channel ch) throws Exception {
-        ch.pipeline()
+        ChannelPipeline pipeline = ch.pipeline();
+        /** 是否打开日志*/
+        if (proxyConfig.isLogging()) {
+            pipeline.addLast(new LoggingHandler());
+        }
+        pipeline
                 .addLast(new ProtobufVarint32FrameDecoder())
                 .addLast(new ProtobufDecoder(MessageProbuf.Message.getDefaultInstance()))
                 .addLast(new ProtobufVarint32LengthFieldPrepender())

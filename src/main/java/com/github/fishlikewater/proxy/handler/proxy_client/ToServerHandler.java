@@ -3,10 +3,10 @@ package com.github.fishlikewater.proxy.handler.proxy_client;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import com.google.protobuf.ByteString;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpResponse;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -17,14 +17,12 @@ import java.util.Map;
  * @date 2019年07月13日 13:57
  * @since
  **/
+@Slf4j
 public class ToServerHandler extends SimpleChannelInboundHandler {
-
-    private Channel outChannel;
 
     private String requestId;
 
-    public ToServerHandler(Channel outChannel, String requestId) {
-        this.outChannel = outChannel;
+    public ToServerHandler(String requestId) {
         this.requestId = requestId;
     }
 
@@ -50,21 +48,22 @@ public class ToServerHandler extends SimpleChannelInboundHandler {
             }
             builder.setCode(code);
             builder.putAllHeader(header);
-            outChannel.write(MessageProbuf.Message.newBuilder()
+            ChannelKit.sendMessage(MessageProbuf.Message.newBuilder()
                     .setRequestId(requestId)
                     .setResponse(builder.build())
-                    .setType(MessageProbuf.MessageType.RESPONSE)).addListener(t->{
+                    .setType(MessageProbuf.MessageType.RESPONSE).build(), t->{
+
             });
-            builder = null;
         }
     }
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        outChannel.flush();
+        ctx.flush();
     }
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.error("happen error: ", cause);
         if (cause instanceof IOException) {
             // 远程主机强迫关闭了一个现有的连接的异常
             ctx.close();

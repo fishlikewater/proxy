@@ -18,6 +18,7 @@ import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.Promise;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -78,7 +79,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                     public void operationComplete(Future<Channel> channelFuture) throws Exception {
                         if(channelFuture.isSuccess()){
                             ChannelPipeline p = channelFuture.get().pipeline();
-                            p.addLast(new ToServerHandler(ctx.channel(), requestid));
+                            p.addLast(new ToServerHandler(requestid));
                             channelFuture.get().writeAndFlush(req);
                         }
                     }
@@ -103,7 +104,13 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("happen error: ", cause);
+        if (cause instanceof IOException) {
+            // 远程主机强迫关闭了一个现有的连接的异常
+            log.error("happen error: ", cause);
+            ctx.close();
+        } else {
+            super.exceptionCaught(ctx, cause);
+        }
     }
 
 

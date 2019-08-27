@@ -20,6 +20,6 @@ public class TempClientServiceInitializer extends ChannelInitializer<Channel> {
     protected void initChannel(Channel ch) throws Exception {
         ChannelPipeline p = ch.pipeline();
         p.addLast("http", new HttpClientCodec());
-        p.addLast("aggregator", new HttpObjectAggregator(65536));
+        p.addLast("aggregator", new HttpObjectAggregator(1024*1024*10));
     }
 }
