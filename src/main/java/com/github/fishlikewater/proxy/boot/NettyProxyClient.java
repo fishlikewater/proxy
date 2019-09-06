@@ -1,7 +1,9 @@
 package com.github.fishlikewater.proxy.boot;
 
 
+import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
+import com.github.fishlikewater.proxy.gui.ConnectionUtils;
 import com.github.fishlikewater.proxy.handler.proxy_client.ChannelKit;
 import com.github.fishlikewater.proxy.handler.proxy_client.ClientHandlerInitializer;
 import com.github.fishlikewater.proxy.kit.EpollKit;
@@ -94,11 +96,15 @@ public class NettyProxyClient {
             ChannelFuture future = clientstrap.connect().addListener(connectionListener).sync();
             this.channel = future.channel();
             log.info("start {} this port:{} and adress:{}", proxyConfig.getType(), proxyConfig.getPort(), proxyConfig.getAddress());
+            ConnectionUtils.setStateText(StrUtil.format("start {} this port:{} and adress:{}", proxyConfig.getType(), proxyConfig.getPort(), proxyConfig.getAddress()));
+            ConnectionUtils.setConnState(true);
             afterConnectionSuccessful(channel);
             ChannelKit.setChannel(this.channel);
             //future.channel().closeFuture().sync();
         } catch (Exception e) {
             log.error("start {} server fail", proxyConfig.getType());
+            ConnectionUtils.setStateText("连接失败");
+            ConnectionUtils.setConnState(false);
         }
     }
 
@@ -129,7 +135,11 @@ public class NettyProxyClient {
         log.info("⬢ {} shutdown ...", proxyConfig.getType());
         try {
             if (this.bossGroup != null) {
-                this.bossGroup.shutdownGracefully();
+                this.bossGroup.shutdownGracefully().addListener(f->{
+                    if(f.isSuccess()){
+                        ConnectionUtils.reset();
+                    }
+                });
             }
             log.info("⬢ {} shutdown successful", proxyConfig.getType());
         } catch (Exception e) {

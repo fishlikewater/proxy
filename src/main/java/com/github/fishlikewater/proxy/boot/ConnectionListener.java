@@ -1,5 +1,6 @@
 package com.github.fishlikewater.proxy.boot;
 
+import com.github.fishlikewater.proxy.gui.ConnectionUtils;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoop;
@@ -28,6 +29,7 @@ public class ConnectionListener implements ChannelFutureListener {
     public void operationComplete(ChannelFuture channelFuture) throws Exception {
         if (!channelFuture.isSuccess()) {
             log.info("connect fail, will reconnect");
+            ConnectionUtils.setStateText("connect fail, will reconnect");
             //NettyProxyClient.build().retryOne();
             final EventLoop loop = channelFuture.channel().eventLoop();
             loop.schedule(new Runnable() {

@@ -1,7 +1,9 @@
 package com.github.fishlikewater.proxy.handler.proxy_client;
 
 
+import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.proxy.boot.NettyProxyClient;
+import com.github.fishlikewater.proxy.gui.ConnectionUtils;
 import com.github.fishlikewater.proxy.kit.EpollKit;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import io.netty.bootstrap.Bootstrap;
@@ -49,14 +51,18 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
     }
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        log.warn("this service has dropped, will retry");
-        final EventLoop loop = ctx.channel().eventLoop();
-        loop.schedule(new Runnable() {
-            @Override
-            public void run() {
-                client.start();
-            }
-        }, 30, TimeUnit.SECONDS);
+        ConnectionUtils.setConnState(false);
+        if(ConnectionUtils.isRetry()){
+            log.warn("this service has dropped, will retry");
+            ConnectionUtils.setStateText("this service has dropped, will retry");
+            final EventLoop loop = ctx.channel().eventLoop();
+            loop.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    client.start();
+                }
+            }, 30, TimeUnit.SECONDS);
+        }
         super.channelInactive(ctx);
     }
 
@@ -89,8 +95,12 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 String extend = msg.getExtend();
                 if(!"SUCCESS".equals(extend)){
                     log.warn(extend);
+                    ConnectionUtils.setStateText(extend);
+                    ConnectionUtils.setConnState(false);
                 }else {
                     log.info("验证成功");
+                    ConnectionUtils.setStateText("验证成功");
+                    ConnectionUtils.setConnState(true);
                 }
                 break;
             case HEALTH:
@@ -127,6 +137,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                             promise.setSuccess(channelFuture.channel());
                         } else {
                             log.warn("connection fail address {}, port {}", host, port);
+                            ConnectionUtils.setStateText(StrUtil.format("connection fail address {}, port {}", host, port));
                             channelFuture.cancel(true);
                         }
                     }

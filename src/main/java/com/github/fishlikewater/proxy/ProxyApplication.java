@@ -58,11 +58,11 @@ public class ProxyApplication implements InitializingBean, DisposableBean{
         }
         ProxyType type = proxyConfig.getType();
         if(type == ProxyType.dns){
-            if(proxyConfig.getProxyDns() != null){
+            /*if(proxyConfig.getProxyDns() != null){
                 System.setProperty("sun.net.spi.nameservice.provider.1", "dns,sun");
                 System.setProperty("sun.net.spi.nameservice.nameservers", proxyConfig.getProxyDns());
                 System.setProperty("sun.net.spi.nameservice.provider.2", "default");
-            }
+            }*/
             nettyUdpServer = new  NettyUdpServer(proxyConfig);
             nettyUdpServer.start();
             return;

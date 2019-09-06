@@ -1,5 +1,8 @@
 package com.github.fishlikewater.proxy;
 
+import javafx.application.ConditionalFeature;
+import javafx.application.Platform;
+
 import java.net.Socket;
 
 /**
@@ -14,7 +17,7 @@ import java.net.Socket;
 public class TestClient {
 
     public static void main(String[] args){
-        System.out.println(isConnected());
+        Platform.isSupported(ConditionalFeature.INPUT_METHOD);
     }
 
     @SuppressWarnings("resource")

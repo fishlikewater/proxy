@@ -27,4 +27,9 @@ public class UdpTest {
         int length =content.length;
         System.out.println(length);
     }
+
+    @Test
+    public void testByte(){
+        System.out.println(("192.168.0.223").getBytes());
+    }
 }

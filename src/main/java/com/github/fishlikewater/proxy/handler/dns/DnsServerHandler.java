@@ -7,12 +7,14 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.socket.DatagramPacket;
-import io.netty.util.ReferenceCountUtil;
+import io.netty.handler.codec.dns.*;
 import lombok.extern.slf4j.Slf4j;
-import org.xbill.DNS.*;
+import org.xbill.DNS.Record;
 
-import java.net.InetAddress;
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 
 /**
@@ -25,47 +27,74 @@ import java.net.InetAddress;
  * @since
  **/
 @Slf4j
-public class DnsServerHandler extends SimpleChannelInboundHandler<DatagramPacket> {
+public class DnsServerHandler extends SimpleChannelInboundHandler<DatagramDnsQuery> {
 
     private MapCache dnsCache = MapCache.single();
+    private static HashMap<String, byte[]> ipMap = new HashMap<>();
+
+    static {
+        InputStream inputStream = DnsServerHandler.class.getResourceAsStream("/filter.list");
+        InputStreamReader isr = new InputStreamReader(inputStream);
+        try {
+            BufferedReader bufferedReader = new BufferedReader(isr);
+            String str = "";
+            while ((str = bufferedReader.readLine()) != null) {
+                String[] split = str.trim().split("/");
+                String[] strs = split[1].split("\\.");
+                byte[] bytes = new byte[4];
+                for (int i = 0; i < strs.length; i++) {
+                    bytes[i] = (byte) Integer.parseInt(strs[i]);
+                }
+                ipMap.put(split[0]+".", bytes);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg){
-
+    protected void channelRead0(ChannelHandlerContext ctx, DatagramDnsQuery query){
+        DatagramDnsResponse response = new DatagramDnsResponse(query.recipient(), query.sender(), query.id());
         try {
-            // 读取收到的数据
-            ByteBuf buf = (ByteBuf) msg.copy().content();
-            byte[] req = new byte[buf.readableBytes()];
-            buf.readBytes(req);
-            Message indata = new Message(req);
-            Record question = indata.getQuestion();
-            String domain = indata.getQuestion().getName().toString();
-            Object cache = dnsCache.get(domain);
-            InetAddress answerIpAddr = null;
-            if(cache != null){
-                answerIpAddr = (InetAddress)cache;
-            }else {
-                //解析域名
-                answerIpAddr = Address.getByName(domain);
-                if(answerIpAddr.getHostName() != null){
-                    dnsCache.set(domain, answerIpAddr, 60*60*24);
+            DefaultDnsQuestion dnsQuestion = query.recordAt(DnsSection.QUESTION);
+            response.addRecord(DnsSection.QUESTION, dnsQuestion);
+            Optional<Map.Entry<String, byte[]>> first = ipMap.entrySet().stream().filter(m -> dnsQuestion.name().endsWith(m.getKey())).findFirst();
+            ByteBuf buf = null;
+            if (first.isPresent()) {
+                buf = Unpooled.wrappedBuffer(first.get().getValue());
+                DefaultDnsRawRecord queryAnswer = new DefaultDnsRawRecord(dnsQuestion.name(), DnsRecordType.A, 60, buf);
+                response.addRecord(DnsSection.ANSWER, queryAnswer);
+            } else {
+                Object cache = dnsCache.get(dnsQuestion.name());
+                Record[] recordArr;
+                if(cache != null){
+                    recordArr = (Record[])cache;
+                }else {
+                    recordArr = DNSUtils.getRecordArr(dnsQuestion.name());
+                    dnsCache.set(dnsQuestion.name(), recordArr, 60*60);
+                }
+                if(recordArr != null){
+                    for (Record record : recordArr) {
+                        String string = record.rdataToString();
+                        String[] split = string.split("\\.");
+                        byte[] bytes = new byte[4];
+                        for (int i = 0; i < split.length; i++) {
+                            bytes[i] = (byte) Integer.parseInt(split[i]);
+                        }
+                        buf = Unpooled.wrappedBuffer(bytes);
+                        DefaultDnsRawRecord queryAnswer = new DefaultDnsRawRecord(dnsQuestion.name(), DnsRecordType.A, 10, buf);
+                        response.addRecord(DnsSection.ANSWER, queryAnswer);
+                    }
                 }
             }
-            Message outdata = (Message)indata.clone();
-            //由于接收到的请求为A类型，因此应答也为ARecord。查看Record类的继承，发现还有AAAARecord(ipv6)，CNAMERecord等
-            Record answer = new ARecord(question.getName(), question.getDClass(), 64, answerIpAddr);
-            outdata.addRecord(answer, Section.ANSWER);
-            //发送消息给客户端
-            byte[] buf2 = outdata.toWire();
-            DatagramPacket response = new DatagramPacket(Unpooled.copiedBuffer(buf2), msg.sender());
+        }catch (Exception e){
+            log.error("解析域名错误", e);
+        } finally {
             ctx.writeAndFlush(response).addListeners(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
-                    ReferenceCountUtil.release(buf);
                 }
             });
-        }catch (Exception e){
-            log.error("解析域名错误", e.getMessage());
         }
 
     }

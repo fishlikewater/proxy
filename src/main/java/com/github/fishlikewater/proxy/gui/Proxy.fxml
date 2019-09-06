@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane focusTraversable="true" prefHeight="558.0" prefWidth="674.0" style="-fx-background-color: #fff;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.github.fishlikewater.proxy.gui.Proxy">
+   <children>
+       <TextField fx:id="remote" focusTraversable="false" layoutX="293.0" layoutY="71.0" promptText="www.fishlikewater.com" />
+      <Label layoutX="154.0" layoutY="76.0" text="远程地址：" />
+      <Label layoutX="154.0" layoutY="128.0" text="远程端口：" />
+      <TextField fx:id="remotePort" focusTraversable="false" layoutX="293.0" layoutY="123.0" onKeyReleased="#vaildPort" prefHeight="30.0" prefWidth="75.0" promptText="11080" />
+      <Label layoutX="154.0" layoutY="179.0" text="本地地址：" />
+      <TextField fx:id="local" focusTraversable="false" layoutX="293.0" layoutY="174.0" promptText="127.0.0.1" />
+      <Label layoutX="154.0" layoutY="229.0" prefWidth="75.0" text="本地端口：" />
+      <TextField fx:id="localPort" focusTraversable="false" layoutX="293.0" layoutY="224.0" onKeyReleased="#vaildLocalPort" prefHeight="30.0" prefWidth="75.0" promptText="9000" />
+      <Button fx:id="connection" layoutX="286.0" layoutY="456.0" mnemonicParsing="false" onMouseClicked="#connection" prefHeight="30.0" prefWidth="102.0" style="-fx-background-color: #0095ff;" text="开始" textAlignment="CENTER" textFill="WHITE">
+         <cursor>
+            <Cursor fx:constant="DEFAULT" />
+         </cursor></Button>
+      <Label fx:id="state" alignment="TOP_CENTER" layoutX="23.0" layoutY="410.0" prefHeight="24.0" prefWidth="629.0" textAlignment="CENTER" textFill="#628cda">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label focusTraversable="true" layoutX="154.0" layoutY="279.0" prefWidth="75.0" text="注册路劲：" />
+      <TextField fx:id="path" layoutX="293.0" layoutY="274.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="30.0" prefWidth="202.0" />
+   </children>
+</AnchorPane>

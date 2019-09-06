@@ -23,7 +23,7 @@ public class ServerHeartBeatHandler extends ChannelInboundHandlerAdapter {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
-            if (event.state() == IdleState.ALL_IDLE) {
+            if (event.state() == IdleState.READER_IDLE) {
                 log.info("服务端主动关闭连接");
                 ctx.close();
            /*     ctx.channel().writeAndFlush(HEARTBEAT_SEQUENCE)
