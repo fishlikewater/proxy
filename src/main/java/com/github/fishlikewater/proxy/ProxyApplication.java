@@ -28,10 +28,6 @@ public class ProxyApplication implements InitializingBean, DisposableBean{
         SpringApplication.run(ProxyApplication.class, args);
     }
 
-  /*  @EventListener
-    public void deployProxy(ApplicationReadyEvent event){
-
-    }*/
 
     @Override
     public void destroy() throws Exception {

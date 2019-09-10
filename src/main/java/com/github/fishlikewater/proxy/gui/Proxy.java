@@ -90,27 +90,31 @@ public class Proxy implements Initializable {
         if(StringUtils.isEmpty(remote.getText())){
             state.setText("远程地址不能为空");
             flag = false;
+            remote.requestFocus();
             return flag;
         }
         if(StringUtils.isEmpty(remotePort.getText())){
             state.setText("远程端口不能为空");
             flag = false;
+            remotePort.requestFocus();
             return flag;
         }
         if(StringUtils.isEmpty(local.getText())){
             state.setText("本地地址不能为空");
             flag = false;
+            local.requestFocus();
             return flag;
         }
         if(StringUtils.isEmpty(localPort.getText())){
             state.setText("本地端口不能为空");
             flag = false;
+            localPort.requestFocus();
             return flag;
         }
         if(StringUtils.isEmpty(path.getText())){
             state.setText("注册路劲不能为空");
             flag = false;
-            path.setFocusTraversable(true);
+            path.requestFocus();
             return flag;
         }
         return flag;
