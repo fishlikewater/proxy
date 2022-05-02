@@ -1,5 +1,6 @@
 package com.github.fishlikewater.proxy.handler.proxy_server;
 
+import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.proxy.kit.ChannelGroupKit;
 import com.github.fishlikewater.proxy.kit.IdUtil;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
@@ -30,9 +31,12 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
             //转成 HttpRequest
             FullHttpRequest req = (FullHttpRequest) msg;
             HttpHeaders headers = req.headers();
-            String uri = headers.get("Host");
+            String uri = req.uri();//headers.get("Host");
             /** 获取连接目标路由*/
-            String triger = uri.split("\\.")[0];
+            if (StrUtil.isBlank(uri)){
+                return;
+            }
+            String triger = uri.split("/")[1];
             Channel channel = ChannelGroupKit.find(triger);
             if(channel == null){
                 byte[] bytes = "没有穿透路由".getBytes(Charset.defaultCharset());
@@ -44,7 +48,7 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
             }else {
                 MessageProbuf.Request.Builder builder = MessageProbuf.Request.newBuilder();
                 builder.setHttpVersion(req.protocolVersion().text());
-                builder.setUrl(req.uri());
+                builder.setUrl(uri);
                 builder.setMethod(req.method().name());
                 Map<String, String> header = new HashMap<>();
                 headers.entries().forEach(t->{
