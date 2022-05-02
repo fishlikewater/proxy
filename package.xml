@@ -1,7 +1,6 @@
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/3.1.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/3.1.0 http://maven.apache.org/xsd/assembly-3.1.0.xsd">
-
     <id>customAssembly</id>
     <!-- dir -->
     <formats>
@@ -13,34 +12,43 @@
     <fileSets>
         <fileSet>
             <directory>src/main/resources/</directory>
-            <outputDirectory>${file.separator}resources</outputDirectory>
+            <outputDirectory>/resources</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>src/main/plugins/</directory>
-            <outputDirectory>${file.separator}plugins</outputDirectory>
+            <outputDirectory>/plugins</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>bin/</directory>
-            <outputDirectory>${file.separator}bin</outputDirectory>
+            <outputDirectory>/</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>lib/</directory>
+            <outputDirectory>/lib</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
         </fileSet>
     </fileSets>
 
     <dependencySets>
         <dependencySet>
-            <outputDirectory>${file.separator}lib</outputDirectory>
+            <outputDirectory>/lib</outputDirectory>
             <scope>runtime</scope>
             <excludes>
                 <exclude>${project.groupId}:${project.artifactId}</exclude>
             </excludes>
         </dependencySet>
-        <dependencySet>
-            <outputDirectory>${file.separator}/bin</outputDirectory>
-            <outputFileNameMapping>${project.artifactId}.jar</outputFileNameMapping>
+       <!-- <dependencySet>
+            <outputDirectory>/</outputDirectory>
             <includes>
-               <include>${project.groupId}:${project.artifactId}</include>
+                <include>${project.groupId}:${project.artifactId}</include>
             </includes>
-        </dependencySet>
+        </dependencySet>-->
     </dependencySets>
-
 
 </assembly>
