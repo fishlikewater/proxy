@@ -36,7 +36,9 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
             if (StrUtil.isBlank(uri)){
                 return;
             }
-            String triger = uri.split("/")[1];
+            final String[] split = uri.split("/");
+            String triger = split[1];
+            uri = uri.replace("/"+triger, "");
             Channel channel = ChannelGroupKit.find(triger);
             if(channel == null){
                 byte[] bytes = "没有穿透路由".getBytes(Charset.defaultCharset());
