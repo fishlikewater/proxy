@@ -59,7 +59,7 @@
         <!--<file>D:/logs/info/info.log</file>-->
         <!-- 日志格式 -->
         <encoder>
-            <pattern>%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
         </encoder>
         <!-- 日志级别过滤器 -->
         <filter class="ch.qos.logback.classic.filter.LevelFilter">

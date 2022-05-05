@@ -64,7 +64,7 @@ start(){
         echo "开启debug模式!"
     fi
 
-    /bin/sh -c  "$javaexe -jar $APP_DEBUGE $JVM_OPTS $JAR_FILE > /dev/null 2>&1 & echo \$!" > "$APP_PID"
+    /bin/sh -c  "$javaexe -jar -Dfile.encoding=utf-8 $APP_DEBUGE $JVM_OPTS $JAR_FILE > /dev/null 2>&1 & echo \$!" > "$APP_PID"
 
     sleep 10s
     checkpid

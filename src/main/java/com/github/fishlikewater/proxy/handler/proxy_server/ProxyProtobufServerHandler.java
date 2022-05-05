@@ -59,15 +59,17 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
             } else {
                 Channel channel = ChannelGroupKit.find(path);
                 if(channel != null){
-                    if(channel.isActive()){
+                    if(channel.isActive() && channel.isWritable()){
                         log.warn("this path {} is existed", path);
                         ChannelGroupKit.sendVailFail(ctx.channel(), "路由已被其他链接使用");
                         return;
                     }else {
+                        ChannelGroupKit.remove(path);
                         channel.close();
                     }
                 }
                 if(StringUtils.isEmpty(attr.get())){
+                    log.info("set path {} successful", path);
                     attr.setIfAbsent(path);
                 }
                 ChannelGroupKit.add(path, ctx.channel());
@@ -108,6 +110,7 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
                     //ctx.channel().writeAndFlush(MessageProbuf.Message.newBuilder().setType())
             }
         }
+        ctx.flush();
     }
 
 
@@ -125,7 +128,7 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-
+        log.info(ctx.channel().remoteAddress().toString() + "断开连接");
         super.channelInactive(ctx);
     }
 
@@ -147,6 +150,7 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         Attribute<String> attr = ctx.channel().attr(CLIENT_PATH);
         String path = attr.get();
+        log.info(path + "断开连接");
         if (!StringUtils.isEmpty(path)) {
             log.info("close chanel and clean path {}", path);
             ChannelGroupKit.remove(path);
@@ -158,9 +162,9 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.info("远程发送异常");
         if (cause instanceof IOException) {
             // 远程主机强迫关闭了一个现有的连接的异常
-            log.info("远程发送异常");
             ctx.close();
         } else {
             super.exceptionCaught(ctx, cause);

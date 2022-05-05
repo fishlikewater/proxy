@@ -63,7 +63,8 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 }
             }, 30, TimeUnit.SECONDS);
         }
-        super.channelInactive(ctx);
+        ctx.close();
+        //super.channelInactive(ctx);
     }
 
     @Override
@@ -109,7 +110,6 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
             case CLOSE:
                 ctx.channel().close();
         }
-
     }
 
     @Override

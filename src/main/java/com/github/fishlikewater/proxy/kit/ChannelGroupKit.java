@@ -6,7 +6,9 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -17,10 +19,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class ChannelGroupKit {
 
-    private static ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+    private static final ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
     @Getter
-    private static ConcurrentHashMap<String, Channel> clientChannelMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Channel> clientChannelMap = new ConcurrentHashMap<>();
 
     public static void add(String path, Channel channel){
         clientChannelMap.put(path, channel);
@@ -37,7 +39,20 @@ public class ChannelGroupKit {
     }
 
     public static void remove(Channel channel){
+        final String string = channel.localAddress().toString();
         group.remove(channel);
+        String path = null;
+        for (Map.Entry<String, Channel> entry:clientChannelMap.entrySet()){
+            if (entry.getValue().localAddress().toString().equals(string)){
+                path = entry.getKey();
+                break;
+            }
+        }
+        if (!StringUtils.isEmpty(path)){
+            clientChannelMap.remove(path);
+        }
+
+
     }
 
 
