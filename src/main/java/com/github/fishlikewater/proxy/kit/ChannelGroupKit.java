@@ -51,8 +51,7 @@ public class ChannelGroupKit {
         if (!StringUtils.isEmpty(path)){
             clientChannelMap.remove(path);
         }
-
-
+        channel.close();
     }
 
 

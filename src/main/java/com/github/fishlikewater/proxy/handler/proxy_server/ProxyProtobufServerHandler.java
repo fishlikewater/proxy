@@ -110,7 +110,6 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
                     //ctx.channel().writeAndFlush(MessageProbuf.Message.newBuilder().setType())
             }
         }
-        ctx.flush();
     }
 
 
@@ -155,7 +154,6 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
             log.info("close chanel and clean path {}", path);
             ChannelGroupKit.remove(path);
         }
-        ChannelGroupKit.remove(ctx.channel());
         super.handlerRemoved(ctx);
     }
 

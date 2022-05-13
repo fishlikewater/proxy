@@ -31,8 +31,8 @@ import java.util.Optional;
 @Slf4j
 public class DnsServerHandler extends SimpleChannelInboundHandler<DatagramDnsQuery> {
 
-    private MapCache dnsCache = MapCache.single();
-    private static HashMap<String, byte[]> ipMap = new HashMap<>();
+    private final MapCache dnsCache = MapCache.single();
+    private static final HashMap<String, byte[]> ipMap = new HashMap<>();
 
     static {
         InputStream inputStream = DnsServerHandler.class.getResourceAsStream("/filter.list");
