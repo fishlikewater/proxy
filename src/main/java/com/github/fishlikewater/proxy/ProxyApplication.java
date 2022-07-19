@@ -2,6 +2,7 @@ package com.github.fishlikewater.proxy;
 
 import com.github.fishlikewater.proxy.boot.NettyProxyClient;
 import com.github.fishlikewater.proxy.boot.NettyProxyServer;
+import com.github.fishlikewater.proxy.boot.NettySocks5ProxyClient;
 import com.github.fishlikewater.proxy.boot.NettyUdpServer;
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.conf.ProxyType;
@@ -70,12 +71,16 @@ public class ProxyApplication implements InitializingBean, DisposableBean{
             nettyProxyServer2.start();
         }
         proxyConfig.setType(type);
-        if(type != ProxyType.proxy_client){
+        if(type == ProxyType.proxy_server_http || type ==  ProxyType.http || type == ProxyType.socks){
             nettyProxyServer1 = new NettyProxyServer(proxyConfig);
             nettyProxyServer1.start();
         }
         if(type == ProxyType.proxy_client){
             nettyProxyClient1 = new NettyProxyClient(proxyConfig);
+            nettyProxyClient1.run();
+        }
+        if(type == ProxyType.socks_client){
+            nettyProxyClient1 = new NettySocks5ProxyClient(proxyConfig);
             nettyProxyClient1.run();
         }
     }

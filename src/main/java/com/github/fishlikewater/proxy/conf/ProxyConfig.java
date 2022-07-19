@@ -30,13 +30,16 @@ public class ProxyConfig {
     /** 服务端 http开放端口*/
     private int httpPort;
 
-    /** 验证用户名 */
+    /** 验证用户名(客户端用户名) */
     private String username;
+
+    /** 验证目标机器用户名(socks5) */
+    private String clientUsername;
 
     /** 验证密码*/
     private String password;
 
-    /** token*/
+    /** token(http 及内网穿透代理)*/
     private String token;
 
     /** 心跳检测间隔*/
@@ -48,14 +51,16 @@ public class ProxyConfig {
     /** 是否开启验证*/
     private boolean auth;
 
+    /** dns */
     private String proxyDns;
 
+    /** 内网穿透代理路劲*/
     private String proxyPath;
 
     /** 客户端 http 映射端口*/
     private int localPort = 8081;
 
-    /** 客户端 http 映射端口*/
+    /** 客户端 http 映射地址*/
     private String localAddress = "127.0.0.1";
 
     /** 打开内存泄漏检测*/

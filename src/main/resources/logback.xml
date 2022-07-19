@@ -85,7 +85,7 @@
     <logger name="scorpio.core" level="DEBUG"/>
 
     <!-- 基于info处理日志：具体控制台或者文件对日志级别的处理还要看所在appender配置的filter，如果没有配置filter，则使用root配置 -->
-    <root level="ERROR">
+    <root level="INFO">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="INFO-OUT"/>
         <appender-ref ref="ERROR-OUT"/>
