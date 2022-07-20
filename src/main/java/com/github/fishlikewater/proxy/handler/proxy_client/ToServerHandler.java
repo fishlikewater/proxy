@@ -38,6 +38,11 @@ public class ToServerHandler extends SimpleChannelInboundHandler {
             resp.headers().entries().forEach(t->{
                 header.put(t.getKey(), t.getValue());
             });
+            //允许跨域访问
+            header.put("Access-Control-Allow-Origin", "*");
+            header.put("Access-Control-Allow-Methods", "*");
+            header.put("Access-Control-Allow-Headers","*");
+            header.put("ACCESS-CONTROL-ALLOW-CREDENTIALS","true");
             ByteBuf content = resp.content();
             if(content.hasArray()){
                 builder.setBody(ByteString.copyFrom(content.array()));
