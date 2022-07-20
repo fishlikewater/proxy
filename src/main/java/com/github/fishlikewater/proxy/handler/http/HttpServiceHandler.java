@@ -80,6 +80,11 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
                     FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.PROXY_AUTHENTICATION_REQUIRED);
                     resp.headers().add("Proxy-Authenticate", "Basic realm=\"Text\"");
                     resp.headers().setInt("Content-Length", resp.content().readableBytes());
+                    //允许跨域访问
+                    resp.headers().set("Access-Control-Allow-Origin", "*");
+                    resp.headers().set("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS");
+                    resp.headers().set("Access-Control-Allow-Headers","Content-Type, CDS-REQ-TYPE, CDS-SM-VERSION");
+                    resp.headers().set("ACCESS-CONTROL-ALLOW-CREDENTIALS","true");
                     this.ctx.writeAndFlush(resp);
                 }
             } else {

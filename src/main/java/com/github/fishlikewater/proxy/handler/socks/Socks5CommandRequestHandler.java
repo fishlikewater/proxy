@@ -1,12 +1,14 @@
 package com.github.fishlikewater.proxy.handler.socks;
 
-import com.github.fishlikewater.proxy.handler.BootStrapFactroy;
+import com.github.fishlikewater.proxy.kit.ChannelGroupKit;
+import com.github.fishlikewater.proxy.kit.IpCacheKit;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.handler.codec.socksx.v5.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @Slf4j
 public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<DefaultSocks5CommandRequest> {
@@ -16,9 +18,48 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 	private ChannelFuture future;
 
 	@Override
+	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+		super.channelInactive(ctx);
+	}
+
+	@Override
+	public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+		final boolean b = ChannelGroupKit.removeChannel(ctx.channel());
+		if (!b){
+			IpCacheKit.remove(ctx.channel());
+		}
+		super.handlerRemoved(ctx);
+	}
+
+	@Override
 	protected void channelRead0(final ChannelHandlerContext ctx, DefaultSocks5CommandRequest msg) throws Exception {
-		log.debug("目标服务器  : " + msg.type() + "," + msg.dstAddr() + "," + msg.dstPort());
-		if(msg.type().equals(Socks5CommandType.CONNECT)) {
+		log.info("目标服务器  : " + msg.type() + "," + msg.dstAddr() + "," + msg.dstPort());
+		final Channel channel = IpCacheKit.getIpsMap().get(msg.dstAddr());
+		if (Objects.isNull(channel)){
+			//Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, Socks5AddressType.IPv4);
+			//ctx.writeAndFlush(commandResponse);
+			log.info("没有目标地址");
+		}else {
+			if(msg.type().equals(Socks5CommandType.CONNECT)) {
+				final DefaultSocks5CommandRequest socks5CommandRequest = new DefaultSocks5CommandRequest(Socks5CommandType.CONNECT, Socks5AddressType.IPv4, msg.dstAddr(), msg.dstPort());
+				channel.writeAndFlush(socks5CommandRequest);
+				if(ctx.pipeline().get(Socks5CommandRequestHandler.class) != null){
+					ctx.pipeline().remove(Socks5CommandRequestHandler.class);
+				}
+				ctx.pipeline().addLast(new Client2DestHandler(channel));
+				channel.pipeline().addLast(new Dest2ClientHandler(ctx));
+				Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
+				ctx.writeAndFlush(commandResponse);
+			}else {
+				log.debug("连接目标服务器失败");
+				Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, Socks5AddressType.IPv4);
+				ctx.writeAndFlush(commandResponse);
+			}
+
+		}
+
+
+		/*if(msg.type().equals(Socks5CommandType.CONNECT)) {
 			if(bootstrap != null){
 				future.await();
 				future.channel().writeAndFlush(msg);
@@ -48,7 +89,7 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 			});
 		} else {
 			ctx.fireChannelRead(msg);
-		}
+		}*/
 	}
 
 	@Override
@@ -115,10 +156,10 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 	 */
 	private static class Client2DestHandler extends ChannelInboundHandlerAdapter {
 		
-		private ChannelFuture destChannelFuture;
+		private Channel destChannel;
 		
-		public Client2DestHandler(ChannelFuture destChannelFuture) {
-			this.destChannelFuture = destChannelFuture;
+		public Client2DestHandler(Channel destChannel) {
+			this.destChannel = destChannel;
 		}
 
 		@Override
@@ -126,7 +167,7 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 			boolean canWrite = ctx.channel().isWritable();
 			log.trace(ctx.channel() + " 可写性：" + canWrite);
 			//流量控制，不允许继续读
-			destChannelFuture.channel().config().setAutoRead(canWrite);
+			destChannel.config().setAutoRead(canWrite);
 			super.channelWritabilityChanged(ctx);
 		}
 
@@ -134,13 +175,13 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 		@Override
 		public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 			log.trace("将客户端的消息转发给目标服务器端");
-			destChannelFuture.channel().writeAndFlush(msg);
+			destChannel.writeAndFlush(msg);
 		}
 		
 		@Override
 		public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 			log.trace("客户端断开连接");
-			destChannelFuture.channel().close();
+			destChannel.close();
 		}
 
 		@Override

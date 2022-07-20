@@ -24,6 +24,9 @@ public class ProxyConfig {
     /** 监控地址*/
     private String address;
 
+    /** 默认分配的ip地址段*/
+    private String ip = "192.168.8";
+
     /** 监控端口*/
     private int port;
 

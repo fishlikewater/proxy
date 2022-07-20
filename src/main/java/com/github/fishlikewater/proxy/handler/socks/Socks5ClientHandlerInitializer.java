@@ -22,6 +22,7 @@ public class Socks5ClientHandlerInitializer extends ChannelInitializer<Channel> 
     @Override
     protected void initChannel(Channel ch) throws Exception {
         ChannelPipeline p = ch.pipeline();
+        p.addFirst(new Socks5CommandResponseDecoder());
         p.addFirst(new Socks5CommandRequestDecoder());
         p.addFirst(new Socks5ClientPasswordAuthRequestHandler());
         p.addFirst(new Socks5ClientInitialAuthHandler(proxyConfig));

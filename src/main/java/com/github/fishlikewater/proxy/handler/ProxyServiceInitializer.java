@@ -21,10 +21,7 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
-import io.netty.handler.codec.socksx.v5.Socks5CommandRequestDecoder;
-import io.netty.handler.codec.socksx.v5.Socks5InitialRequestDecoder;
-import io.netty.handler.codec.socksx.v5.Socks5PasswordAuthRequestDecoder;
-import io.netty.handler.codec.socksx.v5.Socks5ServerEncoder;
+import io.netty.handler.codec.socksx.v5.*;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
@@ -117,6 +114,7 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
         /** sockes5代理服务器*/
         else {
             /** socks connectionddecode */
+            p.addFirst(new Socks5CommandResponseDecoder());
             p.addFirst(new Socks5CommandRequestDecoder()); //7
             if (proxyConfig.isAuth()) {
                 /** 添加验证机制*/

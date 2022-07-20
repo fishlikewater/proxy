@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class ChannelGroupKit {
 
+    @Getter
     private static final ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
     @Getter
@@ -36,6 +37,10 @@ public class ChannelGroupKit {
 
     public static void add(Channel channel){
         group.add(channel);
+    }
+
+    public static boolean removeChannel(Channel channel){
+        return group.remove(channel);
     }
 
     public static void remove(Channel channel){

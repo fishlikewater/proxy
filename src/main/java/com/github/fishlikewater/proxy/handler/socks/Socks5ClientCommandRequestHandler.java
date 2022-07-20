@@ -17,7 +17,11 @@ public class Socks5ClientCommandRequestHandler extends SimpleChannelInboundHandl
 
 	@Override
 	protected void channelRead0(final ChannelHandlerContext ctx, DefaultSocks5CommandRequest msg) throws Exception {
-		log.debug("目标服务器  : " + msg.type() + "," + msg.dstAddr() + "," + msg.dstPort());
+		log.info("目标服务器  : " + msg.type() + "," + msg.dstAddr() + "," + msg.dstPort());
+		if (msg.type().equals(Socks5CommandType.BIND)){
+			log.info("分配的ip为:{}", msg.dstAddr());
+		}
+
 		if(msg.type().equals(Socks5CommandType.CONNECT)) {
 			if(bootstrap != null){
 				future.await();

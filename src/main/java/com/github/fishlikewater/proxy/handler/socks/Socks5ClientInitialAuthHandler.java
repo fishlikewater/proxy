@@ -27,7 +27,7 @@ public class Socks5ClientInitialAuthHandler  extends SimpleChannelInboundHandler
     protected void channelRead0(ChannelHandlerContext ctx, Socks5InitialResponse msg) throws Exception {
         final Socks5AuthMethod socks5AuthMethod = msg.authMethod();
         if (socks5AuthMethod == Socks5AuthMethod.PASSWORD){
-            final DefaultSocks5PasswordAuthRequest socks5PasswordAuthRequest = new DefaultSocks5PasswordAuthRequest(proxyConfig.getUsername(), proxyConfig.getPassword());
+            final DefaultSocks5PasswordAuthRequest socks5PasswordAuthRequest = new DefaultSocks5PasswordAuthRequest(proxyConfig.getClientUsername(), proxyConfig.getPassword());
             ctx.writeAndFlush(socks5PasswordAuthRequest);
         }else {
             log.info("链接成功, 不需要验证");
