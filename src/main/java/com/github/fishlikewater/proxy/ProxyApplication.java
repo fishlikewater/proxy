@@ -71,7 +71,7 @@ public class ProxyApplication implements InitializingBean, DisposableBean{
             nettyProxyServer2.start();
         }
         proxyConfig.setType(type);
-        if(type == ProxyType.proxy_server_http || type ==  ProxyType.http || type == ProxyType.socks){
+        if(type == ProxyType.proxy_server || type ==  ProxyType.http || type == ProxyType.socks){
             nettyProxyServer1 = new NettyProxyServer(proxyConfig);
             nettyProxyServer1.start();
         }
