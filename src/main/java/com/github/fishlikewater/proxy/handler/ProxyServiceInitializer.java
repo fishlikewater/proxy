@@ -93,13 +93,13 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
         }
         /** http代理服务器*/
         if (proxyConfig.getType() == ProxyType.http) {
-            p.addFirst("aggregator", new HttpObjectAggregator(65536));
+            p.addFirst("aggregator", new HttpObjectAggregator(1024*1024*100));
             p.addFirst("httpcode", new HttpServerCodec());
             p.addLast("httpservice", new HttpServiceHandler(proxyConfig.isAuth()));
         }
         /** http转发服务器(内网穿透)*/
         else if (proxyConfig.getType() == ProxyType.proxy_server_http) {
-            p.addFirst("aggregator", new HttpObjectAggregator(65536));
+            p.addFirst("aggregator", new HttpObjectAggregator(1024*1024*100));
             p.addFirst("httpcode", new HttpServerCodec());
             p.addLast("proxyHttpServerHandler", new ProxyHttpServerHandler());
         }
