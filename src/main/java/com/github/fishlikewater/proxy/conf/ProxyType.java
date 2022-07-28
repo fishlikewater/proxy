@@ -10,5 +10,5 @@ package com.github.fishlikewater.proxy.conf;
  * @since
  **/
 public enum ProxyType{
-    http, socks,dns,proxy_server, proxy_server_http, proxy_client, p2p, vpn, socks_client;
+    http,tcp, socks,dns,proxy_server, proxy_server_http, proxy_client, p2p, vpn, socks_client;
 }
