@@ -1,4 +1,4 @@
-package com.github.fishlikewater.proxy.handler.socks;
+package com.github.fishlikewater.proxy.handler.socks_proxy;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

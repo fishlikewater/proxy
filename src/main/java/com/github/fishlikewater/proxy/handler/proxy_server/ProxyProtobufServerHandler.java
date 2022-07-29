@@ -5,7 +5,6 @@ import com.github.fishlikewater.proxy.kit.ChannelGroupKit;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -28,9 +27,9 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
 
     private static final AttributeKey<String> CLIENT_PATH = AttributeKey.valueOf("client_path");
 
-    private ConnectionValidate connectionValidate;
+    private final ConnectionValidate connectionValidate;
 
-    private ProxyConfig proxyConfig;
+    private final ProxyConfig proxyConfig;
 
     public ProxyProtobufServerHandler(ConnectionValidate connectionValidate, ProxyConfig proxyConfig){
         this.connectionValidate = connectionValidate;
@@ -41,7 +40,7 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
     protected void channelRead0(ChannelHandlerContext ctx, MessageProbuf.Message msg) throws Exception {
         Attribute<String> attr = ctx.channel().attr(CLIENT_PATH);
         MessageProbuf.MessageType type = msg.getType();
-        /** 连接验证*/
+        /* 连接验证*/
         if (type == MessageProbuf.MessageType.VALID) {
             MessageProbuf.Register register = msg.getRegister();
             boolean validate = connectionValidate.validate(register.getToken(), proxyConfig.getToken());
@@ -51,10 +50,10 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
                 return;
             }
             log.info("valid successful");
-            /** 路由*/
+            /* 路由*/
             String path = register.getPath();
             if (StringUtils.isEmpty(path)) {
-                /** 没有注册路由的无效连接*/
+                /* 没有注册路由的无效连接*/
                 ChannelGroupKit.sendVailFail(ctx.channel(), "请配置路由");
             } else {
                 Channel channel = ChannelGroupKit.find(path);
@@ -78,7 +77,7 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
             }
         } else {
             if (StringUtils.isEmpty(attr.get())) {
-               /** 连接后没有经过验证的请求 直接关闭*/
+                /* 连接后没有经过验证的请求 直接关闭*/
                 ChannelGroupKit.sendVailFail(ctx.channel(), "非法请求");
                 return;
             }
@@ -87,12 +86,10 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
                     String requestid = msg.getRequestId();
                     Channel channel = CacheUtil.get(requestid);
                     if(channel != null && channel.isActive()){
-                        ChannelPipeline pipeline = channel.pipeline();
+                        //ChannelPipeline pipeline = channel.pipeline();
                         FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST);
                         MessageProbuf.Response response = msg.getResponse();
-                        response.getHeaderMap().entrySet().forEach(t->{
-                            resp.headers().set(t.getKey(), t.getValue());
-                        });
+                        response.getHeaderMap().forEach((key, value) -> resp.headers().set(key, value));
                         resp.content().writeBytes(response.getBody().toByteArray());
                         resp.setStatus(HttpResponseStatus.valueOf(response.getCode()));
                         channel.writeAndFlush(resp).addListener(t->{

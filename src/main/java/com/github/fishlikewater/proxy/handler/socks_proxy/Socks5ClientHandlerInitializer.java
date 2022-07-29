@@ -1,4 +1,4 @@
-package com.github.fishlikewater.proxy.handler.socks;
+package com.github.fishlikewater.proxy.handler.socks_proxy;
 
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import io.netty.channel.Channel;

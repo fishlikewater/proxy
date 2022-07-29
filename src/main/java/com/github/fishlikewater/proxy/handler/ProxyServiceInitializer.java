@@ -11,6 +11,8 @@ import com.github.fishlikewater.proxy.handler.proxy_server.ProxyProtobufServerHa
 import com.github.fishlikewater.proxy.handler.socks.Socks5CommandRequestHandler;
 import com.github.fishlikewater.proxy.handler.socks.Socks5InitialAuthHandler;
 import com.github.fishlikewater.proxy.handler.socks.Socks5PasswordAuthRequestHandler;
+import com.github.fishlikewater.proxy.handler.socks_proxy.Client2DestHandler;
+import com.github.fishlikewater.proxy.handler.socks_proxy.Socks5ProxyCommandRequestHandler;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -41,7 +43,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
 
-    private Thread thread = new Thread(new Runnable() {
+    private final Thread thread = new Thread(new Runnable() {
         @Override
         public void run() {
             while (true) {
@@ -60,7 +62,7 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
     });
 
 
-    private ProxyConfig proxyConfig;
+    private final ProxyConfig proxyConfig;
     private GlobalTrafficShapingHandler trafficHandler;
 
     public ProxyServiceInitializer(ProxyConfig proxyConfig) {
@@ -69,7 +71,7 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
     }
 
     @Override
-    protected void initChannel(Channel channel) throws Exception {
+    protected void initChannel(Channel channel) {
         ChannelPipeline p = channel.pipeline();
         if (proxyConfig.getIsOpenGlobalTrafficLimit()) {
             if (trafficHandler == null) {
@@ -80,30 +82,30 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
             p.addLast("globallimit", trafficHandler);
         }
         p.addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS));
-        /** http服务端 无心跳直接关闭*/
+        /* http服务端 无心跳直接关闭*/
         if (proxyConfig.getType() == ProxyType.proxy_server_http || proxyConfig.getType() == ProxyType.http) {
             p.addLast(new HttpHeartBeatHandler());
         } else {
-            /** 其他模式 发送心跳包到客户端确认*/
+            /* 其他模式 发送心跳包到客户端确认*/
             p.addLast(new ServerHeartBeatHandler());
         }
-        /** 是否打开日志*/
+        /* 是否打开日志*/
         if (proxyConfig.isLogging()) {
             p.addLast(new LoggingHandler());
         }
-        /** http代理服务器*/
+        /* http代理服务器*/
         if (proxyConfig.getType() == ProxyType.http) {
             p.addFirst("aggregator", new HttpObjectAggregator(1024*1024*100));
             p.addFirst("httpcode", new HttpServerCodec());
             p.addLast("httpservice", new HttpServiceHandler(proxyConfig.isAuth()));
         }
-        /** http转发服务器(内网穿透)*/
+        /* http转发服务器(内网穿透)*/
         else if (proxyConfig.getType() == ProxyType.proxy_server_http) {
             p.addFirst("aggregator", new HttpObjectAggregator(1024*1024*100));
             p.addFirst("httpcode", new HttpServerCodec());
             p.addLast("proxyHttpServerHandler", new ProxyHttpServerHandler());
         }
-        /** http协议转发(内网穿透)*/
+        /* http协议转发(内网穿透)*/
         else if (proxyConfig.getType() == ProxyType.proxy_server) {
             p.addFirst(new ProtobufEncoder());
             p.addFirst(new ProtobufVarint32LengthFieldPrepender());
@@ -111,21 +113,37 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
             p.addFirst(new ProtobufVarint32FrameDecoder());
             p.addLast("proxyProtobufServerHandler", new ProxyProtobufServerHandler(new DefaultConnectionValidate(), proxyConfig));
         }
-        /** sockes5代理服务器*/
-        else {
-            /** socks connectionddecode */
+        /* sockes5代理服务器*/
+        else if (proxyConfig.getType() == ProxyType.socks){
+            /* socks connectionddecode */
             p.addFirst(new Socks5CommandResponseDecoder());
             p.addFirst(new Socks5CommandRequestDecoder()); //7
             if (proxyConfig.isAuth()) {
-                /** 添加验证机制*/
+                /* 添加验证机制*/
                 p.addFirst(new Socks5PasswordAuthRequestHandler(proxyConfig)); //5
                 p.addFirst(new Socks5PasswordAuthRequestDecoder()); //4
             }
             p.addFirst(new Socks5InitialAuthHandler(proxyConfig.isAuth())); //3
             p.addFirst(Socks5ServerEncoder.DEFAULT); //2
             p.addFirst(new Socks5InitialRequestDecoder());  //1
-            /** Socks connection handler */
+            /* Socks connection handler */
             p.addLast(new Socks5CommandRequestHandler());
+
+        }else if (proxyConfig.getType() == ProxyType.socks_proxy){
+            /* socks connectionddecode */
+            p.addFirst(new Socks5CommandResponseDecoder());
+            p.addFirst(new Socks5CommandRequestDecoder()); //7
+            if (proxyConfig.isAuth()) {
+                /* 添加验证机制*/
+                p.addFirst(new Socks5PasswordAuthRequestHandler(proxyConfig)); //5
+                p.addFirst(new Socks5PasswordAuthRequestDecoder()); //4
+            }
+            p.addFirst(new Socks5InitialAuthHandler(proxyConfig.isAuth())); //3
+            p.addFirst(Socks5ServerEncoder.DEFAULT); //2
+            p.addFirst(new Socks5InitialRequestDecoder());  //1
+            /* Socks connection handler */
+            p.addLast(new Socks5ProxyCommandRequestHandler());
+            p.addLast(new Client2DestHandler());
 
         }
 

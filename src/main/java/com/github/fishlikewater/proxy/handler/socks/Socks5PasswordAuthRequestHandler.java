@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class Socks5PasswordAuthRequestHandler extends SimpleChannelInboundHandler<DefaultSocks5PasswordAuthRequest> {
 
-	private ProxyConfig proxyConfig;
+	private final ProxyConfig proxyConfig;
 
 	private static final AtomicInteger ips = new AtomicInteger(1);
 
@@ -33,7 +33,7 @@ public class Socks5PasswordAuthRequestHandler extends SimpleChannelInboundHandle
 			if (ips.get() > 254){
 				ips.set(1);
 			}
-			String ip = "";
+			String ip;
 			while (true){
 				final int i = ips.get();
 				ip = proxyConfig.getIp() + "." +i;
@@ -49,7 +49,7 @@ public class Socks5PasswordAuthRequestHandler extends SimpleChannelInboundHandle
 			final Socks5CommandRequest socks5CommandRequest = new DefaultSocks5CommandRequest(Socks5CommandType.BIND, Socks5AddressType.IPv4, ip, 0);
 			ctx.writeAndFlush(socks5CommandRequest);
 		} else if(msg.username().equals(proxyConfig.getUsername()) && msg.password().equals(proxyConfig.getPassword())) {
-			log.info("客户机验证成功");
+			log.info("使用客户机验证成功");
 			Socks5PasswordAuthResponse passwordAuthResponse = new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.SUCCESS);
 			ctx.writeAndFlush(passwordAuthResponse);
 			ChannelGroupKit.add(ctx.channel());

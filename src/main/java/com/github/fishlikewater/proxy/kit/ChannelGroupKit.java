@@ -1,6 +1,7 @@
 package com.github.fishlikewater.proxy.kit;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelId;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
@@ -33,6 +34,9 @@ public class ChannelGroupKit {
     }
     public static Channel find(String path){
         return clientChannelMap.get(path);
+    }
+    public static Channel find(ChannelId id){
+        return group.find(id);
     }
 
     public static void add(Channel channel){

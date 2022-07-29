@@ -32,14 +32,22 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
             FullHttpRequest req = (FullHttpRequest) msg;
             HttpHeaders headers = req.headers();
             String uri = req.uri();//headers.get("Host");
-            /** 获取连接目标路由*/
+            /* 获取连接目标路由*/
             if (StrUtil.isBlank(uri)){
                 return;
             }
             final String[] split = uri.split("/");
             String triger = split[1];
+            Channel channel = null;
+            if (StrUtil.isBlank(triger)){
+                channel = ChannelGroupKit.find("default");
+            }else {
+                channel = ChannelGroupKit.find(triger);
+                if (channel == null){
+                    channel = ChannelGroupKit.find("default");
+                }
+            }
             uri = uri.replace("/"+triger, "");
-            Channel channel = ChannelGroupKit.find(triger);
             if(channel == null){
                 byte[] bytes = "没有穿透路由".getBytes(Charset.defaultCharset());
                 FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST);
@@ -94,5 +102,11 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
         } else {
             super.exceptionCaught(ctx, cause);
         }
+    }
+
+    public static void main(String[] args) {
+        String url = "";
+        final String[] split = url.split("/");
+        System.out.println(split.length);
     }
 }
