@@ -4,8 +4,9 @@ package com.github.fishlikewater.proxy.boot;
 import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.gui.ConnectionUtils;
+import com.github.fishlikewater.proxy.handler.health.ClientHeartBeatHandler;
 import com.github.fishlikewater.proxy.handler.proxy_client.ChannelKit;
-import com.github.fishlikewater.proxy.handler.proxy_client.ClientHandlerInitializer;
+import com.github.fishlikewater.proxy.handler.ClientHandlerInitializer;
 import com.github.fishlikewater.proxy.kit.EpollKit;
 import com.github.fishlikewater.proxy.kit.IdUtil;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
@@ -107,13 +108,16 @@ public class NettyProxyClient {
     }
 
     /**
-     * @Description : 
+     * @Description :
      * @param : channel
      * @Date : 2022/7/18 14:43
      * @Author : fishlikewater@126.com
      * @Return : void
      */
-    void afterConnectionSuccessful(Channel channel) {
+    void afterConnectionSuccessful(Channel channel) throws InterruptedException {
+        /* 先发一个测试包*/
+        channel.writeAndFlush(ClientHeartBeatHandler.HEARTBEAT_SEQUENCE);
+        Thread.sleep(5000);
         /* 发送首先发送验证信息*/
         MessageProbuf.Register.Builder builder = MessageProbuf.Register.newBuilder();
         builder.setPath(proxyConfig.getProxyPath()).setToken(proxyConfig.getToken());
@@ -124,6 +128,7 @@ public class NettyProxyClient {
                 .setType(MessageProbuf.MessageType.VALID)
                 .build();
         channel.writeAndFlush(validMessage).addListener(f -> {
+            log.info("发送验证信息成功");
         });
     }
 

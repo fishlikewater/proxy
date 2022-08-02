@@ -11,7 +11,7 @@ import com.github.fishlikewater.proxy.handler.proxy_server.ProxyProtobufServerHa
 import com.github.fishlikewater.proxy.handler.socks.Socks5CommandRequestHandler;
 import com.github.fishlikewater.proxy.handler.socks.Socks5InitialAuthHandler;
 import com.github.fishlikewater.proxy.handler.socks.Socks5PasswordAuthRequestHandler;
-import com.github.fishlikewater.proxy.handler.socks_proxy.Client2DestHandler;
+import com.github.fishlikewater.proxy.handler.socks_proxy.PortUnificationServerHandler;
 import com.github.fishlikewater.proxy.handler.socks_proxy.Socks5ProxyCommandRequestHandler;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import io.netty.channel.Channel;
@@ -116,7 +116,6 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
         /* sockes5代理服务器*/
         else if (proxyConfig.getType() == ProxyType.socks){
             /* socks connectionddecode */
-            p.addFirst(new Socks5CommandResponseDecoder());
             p.addFirst(new Socks5CommandRequestDecoder()); //7
             if (proxyConfig.isAuth()) {
                 /* 添加验证机制*/
@@ -130,8 +129,6 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
             p.addLast(new Socks5CommandRequestHandler());
 
         }else if (proxyConfig.getType() == ProxyType.socks_proxy){
-            /* socks connectionddecode */
-            p.addFirst(new Socks5CommandResponseDecoder());
             p.addFirst(new Socks5CommandRequestDecoder()); //7
             if (proxyConfig.isAuth()) {
                 /* 添加验证机制*/
@@ -141,10 +138,8 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
             p.addFirst(new Socks5InitialAuthHandler(proxyConfig.isAuth())); //3
             p.addFirst(Socks5ServerEncoder.DEFAULT); //2
             p.addFirst(new Socks5InitialRequestDecoder());  //1
-            /* Socks connection handler */
             p.addLast(new Socks5ProxyCommandRequestHandler());
-            p.addLast(new Client2DestHandler());
-
+            p.addFirst(new PortUnificationServerHandler(proxyConfig));
         }
 
 

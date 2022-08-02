@@ -5,7 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.gui.ConnectionUtils;
 import com.github.fishlikewater.proxy.handler.proxy_client.ChannelKit;
-import com.github.fishlikewater.proxy.handler.socks_proxy.Socks5ClientHandlerInitializer;
+import com.github.fishlikewater.proxy.handler.socks_client.Socks5ClientHandlerInitializer;
 import com.github.fishlikewater.proxy.kit.EpollKit;
 import com.github.fishlikewater.proxy.kit.NamedThreadFactory;
 import io.netty.bootstrap.Bootstrap;

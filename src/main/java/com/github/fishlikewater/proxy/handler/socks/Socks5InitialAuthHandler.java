@@ -27,7 +27,7 @@ public class Socks5InitialAuthHandler extends SimpleChannelInboundHandler<Defaul
 		} else {
 			if(msg.version().equals(SocksVersion.SOCKS5)) {
 				if(isAuth) {
-					log.info("需验证");
+					//log.info("需验证");
 					Socks5InitialResponse initialResponse = new DefaultSocks5InitialResponse(Socks5AuthMethod.PASSWORD);
 					ctx.writeAndFlush(initialResponse);
 				} else {

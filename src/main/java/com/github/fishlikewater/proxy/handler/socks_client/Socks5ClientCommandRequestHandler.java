@@ -1,4 +1,4 @@
-package com.github.fishlikewater.proxy.handler.socks_proxy;
+package com.github.fishlikewater.proxy.handler.socks_client;
 
 import com.github.fishlikewater.proxy.handler.BootStrapFactroy;
 import io.netty.bootstrap.Bootstrap;

@@ -26,30 +26,11 @@ public class Socks5PasswordAuthRequestHandler extends SimpleChannelInboundHandle
 	protected void channelRead0(ChannelHandlerContext ctx, DefaultSocks5PasswordAuthRequest msg) throws Exception {
 		log.debug("用户名密码 : " + msg.username() + "," + msg.password());
 		if (msg.username().equals(proxyConfig.getClientUsername()) && msg.password().equals(proxyConfig.getPassword())){
-			log.info("目标机器验证成功");
-			//Socks5PasswordAuthResponse passwordAuthResponse = new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.SUCCESS);
-			//ctx.write(passwordAuthResponse);
-			//分配ip
-			if (ips.get() > 254){
-				ips.set(1);
-			}
-			String ip;
-			while (true){
-				final int i = ips.get();
-				ip = proxyConfig.getIp() + "." +i;
-				final boolean b = IpCacheKit.findByIp(ip);
-				if (b){
-					ips.incrementAndGet();
-				}else {
-					break;
-				}
-			}
-			IpCacheKit.add(ip, ctx.channel());
-			ips.incrementAndGet();
-			final Socks5CommandRequest socks5CommandRequest = new DefaultSocks5CommandRequest(Socks5CommandType.BIND, Socks5AddressType.IPv4, ip, 0);
-			ctx.writeAndFlush(socks5CommandRequest);
+			//log.info("目标机器验证成功");
+			Socks5PasswordAuthResponse passwordAuthResponse = new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.SUCCESS);
+			ctx.writeAndFlush(passwordAuthResponse);
 		} else if(msg.username().equals(proxyConfig.getUsername()) && msg.password().equals(proxyConfig.getPassword())) {
-			log.info("使用客户机验证成功");
+			//log.info("使用客户机验证成功");
 			Socks5PasswordAuthResponse passwordAuthResponse = new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.SUCCESS);
 			ctx.writeAndFlush(passwordAuthResponse);
 			ChannelGroupKit.add(ctx.channel());

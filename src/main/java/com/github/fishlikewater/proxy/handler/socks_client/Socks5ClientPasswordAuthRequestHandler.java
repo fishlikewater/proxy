@@ -1,4 +1,4 @@
-package com.github.fishlikewater.proxy.handler.socks_proxy;
+package com.github.fishlikewater.proxy.handler.socks_client;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -11,7 +11,7 @@ public class Socks5ClientPasswordAuthRequestHandler extends SimpleChannelInbound
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, DefaultSocks5PasswordAuthResponse msg) throws Exception {
 		if (msg.status().isSuccess()){
-			log.info("服务器验证成功");
+			//log.info("服务器验证成功");
 		}else {
 			log.info("服务器验证失败");
 		}
