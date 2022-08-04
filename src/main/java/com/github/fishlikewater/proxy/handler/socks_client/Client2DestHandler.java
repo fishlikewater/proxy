@@ -1,16 +1,26 @@
 package com.github.fishlikewater.proxy.handler.socks_client;
 
-import cn.hutool.core.util.ObjectUtil;
-import com.github.fishlikewater.proxy.conf.ProxyConfig;
-import com.github.fishlikewater.proxy.handler.BootStrapFactroy;
-import com.github.fishlikewater.proxy.handler.socks_proxy.Socks5ProxyCommandRequestHandler;
+import cn.hutool.core.util.StrUtil;
+import com.github.fishlikewater.proxy.boot.NettyProxyClient;
+import com.github.fishlikewater.proxy.gui.ConnectionUtils;
+import com.github.fishlikewater.proxy.handler.NoneClientInitializer;
+import com.github.fishlikewater.proxy.handler.proxy_client.ChannelKit;
+import com.github.fishlikewater.proxy.kit.EpollKit;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
-import com.google.protobuf.ByteString;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
+import io.netty.channel.epoll.EpollSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.socksx.v5.DefaultSocks5CommandRequest;
+import io.netty.handler.codec.socksx.v5.Socks5AddressType;
+import io.netty.handler.codec.socksx.v5.Socks5CommandRequest;
+import io.netty.handler.codec.socksx.v5.Socks5CommandType;
+import io.netty.util.concurrent.FutureListener;
+import io.netty.util.concurrent.Promise;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Description:
@@ -22,10 +32,31 @@ import java.io.IOException;
 @Slf4j
 public class Client2DestHandler extends SimpleChannelInboundHandler<MessageProbuf.Message> {
 
-    private final ProxyConfig proxyConfig;
+    private final NettyProxyClient client;
 
-    public Client2DestHandler(ProxyConfig proxyConfig) {
-        this.proxyConfig = proxyConfig;
+    private Bootstrap clientstrap;
+
+    //保留全局ctx
+    private ChannelHandlerContext ctx;
+
+    public Client2DestHandler(NettyProxyClient client) {
+        this.client = client;
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+        this.ctx = ctx;
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) {
+        if (ConnectionUtils.isRetry()) {
+            log.warn("this service has dropped, will retry");
+            final EventLoop loop = ctx.channel().eventLoop();
+            loop.schedule(client::start, 30, TimeUnit.SECONDS);
+        }
+        ctx.close();
     }
 
     @Override
@@ -35,23 +66,15 @@ public class Client2DestHandler extends SimpleChannelInboundHandler<MessageProbu
             case REQUEST:
                 final String requestId = msg.getRequestId();
                 final MessageProbuf.SocksMsg socksMsg = msg.getSocksMsg();
+                /*final Socks5CommandRequest commandRequest =
+                        new DefaultSocks5CommandRequest(Socks5CommandType.CONNECT, Socks5AddressType.IPv4, socksMsg.getDstAddr(), socksMsg.getDstPort());*/
                 log.info("准备连接目标服务器");
-                Bootstrap bootstrap = BootStrapFactroy.bootstrapConfig(ctx);
-                log.info("连接目标服务器");
-                ChannelFuture future = bootstrap.connect(socksMsg.getDstAddr(), socksMsg.getDstPort());
-                future.addListener(new ChannelFutureListener() {
-                    public void operationComplete(final ChannelFuture future) throws Exception {
-                        if (future.isSuccess()) {
-                            log.info("成功连接目标服务器");
-                            //future.channel().writeAndFlush()
-                            /*if (ctx.pipeline().get(Client2DestHandler.class) != null) {
-                                ctx.pipeline().remove(Client2DestHandler.class);
-                            }*/
-                            //ctx.pipeline().addLast(new Client2DestHandler.Client2DestHandler2(future));
-                            future.channel().pipeline().addLast(new Client2DestHandler.Dest2ClientHandler(requestId, ctx));
-                        } else {
-                            log.info("连接目标服务器失败");
-                        }
+                Promise<Channel> promise = createPromise(socksMsg.getDstAddr(), socksMsg.getDstPort());
+                promise.addListener((FutureListener<Channel>) channelFuture -> {
+                    if (channelFuture.isSuccess()) {
+                        ChannelPipeline p = channelFuture.get().pipeline();
+                        p.addLast(new ToServerHandler(requestId));
+                        //channelFuture.get().writeAndFlush(commandRequest);
                     }
                 });
                 break;
@@ -74,103 +97,59 @@ public class Client2DestHandler extends SimpleChannelInboundHandler<MessageProbu
         }
     }
 
-    /**
-     * 将目标服务器信息转发给客户端
-     *
-     * @author huchengyi
-     */
-    private static class Dest2ClientHandler extends SimpleChannelInboundHandler<Object> {
+    //根据host和端口，创建一个连接web的连接
+    private Promise<Channel> createPromise(String host, int port) {
+        Bootstrap bootstrap = bootstrapConfig();
+        final Promise<Channel> promise = ctx.executor().newPromise();
+        bootstrap.remoteAddress(host, port);
+        bootstrap.connect()
+                .addListener((ChannelFutureListener) channelFuture -> {
+                    if (channelFuture.isSuccess()) {
+                        promise.setSuccess(channelFuture.channel());
+                        log.info("connection success address {}, port {}", host, port);
+                    } else {
+                        log.warn("connection fail address {}, port {}", host, port);
+                        ConnectionUtils.setStateText(StrUtil.format("connection fail address {}, port {}", host, port));
+                        channelFuture.cancel(true);
+                    }
+                });
+        return promise;
+    }
+
+    private Bootstrap bootstrapConfig() {
+        if (clientstrap == null) clientstrap = new Bootstrap();
+        else return this.clientstrap;
+        clientstrap.option(ChannelOption.SO_REUSEADDR, true);
+        clientstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
+            clientstrap.channel(EpollSocketChannel.class);
+        } else {
+            clientstrap.channel(NioSocketChannel.class);
+        }
+        clientstrap.group(ctx.channel().eventLoop());
+        clientstrap.handler(new NoneClientInitializer());
+        return clientstrap;
+    }
+
+    private static class ToServerHandler extends SimpleChannelInboundHandler<Object> {
 
         private final String requestId;
 
-        private final ChannelHandlerContext clientChannelContext;
-
-        public Dest2ClientHandler(String requestId, ChannelHandlerContext clientChannelContext) {
-            this.clientChannelContext = clientChannelContext;
+        public ToServerHandler(String requestId) {
             this.requestId = requestId;
         }
 
         @Override
-        public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-            boolean canWrite = ctx.channel().isWritable();
-            log.trace(ctx.channel() + " 可写性：" + canWrite);
-            //流量控制，不允许继续读
-            clientChannelContext.channel().config().setAutoRead(canWrite);
-            super.channelWritabilityChanged(ctx);
-        }
+        protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+            final MessageProbuf.Response.Builder resp = MessageProbuf.Response.newBuilder();
+            ChannelKit.sendMessage(MessageProbuf.Message.newBuilder()
+                    .setRequestId(requestId)
+                    .setResponse(resp.build())
+                    .setType(MessageProbuf.MessageType.RESPONSE).build(), t->{
 
-        @Override
-        public void channelRead0(ChannelHandlerContext ctx2, Object destMsg) throws Exception {
-            log.info("将目标服务器信息转发给服务端");
-            MessageProbuf.Response.Builder builder = MessageProbuf.Response.newBuilder();
-            builder.setBody(ByteString.copyFrom(ObjectUtil.serialize(destMsg)));
-            clientChannelContext.writeAndFlush(MessageProbuf.Message.newBuilder()
-                    .setType(MessageProbuf.MessageType.RESPONSE)
-                    .setResponse(builder.build())
-                    .setRequestId(requestId));
-        }
-
-        @Override
-        public void channelInactive(ChannelHandlerContext ctx2) throws Exception {
-            log.trace("目标服务器断开连接");
-            clientChannelContext.channel().close();
-        }
-
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            if (cause instanceof IOException) {
-                // 远程主机强迫关闭了一个现有的连接的异常
-                ctx.close();
-            } else {
-                super.exceptionCaught(ctx, cause);
-            }
-        }
-    }
-
-    /**
-     * 将客户端的消息转发给目标服务器端
-     *
-     * @author huchengyi
-     */
-    private static class Client2DestHandler2 extends ChannelInboundHandlerAdapter {
-
-        private final ChannelFuture destChannelFuture;
-
-        public Client2DestHandler2(ChannelFuture destChannelFuture) {
-            this.destChannelFuture = destChannelFuture;
-        }
-
-        @Override
-        public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-            boolean canWrite = ctx.channel().isWritable();
-            log.trace(ctx.channel() + " 可写性：" + canWrite);
-            //流量控制，不允许继续读
-            destChannelFuture.channel().config().setAutoRead(canWrite);
-            super.channelWritabilityChanged(ctx);
-        }
-
-
-        @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-            log.trace("将客户端的消息转发给目标服务器端");
-            destChannelFuture.channel().writeAndFlush(msg);
-        }
-
-        @Override
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            log.trace("客户端断开连接");
-            destChannelFuture.channel().close();
-        }
-
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            if (cause instanceof IOException) {
-                // 远程主机强迫关闭了一个现有的连接的异常
-                ctx.close();
-            } else {
-                super.exceptionCaught(ctx, cause);
-            }
+            });
         }
     }
 
 }
+

@@ -38,7 +38,6 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        in.retain();
         in.markReaderIndex();
         final int readerIndex = in.readerIndex();
         if (in.writerIndex() == readerIndex) {

@@ -1,12 +1,16 @@
 package com.github.fishlikewater.proxy.handler.socks_proxy;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.github.fishlikewater.proxy.handler.BootStrapFactroy;
 import com.github.fishlikewater.proxy.handler.proxy_server.CacheUtil;
 import com.github.fishlikewater.proxy.kit.ChannelGroupKit;
 import com.github.fishlikewater.proxy.kit.IdUtil;
 import com.github.fishlikewater.proxy.kit.IpCacheKit;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
+import com.google.protobuf.ByteString;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.*;
 import io.netty.handler.codec.socksx.v5.*;
 import lombok.extern.slf4j.Slf4j;
@@ -39,13 +43,10 @@ public class Socks5ProxyCommandRequestHandler extends SimpleChannelInboundHandle
     protected void channelRead0(final ChannelHandlerContext ctx, DefaultSocks5CommandRequest msg) throws Exception {
         //log.info("目标服务器  : " + msg.type() + "," + msg.dstAddr() + "," + msg.dstPort());
         final Channel clientChannel = IpCacheKit.getIpsMap().get(msg.dstAddr());
+        log.info("类型: {}", msg.type());
         if (Objects.isNull(clientChannel)) {
             //log.info("没有目标地址");
             if (msg.type().equals(Socks5CommandType.CONNECT)) {
-                if (bootstrap != null) {
-                    future.await();
-                    future.channel().writeAndFlush(msg);
-                }
                 log.trace("准备连接目标服务器");
                 bootstrap = BootStrapFactroy.bootstrapConfig(ctx);
                 log.trace("连接目标服务器");

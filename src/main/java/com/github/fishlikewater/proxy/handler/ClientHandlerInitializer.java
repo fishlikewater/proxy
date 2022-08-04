@@ -63,7 +63,7 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
                     .addLast(new ProtobufEncoder())
                     .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
                     .addLast(new ClientHeartBeatHandler(client))
-                    .addLast(new Client2DestHandler(proxyConfig));
+                    .addLast(new Client2DestHandler(client));
         }
 
 
