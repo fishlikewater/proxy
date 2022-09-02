@@ -115,9 +115,6 @@ public class NettyProxyClient {
      * @Return : void
      */
     void afterConnectionSuccessful(Channel channel) throws InterruptedException {
-        /* 先发一个测试包*/
-        channel.writeAndFlush(ClientHeartBeatHandler.HEARTBEAT_SEQUENCE);
-        Thread.sleep(5000);
         /* 发送首先发送验证信息*/
         MessageProbuf.Register.Builder builder = MessageProbuf.Register.newBuilder();
         builder.setPath(proxyConfig.getProxyPath()).setToken(proxyConfig.getToken());
