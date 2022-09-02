@@ -244,11 +244,11 @@
                     <archive>
                         <manifest>
                             <mainClass>com.github.fishlikewater.proxy.ProxyApplication</mainClass>
-                            <classpathPrefix>../lib/</classpathPrefix>
+                            <classpathPrefix>lib/</classpathPrefix>
                             <addClasspath>true</addClasspath>
                         </manifest>
                         <manifestEntries>
-                            <Class-Path>../resources/</Class-Path>
+                            <Class-Path>resources/</Class-Path>
                         </manifestEntries>
                     </archive>
                 </configuration>
