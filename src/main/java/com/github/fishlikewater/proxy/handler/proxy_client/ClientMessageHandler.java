@@ -149,7 +149,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
         if (clientstrap == null) clientstrap = new Bootstrap();
         else return this.clientstrap;
         clientstrap.option(ChannelOption.SO_REUSEADDR, true);
-        clientstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 120000);
+        clientstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5*60*1000);
         clientstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
             clientstrap.channel(EpollSocketChannel.class);

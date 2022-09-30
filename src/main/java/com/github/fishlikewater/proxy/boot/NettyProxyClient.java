@@ -72,7 +72,7 @@ public class NettyProxyClient {
     void bootstrapConfig() {
         if (clientstrap == null) clientstrap = new Bootstrap();
         clientstrap.option(ChannelOption.SO_REUSEADDR, true);
-        clientstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 120000);
+        clientstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5*60*1000);
         clientstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
         clientstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         clientstrap.option(ChannelOption.TCP_NODELAY, true);

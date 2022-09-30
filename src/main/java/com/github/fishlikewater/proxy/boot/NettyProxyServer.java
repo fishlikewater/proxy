@@ -51,7 +51,7 @@ public class NettyProxyServer {
         bootstrap.option(ChannelOption.SO_REUSEADDR, true);
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.option(ChannelOption.SO_BACKLOG, 8192);
-        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 120000);
+        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5*60*1000);
         bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
         bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
         bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
