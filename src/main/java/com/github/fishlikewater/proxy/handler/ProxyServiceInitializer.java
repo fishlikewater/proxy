@@ -1,5 +1,6 @@
 package com.github.fishlikewater.proxy.handler;
 
+import com.github.fishlikewater.proxy.codec.ByteArrayCodec;
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.conf.ProxyType;
 import com.github.fishlikewater.proxy.handler.health.HttpHeartBeatHandler;
@@ -11,8 +12,6 @@ import com.github.fishlikewater.proxy.handler.proxy_server.ProxyProtobufServerHa
 import com.github.fishlikewater.proxy.handler.socks.Socks5CommandRequestHandler;
 import com.github.fishlikewater.proxy.handler.socks.Socks5InitialAuthHandler;
 import com.github.fishlikewater.proxy.handler.socks.Socks5PasswordAuthRequestHandler;
-import com.github.fishlikewater.proxy.handler.socks_proxy.PortUnificationServerHandler;
-import com.github.fishlikewater.proxy.handler.socks_proxy.Socks5ProxyCommandRequestHandler;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -23,8 +22,12 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
-import io.netty.handler.codec.socksx.v5.*;
+import io.netty.handler.codec.socksx.v5.Socks5CommandRequestDecoder;
+import io.netty.handler.codec.socksx.v5.Socks5InitialRequestDecoder;
+import io.netty.handler.codec.socksx.v5.Socks5PasswordAuthRequestDecoder;
+import io.netty.handler.codec.socksx.v5.Socks5ServerEncoder;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.handler.traffic.TrafficCounter;
@@ -63,11 +66,13 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
 
 
     private final ProxyConfig proxyConfig;
+    private final ProxyType proxyType;
     private GlobalTrafficShapingHandler trafficHandler;
 
-    public ProxyServiceInitializer(ProxyConfig proxyConfig) {
+    public ProxyServiceInitializer(ProxyConfig proxyConfig, ProxyType proxyType) {
         log.info("init handler");
         this.proxyConfig = proxyConfig;
+        this.proxyType = proxyType;
     }
 
     @Override
@@ -83,7 +88,7 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
         }
         p.addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS));
         /* http服务端 无心跳直接关闭*/
-        if (proxyConfig.getType() == ProxyType.proxy_server_http || proxyConfig.getType() == ProxyType.http) {
+        if (proxyType == ProxyType.proxy_server_http || proxyType == ProxyType.http) {
             p.addLast(new HttpHeartBeatHandler());
         } else {
             /* 其他模式 发送心跳包到客户端确认*/
@@ -94,19 +99,19 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
             p.addLast(new LoggingHandler());
         }
         /* http代理服务器*/
-        if (proxyConfig.getType() == ProxyType.http) {
+        if (proxyType == ProxyType.http) {
             p.addFirst("aggregator", new HttpObjectAggregator(1024*1024*100));
             p.addFirst("httpcode", new HttpServerCodec());
             p.addLast("httpservice", new HttpServiceHandler(proxyConfig.isAuth()));
         }
         /* http转发服务器(内网穿透)*/
-        else if (proxyConfig.getType() == ProxyType.proxy_server_http) {
+        else if (proxyType == ProxyType.proxy_server_http) {
             p.addFirst("aggregator", new HttpObjectAggregator(1024*1024*100));
             p.addFirst("httpcode", new HttpServerCodec());
             p.addLast("proxyHttpServerHandler", new ProxyHttpServerHandler());
         }
         /* http协议转发(内网穿透)*/
-        else if (proxyConfig.getType() == ProxyType.proxy_server) {
+        else if (proxyType == ProxyType.proxy_server) {
             p.addFirst(new ProtobufEncoder());
             p.addFirst(new ProtobufVarint32LengthFieldPrepender());
             p.addFirst(new ProtobufDecoder(MessageProbuf.Message.getDefaultInstance()));
@@ -114,7 +119,7 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
             p.addLast("proxyProtobufServerHandler", new ProxyProtobufServerHandler(new DefaultConnectionValidate(), proxyConfig));
         }
         /* sockes5代理服务器*/
-        else if (proxyConfig.getType() == ProxyType.socks){
+        else if (proxyType == ProxyType.socks){
             /* socks connectionddecode */
             p.addFirst(new Socks5CommandRequestDecoder()); //7
             if (proxyConfig.isAuth()) {
@@ -128,18 +133,6 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
             /* Socks connection handler */
             p.addLast(new Socks5CommandRequestHandler());
 
-        }else if (proxyConfig.getType() == ProxyType.socks_proxy){
-            p.addFirst(new Socks5CommandRequestDecoder()); //7
-            if (proxyConfig.isAuth()) {
-                /* 添加验证机制*/
-                p.addFirst(new Socks5PasswordAuthRequestHandler(proxyConfig)); //5
-                p.addFirst(new Socks5PasswordAuthRequestDecoder()); //4
-            }
-            p.addFirst(new Socks5InitialAuthHandler(proxyConfig.isAuth())); //3
-            p.addFirst(Socks5ServerEncoder.DEFAULT); //2
-            p.addFirst(new Socks5InitialRequestDecoder());  //1
-            p.addLast(new Socks5ProxyCommandRequestHandler());
-            p.addFirst(new PortUnificationServerHandler(proxyConfig));
         }
 
 

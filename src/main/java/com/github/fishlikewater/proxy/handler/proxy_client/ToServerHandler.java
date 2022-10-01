@@ -20,7 +20,7 @@ import java.util.Map;
 @Slf4j
 public class ToServerHandler extends SimpleChannelInboundHandler {
 
-    private String requestId;
+    private final String requestId;
 
     public ToServerHandler(String requestId) {
         this.requestId = requestId;
@@ -30,23 +30,23 @@ public class ToServerHandler extends SimpleChannelInboundHandler {
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         //System.out.println("交换数据");
-        if(msg instanceof FullHttpResponse){
+        if (msg instanceof FullHttpResponse) {
             FullHttpResponse resp = (FullHttpResponse) msg;
             MessageProbuf.Response.Builder builder = MessageProbuf.Response.newBuilder();
             int code = resp.status().code();
             Map<String, String> header = new HashMap<>();
-            resp.headers().entries().forEach(t->{
+            resp.headers().entries().forEach(t -> {
                 header.put(t.getKey(), t.getValue());
             });
             //允许跨域访问
             header.put("Access-Control-Allow-Origin", "*");
             header.put("Access-Control-Allow-Methods", "*");
-            header.put("Access-Control-Allow-Headers","*");
-            header.put("ACCESS-CONTROL-ALLOW-CREDENTIALS","true");
+            header.put("Access-Control-Allow-Headers", "*");
+            header.put("ACCESS-CONTROL-ALLOW-CREDENTIALS", "true");
             ByteBuf content = resp.content();
-            if(content.hasArray()){
+            if (content.hasArray()) {
                 builder.setBody(ByteString.copyFrom(content.array()));
-            }else {
+            } else {
                 byte[] bytes = new byte[content.readableBytes()];
                 content.readBytes(bytes);
                 builder.setBody(ByteString.copyFrom(bytes));
@@ -54,9 +54,10 @@ public class ToServerHandler extends SimpleChannelInboundHandler {
             builder.setCode(code);
             builder.putAllHeader(header);
             ChannelKit.sendMessage(MessageProbuf.Message.newBuilder()
+                    .setProtocol(MessageProbuf.Protocol.HTTP)
                     .setRequestId(requestId)
                     .setResponse(builder.build())
-                    .setType(MessageProbuf.MessageType.RESPONSE).build(), t->{
+                    .setType(MessageProbuf.MessageType.RESPONSE).build(), t -> {
 
             });
         }
@@ -66,6 +67,7 @@ public class ToServerHandler extends SimpleChannelInboundHandler {
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
         ctx.flush();
     }
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error("happen error: ", cause);

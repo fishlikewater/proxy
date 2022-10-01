@@ -3,8 +3,8 @@ package com.github.fishlikewater.proxy.boot;
 
 import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
+import com.github.fishlikewater.proxy.conf.ProxyType;
 import com.github.fishlikewater.proxy.gui.ConnectionUtils;
-import com.github.fishlikewater.proxy.handler.health.ClientHeartBeatHandler;
 import com.github.fishlikewater.proxy.handler.proxy_client.ChannelKit;
 import com.github.fishlikewater.proxy.handler.ClientHandlerInitializer;
 import com.github.fishlikewater.proxy.kit.EpollKit;
@@ -21,21 +21,21 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.DisposableBean;
 
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
 
 /**
  * @version V1.0
- * @a1uthor zhangx
  * @mail fishlikewater@126.com
- * @ClassName NettyProxyClient
+ * @ClassName TcpProxyClient
  * @Description
  * @date 2018年12月25日 14:21
  **/
 @Slf4j
 @Accessors(chain = true)
-public class NettyProxyClient {
+public class TcpProxyClient implements DisposableBean {
 
     /**
      * 处理连接
@@ -50,11 +50,14 @@ public class NettyProxyClient {
     @Getter
     private ProxyConfig proxyConfig;
 
-    public NettyProxyClient(ProxyConfig proxyConfig) {
+    private ProxyType proxyType;
+
+    public TcpProxyClient(ProxyConfig proxyConfig, ProxyType proxyType) {
         this.proxyConfig = proxyConfig;
+        this.proxyType = proxyType;
     }
 
-    private NettyProxyClient() {
+    private TcpProxyClient() {
 
     }
 
@@ -72,7 +75,7 @@ public class NettyProxyClient {
     void bootstrapConfig() {
         if (clientstrap == null) clientstrap = new Bootstrap();
         clientstrap.option(ChannelOption.SO_REUSEADDR, true);
-        clientstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5*60*1000);
+        clientstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2*60*1000);
         clientstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
         clientstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         clientstrap.option(ChannelOption.TCP_NODELAY, true);
@@ -83,7 +86,7 @@ public class NettyProxyClient {
             bossGroup = new NioEventLoopGroup(0, new NamedThreadFactory("client-nio-boss@"));
             clientstrap.group(bossGroup).channel(NioSocketChannel.class);
         }
-        clientstrap.handler(new ClientHandlerInitializer(proxyConfig, this));
+        clientstrap.handler(new ClientHandlerInitializer(proxyConfig, this, proxyType));
     }
 
     /**
@@ -95,13 +98,13 @@ public class NettyProxyClient {
             ChannelFuture future = clientstrap.connect().addListener(connectionListener).sync();
             this.channel = future.channel();
             log.info("start {} this port:{} and adress:{}", proxyConfig.getType(), proxyConfig.getPort(), proxyConfig.getAddress());
-            ConnectionUtils.setStateText(StrUtil.format("start {} this port:{} and adress:{}", proxyConfig.getType(), proxyConfig.getPort(), proxyConfig.getAddress()));
+            ConnectionUtils.setStateText(StrUtil.format("start {} this port:{} and adress:{}", proxyType, proxyConfig.getPort(), proxyConfig.getAddress()));
             ConnectionUtils.setConnState(true);
             afterConnectionSuccessful(channel);
             ChannelKit.setChannel(this.channel);
             //future.channel().closeFuture().sync();
         } catch (Exception e) {
-            log.error("start {} server fail", proxyConfig.getType());
+            log.error("start {} server fail", proxyType);
             ConnectionUtils.setStateText("连接失败");
             ConnectionUtils.setConnState(false);
         }
@@ -109,7 +112,7 @@ public class NettyProxyClient {
 
     /**
      * @Description :
-     * @param : channel
+     * @param: channel
      * @Date : 2022/7/18 14:43
      * @Author : fishlikewater@126.com
      * @Return : void
@@ -124,9 +127,7 @@ public class NettyProxyClient {
                 .setRegister(builder.build())
                 .setType(MessageProbuf.MessageType.VALID)
                 .build();
-        channel.writeAndFlush(validMessage).addListener(f -> {
-            log.info("发送验证信息成功");
-        });
+        channel.writeAndFlush(validMessage).addListener(f -> log.info("发送验证信息成功"));
     }
 
 
@@ -134,7 +135,7 @@ public class NettyProxyClient {
      * 关闭服务
      */
     public void stop() {
-        log.info("⬢ {} shutdown ...", proxyConfig.getType());
+        log.info("⬢ {} shutdown ...", proxyType);
         try {
             if (this.bossGroup != null) {
                 this.bossGroup.shutdownGracefully().addListener(f->{
@@ -143,26 +144,27 @@ public class NettyProxyClient {
                     }
                 });
             }
-            log.info("⬢ {} shutdown successful", proxyConfig.getType());
+            log.info("⬢ {} shutdown successful", proxyType);
         } catch (Exception e) {
-            log.error("⬢ {} shutdown error", proxyConfig.getType());
+            log.error("⬢ {} shutdown error", proxyType);
         }
     }
 
-    private void registerShutdownHook(Supplier supplier) {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                try {
-                    System.out.println("startting shutdown working......");
-                    supplier.get();
-                } catch (Throwable e) {
-                    log.error("shutdownHook error", e);
-                } finally {
-                    log.info("jvm shutdown");
-                }
+    private void registerShutdownHook(Supplier<?> supplier) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                System.out.println("startting shutdown working......");
+                supplier.get();
+            } catch (Throwable e) {
+                log.error("shutdownHook error", e);
+            } finally {
+                log.info("jvm shutdown");
             }
-
-        });
+        }));
     }
 
+    @Override
+    public void destroy() throws Exception {
+        stop();
+    }
 }

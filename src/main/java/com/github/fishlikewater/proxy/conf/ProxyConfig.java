@@ -10,8 +10,7 @@ import org.springframework.stereotype.Component;
  * @mail fishlikewater@126.com
  * @ClassName ProxyConfig
  * @Description
- * @Date 2019年03月05日 15:55
- * @since
+ * @since: 2019年03月05日 15:55
  **/
 @ConfigurationProperties("proxy")
 @Data
@@ -19,7 +18,7 @@ import org.springframework.stereotype.Component;
 public class ProxyConfig {
 
     /** 代理类型*/
-    private ProxyType type;
+    private ProxyType[] type;
 
     /** 监控地址*/
     private String address;

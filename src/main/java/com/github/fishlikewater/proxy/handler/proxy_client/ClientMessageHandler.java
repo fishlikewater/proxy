@@ -2,7 +2,7 @@ package com.github.fishlikewater.proxy.handler.proxy_client;
 
 
 import cn.hutool.core.util.StrUtil;
-import com.github.fishlikewater.proxy.boot.NettyProxyClient;
+import com.github.fishlikewater.proxy.boot.TcpProxyClient;
 import com.github.fishlikewater.proxy.gui.ConnectionUtils;
 import com.github.fishlikewater.proxy.kit.EpollKit;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
@@ -31,14 +31,14 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ClientMessageHandler extends SimpleChannelInboundHandler<MessageProbuf.Message> {
 
-    private NettyProxyClient client;
+    private TcpProxyClient client;
 
     private Bootstrap clientstrap;
 
     //保留全局ctx
     private ChannelHandlerContext ctx;
 
-    public ClientMessageHandler(NettyProxyClient client){
+    public ClientMessageHandler(TcpProxyClient client){
         this.client = client;
     }
 

@@ -8,8 +8,7 @@ import lombok.Setter;
 
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
- * @date 2019年08月24日 22:04
- * @since
+ * @since 2019年08月24日 22:04
  **/
 public class ChannelKit {
 

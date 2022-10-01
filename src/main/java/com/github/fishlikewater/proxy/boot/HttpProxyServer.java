@@ -19,17 +19,14 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.DisposableBean;
 
 /**
- * @author zhangx
- * @version V1.0
- * @mail fishlikewater@126.com
- * @ClassName NettyProxyServer
- * @Description
- * @date 2019年02月26日 21:45
- **/
+ * @Description:
+ * @since: 2022/10/1 9:52
+ */
 @Slf4j
-public class NettyProxyServer {
+public class HttpProxyServer implements DisposableBean {
     /**
      * 处理连接
      */
@@ -39,19 +36,21 @@ public class NettyProxyServer {
      */
     private EventLoopGroup workerGroup;
 
-    private ProxyConfig proxyConfig;
+    private final ProxyConfig proxyConfig;
 
-    public NettyProxyServer(ProxyConfig proxyConfig) {
+    private final ProxyType proxyType;
+
+    public HttpProxyServer(ProxyConfig proxyConfig, ProxyType proxyType) {
         this.proxyConfig = proxyConfig;
+        this.proxyType = proxyType;
     }
 
     public void start() {
-
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.option(ChannelOption.SO_REUSEADDR, true);
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.option(ChannelOption.SO_BACKLOG, 8192);
-        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5*60*1000);
+        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2 * 60 * 1000);
         bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
         bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
         bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
@@ -66,25 +65,19 @@ public class NettyProxyServer {
             workerGroup = new NioEventLoopGroup(0, new NamedThreadFactory("nio-worker@"));
             bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class);
         }
-        bootstrap.childHandler(new ProxyServiceInitializer(proxyConfig));
+        bootstrap.childHandler(new ProxyServiceInitializer(proxyConfig, ProxyType.http));
         try {
             Channel ch;
             if (proxyConfig.getAddress() == null) {
                 ch = bootstrap.bind(proxyConfig.getPort()).sync().channel();
             } else {
-                if (proxyConfig.getType() == ProxyType.proxy_server_http) {
-                    ch = bootstrap.bind(proxyConfig.getAddress(), proxyConfig.getHttpPort()).sync().channel();
-                    log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyConfig.getHttpPort(), proxyConfig.getAddress(), proxyConfig.getType());
-                } else {
-                    ch = bootstrap.bind(proxyConfig.getAddress(), proxyConfig.getPort()).sync().channel();
-                    log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyConfig.getPort(), proxyConfig.getAddress(), proxyConfig.getType());
-                }
+                ch = bootstrap.bind(proxyConfig.getAddress(), proxyConfig.getHttpPort()).sync().channel();
+                log.info("⬢ start {} server this port:{} and adress:{} proxy type:{}", proxyType, proxyConfig.getHttpPort(), proxyConfig.getAddress(), proxyType);
             }
-            ch.closeFuture().addListener(t -> {
-                log.info("⬢ {}服务开始关闭", proxyConfig.getType());
-            });
+
+            ch.closeFuture().addListener(t -> log.info("⬢  {}服务开始关闭", proxyType));
         } catch (InterruptedException e) {
-            log.error("⬢ start "+proxyConfig.getType()+" server fail", e);
+            log.error("⬢ start {} server fail", proxyType, e);
         }
     }
 
@@ -92,7 +85,7 @@ public class NettyProxyServer {
      * 关闭服务
      */
     public void stop() {
-        log.info("⬢ {} shutdown ...", proxyConfig.getType());
+        log.info("⬢ {} server shutdown ...", proxyType);
         try {
             if (this.bossGroup != null) {
                 this.bossGroup.shutdownGracefully().sync();
@@ -100,28 +93,14 @@ public class NettyProxyServer {
             if (this.workerGroup != null) {
                 this.workerGroup.shutdownGracefully().sync();
             }
-            log.info("⬢ {} shutdown successful", proxyConfig.getType());
+            log.info("⬢ {} shutdown successful", proxyType);
         } catch (Exception e) {
-            log.error("⬢ proxyConfig.getType()"+" shutdown error", e);
+            log.error("⬢ {} shutdown error", proxyType, e);
         }
     }
 
-    /**
-     * 数据交换连接客户端
-     *
-     * @return
-     */
-    private Bootstrap getBootstrap() {
-        Bootstrap bootstrap = new Bootstrap();
-        if (EpollKit.epollIsAvailable()) {
-            bootstrap.channel(EpollSocketChannel.class);
-        } else {
-            bootstrap.channel(NioSocketChannel.class);
-        }
-        bootstrap.group(bossGroup)
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000);
-
-        return bootstrap;
-
+    @Override
+    public void destroy() throws Exception {
+        stop();
     }
 }

@@ -1,6 +1,6 @@
 package com.github.fishlikewater.proxy.gui;
 
-import com.github.fishlikewater.proxy.boot.NettyProxyClient;
+import com.github.fishlikewater.proxy.boot.TcpProxyClient;
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.conf.ProxyType;
 import javafx.application.Platform;
@@ -17,12 +17,11 @@ import java.util.Properties;
 
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
- * @date 2019年08月31日 9:52
- * @since
+ * @since 2019年08月31日 9:52
  **/
 public class ConnectionUtils {
 
-    private static NettyProxyClient nettyProxyClient;
+    private static TcpProxyClient nettyProxyClient;
 
     private static Properties prop;
 
@@ -55,17 +54,17 @@ public class ConnectionUtils {
         connection.setDisable(true);
         connection.setStyle("-fx-background-color:gray;");
         ProxyConfig proxyConfig = new ProxyConfig();
-        proxyConfig.setType(ProxyType.proxy_client);
+        proxyConfig.setType(new ProxyType[]{ProxyType.proxy_client});
         proxyConfig.setAddress(remote);
         proxyConfig.setPort(remotePort);
         proxyConfig.setLocalAddress(local);
         proxyConfig.setLocalPort(localPort);
         proxyConfig.setProxyPath(path);
         proxyConfig.setToken(prop.getProperty("proxy.token"));
-        proxyConfig.setIsOpenCheckMemoryLeak(Boolean.valueOf(prop.getProperty("proxy.is-open-check-memory-leak")));
-        proxyConfig.setLogging(Boolean.valueOf(prop.getProperty("proxy.logging")));
-        proxyConfig.setTimeout(Long.valueOf(prop.getProperty("proxy.timeout")));
-        nettyProxyClient = new NettyProxyClient(proxyConfig);
+        proxyConfig.setIsOpenCheckMemoryLeak(Boolean.parseBoolean(prop.getProperty("proxy.is-open-check-memory-leak")));
+        proxyConfig.setLogging(Boolean.parseBoolean(prop.getProperty("proxy.logging")));
+        proxyConfig.setTimeout(Long.parseLong(prop.getProperty("proxy.timeout")));
+        nettyProxyClient = new TcpProxyClient(proxyConfig, ProxyType.proxy_client);
         nettyProxyClient.run();
         state.setText("连接成功");
         isRetry = true;

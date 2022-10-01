@@ -146,6 +146,113 @@ public final class MessageProbuf {
     // @@protoc_insertion_point(enum_scope:MessageType)
   }
 
+  /**
+   * Protobuf enum {@code Protocol}
+   */
+  public enum Protocol
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>HTTP = 0;</code>
+     */
+    HTTP(0),
+    /**
+     * <code>TCP = 1;</code>
+     */
+    TCP(1),
+    /**
+     * <code>SOCKS = 3;</code>
+     */
+    SOCKS(3),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     * <code>HTTP = 0;</code>
+     */
+    public static final int HTTP_VALUE = 0;
+    /**
+     * <code>TCP = 1;</code>
+     */
+    public static final int TCP_VALUE = 1;
+    /**
+     * <code>SOCKS = 3;</code>
+     */
+    public static final int SOCKS_VALUE = 3;
+
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @Deprecated
+    public static Protocol valueOf(int value) {
+      return forNumber(value);
+    }
+
+    public static Protocol forNumber(int value) {
+      switch (value) {
+        case 0: return HTTP;
+        case 1: return TCP;
+        case 3: return SOCKS;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<Protocol>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static final com.google.protobuf.Internal.EnumLiteMap<
+        Protocol> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<Protocol>() {
+            public Protocol findValueByNumber(int number) {
+              return Protocol.forNumber(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(ordinal());
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return MessageProbuf.getDescriptor().getEnumTypes().get(1);
+    }
+
+    private static final Protocol[] VALUES = values();
+
+    public static Protocol valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private Protocol(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:Protocol)
+  }
+
   public interface MessageOrBuilder extends
       // @@protoc_insertion_point(interface_extends:Message)
       com.google.protobuf.MessageOrBuilder {
@@ -224,17 +331,13 @@ public final class MessageProbuf {
         getExtendBytes();
 
     /**
-     * <code>.SocksMsg socksMsg = 8;</code>
+     * <code>.Protocol protocol = 8;</code>
      */
-    boolean hasSocksMsg();
+    int getProtocolValue();
     /**
-     * <code>.SocksMsg socksMsg = 8;</code>
+     * <code>.Protocol protocol = 8;</code>
      */
-    SocksMsg getSocksMsg();
-    /**
-     * <code>.SocksMsg socksMsg = 8;</code>
-     */
-    SocksMsgOrBuilder getSocksMsgOrBuilder();
+    Protocol getProtocol();
   }
   /**
    * Protobuf type {@code Message}
@@ -252,6 +355,7 @@ public final class MessageProbuf {
       type_ = 0;
       requestId_ = "";
       extend_ = "";
+      protocol_ = 0;
     }
 
     @Override
@@ -346,17 +450,10 @@ public final class MessageProbuf {
               extend_ = s;
               break;
             }
-            case 66: {
-              SocksMsg.Builder subBuilder = null;
-              if (socksMsg_ != null) {
-                subBuilder = socksMsg_.toBuilder();
-              }
-              socksMsg_ = input.readMessage(SocksMsg.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(socksMsg_);
-                socksMsg_ = subBuilder.buildPartial();
-              }
+            case 64: {
+              int rawValue = input.readEnum();
 
+              protocol_ = rawValue;
               break;
             }
             default: {
@@ -548,25 +645,21 @@ public final class MessageProbuf {
       }
     }
 
-    public static final int SOCKSMSG_FIELD_NUMBER = 8;
-    private SocksMsg socksMsg_;
+    public static final int PROTOCOL_FIELD_NUMBER = 8;
+    private int protocol_;
     /**
-     * <code>.SocksMsg socksMsg = 8;</code>
+     * <code>.Protocol protocol = 8;</code>
      */
-    public boolean hasSocksMsg() {
-      return socksMsg_ != null;
+    public int getProtocolValue() {
+      return protocol_;
     }
     /**
-     * <code>.SocksMsg socksMsg = 8;</code>
+     * <code>.Protocol protocol = 8;</code>
      */
-    public SocksMsg getSocksMsg() {
-      return socksMsg_ == null ? SocksMsg.getDefaultInstance() : socksMsg_;
-    }
-    /**
-     * <code>.SocksMsg socksMsg = 8;</code>
-     */
-    public SocksMsgOrBuilder getSocksMsgOrBuilder() {
-      return getSocksMsg();
+    public Protocol getProtocol() {
+      @SuppressWarnings("deprecation")
+      Protocol result = Protocol.valueOf(protocol_);
+      return result == null ? Protocol.UNRECOGNIZED : result;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -604,8 +697,8 @@ public final class MessageProbuf {
       if (!getExtendBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 7, extend_);
       }
-      if (socksMsg_ != null) {
-        output.writeMessage(8, getSocksMsg());
+      if (protocol_ != Protocol.HTTP.getNumber()) {
+        output.writeEnum(8, protocol_);
       }
       unknownFields.writeTo(output);
     }
@@ -642,9 +735,9 @@ public final class MessageProbuf {
       if (!getExtendBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, extend_);
       }
-      if (socksMsg_ != null) {
+      if (protocol_ != Protocol.HTTP.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(8, getSocksMsg());
+          .computeEnumSize(8, protocol_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -683,11 +776,7 @@ public final class MessageProbuf {
       }
       if (!getExtend()
           .equals(other.getExtend())) return false;
-      if (hasSocksMsg() != other.hasSocksMsg()) return false;
-      if (hasSocksMsg()) {
-        if (!getSocksMsg()
-            .equals(other.getSocksMsg())) return false;
-      }
+      if (protocol_ != other.protocol_) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -719,10 +808,8 @@ public final class MessageProbuf {
       }
       hash = (37 * hash) + EXTEND_FIELD_NUMBER;
       hash = (53 * hash) + getExtend().hashCode();
-      if (hasSocksMsg()) {
-        hash = (37 * hash) + SOCKSMSG_FIELD_NUMBER;
-        hash = (53 * hash) + getSocksMsg().hashCode();
-      }
+      hash = (37 * hash) + PROTOCOL_FIELD_NUMBER;
+      hash = (53 * hash) + protocol_;
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -882,12 +969,8 @@ public final class MessageProbuf {
         }
         extend_ = "";
 
-        if (socksMsgBuilder_ == null) {
-          socksMsg_ = null;
-        } else {
-          socksMsg_ = null;
-          socksMsgBuilder_ = null;
-        }
+        protocol_ = 0;
+
         return this;
       }
 
@@ -933,11 +1016,7 @@ public final class MessageProbuf {
           result.register_ = registerBuilder_.build();
         }
         result.extend_ = extend_;
-        if (socksMsgBuilder_ == null) {
-          result.socksMsg_ = socksMsg_;
-        } else {
-          result.socksMsg_ = socksMsgBuilder_.build();
-        }
+        result.protocol_ = protocol_;
         onBuilt();
         return result;
       }
@@ -1009,8 +1088,8 @@ public final class MessageProbuf {
           extend_ = other.extend_;
           onChanged();
         }
-        if (other.hasSocksMsg()) {
-          mergeSocksMsg(other.getSocksMsg());
+        if (other.protocol_ != 0) {
+          setProtocolValue(other.getProtocolValue());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -1601,121 +1680,49 @@ public final class MessageProbuf {
         return this;
       }
 
-      private SocksMsg socksMsg_;
-      private com.google.protobuf.SingleFieldBuilderV3<
-          SocksMsg, SocksMsg.Builder, SocksMsgOrBuilder> socksMsgBuilder_;
+      private int protocol_ = 0;
       /**
-       * <code>.SocksMsg socksMsg = 8;</code>
+       * <code>.Protocol protocol = 8;</code>
        */
-      public boolean hasSocksMsg() {
-        return socksMsgBuilder_ != null || socksMsg_ != null;
+      public int getProtocolValue() {
+        return protocol_;
       }
       /**
-       * <code>.SocksMsg socksMsg = 8;</code>
+       * <code>.Protocol protocol = 8;</code>
        */
-      public SocksMsg getSocksMsg() {
-        if (socksMsgBuilder_ == null) {
-          return socksMsg_ == null ? SocksMsg.getDefaultInstance() : socksMsg_;
-        } else {
-          return socksMsgBuilder_.getMessage();
-        }
-      }
-      /**
-       * <code>.SocksMsg socksMsg = 8;</code>
-       */
-      public Builder setSocksMsg(SocksMsg value) {
-        if (socksMsgBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          socksMsg_ = value;
-          onChanged();
-        } else {
-          socksMsgBuilder_.setMessage(value);
-        }
-
-        return this;
-      }
-      /**
-       * <code>.SocksMsg socksMsg = 8;</code>
-       */
-      public Builder setSocksMsg(
-          SocksMsg.Builder builderForValue) {
-        if (socksMsgBuilder_ == null) {
-          socksMsg_ = builderForValue.build();
-          onChanged();
-        } else {
-          socksMsgBuilder_.setMessage(builderForValue.build());
-        }
-
-        return this;
-      }
-      /**
-       * <code>.SocksMsg socksMsg = 8;</code>
-       */
-      public Builder mergeSocksMsg(SocksMsg value) {
-        if (socksMsgBuilder_ == null) {
-          if (socksMsg_ != null) {
-            socksMsg_ =
-              SocksMsg.newBuilder(socksMsg_).mergeFrom(value).buildPartial();
-          } else {
-            socksMsg_ = value;
-          }
-          onChanged();
-        } else {
-          socksMsgBuilder_.mergeFrom(value);
-        }
-
-        return this;
-      }
-      /**
-       * <code>.SocksMsg socksMsg = 8;</code>
-       */
-      public Builder clearSocksMsg() {
-        if (socksMsgBuilder_ == null) {
-          socksMsg_ = null;
-          onChanged();
-        } else {
-          socksMsg_ = null;
-          socksMsgBuilder_ = null;
-        }
-
-        return this;
-      }
-      /**
-       * <code>.SocksMsg socksMsg = 8;</code>
-       */
-      public SocksMsg.Builder getSocksMsgBuilder() {
-        
+      public Builder setProtocolValue(int value) {
+        protocol_ = value;
         onChanged();
-        return getSocksMsgFieldBuilder().getBuilder();
+        return this;
       }
       /**
-       * <code>.SocksMsg socksMsg = 8;</code>
+       * <code>.Protocol protocol = 8;</code>
        */
-      public SocksMsgOrBuilder getSocksMsgOrBuilder() {
-        if (socksMsgBuilder_ != null) {
-          return socksMsgBuilder_.getMessageOrBuilder();
-        } else {
-          return socksMsg_ == null ?
-              SocksMsg.getDefaultInstance() : socksMsg_;
-        }
+      public Protocol getProtocol() {
+        @SuppressWarnings("deprecation")
+        Protocol result = Protocol.valueOf(protocol_);
+        return result == null ? Protocol.UNRECOGNIZED : result;
       }
       /**
-       * <code>.SocksMsg socksMsg = 8;</code>
+       * <code>.Protocol protocol = 8;</code>
        */
-      private com.google.protobuf.SingleFieldBuilderV3<
-          SocksMsg, SocksMsg.Builder, SocksMsgOrBuilder>
-          getSocksMsgFieldBuilder() {
-        if (socksMsgBuilder_ == null) {
-          socksMsgBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              SocksMsg, SocksMsg.Builder, SocksMsgOrBuilder>(
-                  getSocksMsg(),
-                  getParentForChildren(),
-                  isClean());
-          socksMsg_ = null;
+      public Builder setProtocol(Protocol value) {
+        if (value == null) {
+          throw new NullPointerException();
         }
-        return socksMsgBuilder_;
+        
+        protocol_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.Protocol protocol = 8;</code>
+       */
+      public Builder clearProtocol() {
+        
+        protocol_ = 0;
+        onChanged();
+        return this;
       }
       @Override
       public final Builder setUnknownFields(
@@ -4523,685 +4530,6 @@ public final class MessageProbuf {
 
   }
 
-  public interface SocksMsgOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:SocksMsg)
-      com.google.protobuf.MessageOrBuilder {
-
-    /**
-     * <code>int32 type = 1;</code>
-     */
-    int getType();
-
-    /**
-     * <code>string dstAddr = 2;</code>
-     */
-    String getDstAddr();
-    /**
-     * <code>string dstAddr = 2;</code>
-     */
-    com.google.protobuf.ByteString
-        getDstAddrBytes();
-
-    /**
-     * <code>int32 dstPort = 3;</code>
-     */
-    int getDstPort();
-  }
-  /**
-   * Protobuf type {@code SocksMsg}
-   */
-  public  static final class SocksMsg extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:SocksMsg)
-      SocksMsgOrBuilder {
-  private static final long serialVersionUID = 0L;
-    // Use SocksMsg.newBuilder() to construct.
-    private SocksMsg(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
-      super(builder);
-    }
-    private SocksMsg() {
-      dstAddr_ = "";
-    }
-
-    @Override
-    @SuppressWarnings({"unused"})
-    protected Object newInstance(
-        UnusedPrivateParameter unused) {
-      return new SocksMsg();
-    }
-
-    @Override
-    public final com.google.protobuf.UnknownFieldSet
-    getUnknownFields() {
-      return this.unknownFields;
-    }
-    private SocksMsg(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 8: {
-
-              type_ = input.readInt32();
-              break;
-            }
-            case 18: {
-              String s = input.readStringRequireUtf8();
-
-              dstAddr_ = s;
-              break;
-            }
-            case 24: {
-
-              dstPort_ = input.readInt32();
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return MessageProbuf.internal_static_SocksMsg_descriptor;
-    }
-
-    @Override
-    protected FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return MessageProbuf.internal_static_SocksMsg_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              SocksMsg.class, Builder.class);
-    }
-
-    public static final int TYPE_FIELD_NUMBER = 1;
-    private int type_;
-    /**
-     * <code>int32 type = 1;</code>
-     */
-    public int getType() {
-      return type_;
-    }
-
-    public static final int DSTADDR_FIELD_NUMBER = 2;
-    private volatile Object dstAddr_;
-    /**
-     * <code>string dstAddr = 2;</code>
-     */
-    public String getDstAddr() {
-      Object ref = dstAddr_;
-      if (ref instanceof String) {
-        return (String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        dstAddr_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string dstAddr = 2;</code>
-     */
-    public com.google.protobuf.ByteString
-        getDstAddrBytes() {
-      Object ref = dstAddr_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
-        dstAddr_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    public static final int DSTPORT_FIELD_NUMBER = 3;
-    private int dstPort_;
-    /**
-     * <code>int32 dstPort = 3;</code>
-     */
-    public int getDstPort() {
-      return dstPort_;
-    }
-
-    private byte memoizedIsInitialized = -1;
-    @Override
-    public final boolean isInitialized() {
-      byte isInitialized = memoizedIsInitialized;
-      if (isInitialized == 1) return true;
-      if (isInitialized == 0) return false;
-
-      memoizedIsInitialized = 1;
-      return true;
-    }
-
-    @Override
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      if (type_ != 0) {
-        output.writeInt32(1, type_);
-      }
-      if (!getDstAddrBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, dstAddr_);
-      }
-      if (dstPort_ != 0) {
-        output.writeInt32(3, dstPort_);
-      }
-      unknownFields.writeTo(output);
-    }
-
-    @Override
-    public int getSerializedSize() {
-      int size = memoizedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (type_ != 0) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(1, type_);
-      }
-      if (!getDstAddrBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, dstAddr_);
-      }
-      if (dstPort_ != 0) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, dstPort_);
-      }
-      size += unknownFields.getSerializedSize();
-      memoizedSize = size;
-      return size;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-      if (obj == this) {
-       return true;
-      }
-      if (!(obj instanceof SocksMsg)) {
-        return super.equals(obj);
-      }
-      SocksMsg other = (SocksMsg) obj;
-
-      if (getType()
-          != other.getType()) return false;
-      if (!getDstAddr()
-          .equals(other.getDstAddr())) return false;
-      if (getDstPort()
-          != other.getDstPort()) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      if (memoizedHashCode != 0) {
-        return memoizedHashCode;
-      }
-      int hash = 41;
-      hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + TYPE_FIELD_NUMBER;
-      hash = (53 * hash) + getType();
-      hash = (37 * hash) + DSTADDR_FIELD_NUMBER;
-      hash = (53 * hash) + getDstAddr().hashCode();
-      hash = (37 * hash) + DSTPORT_FIELD_NUMBER;
-      hash = (53 * hash) + getDstPort();
-      hash = (29 * hash) + unknownFields.hashCode();
-      memoizedHashCode = hash;
-      return hash;
-    }
-
-    public static SocksMsg parseFrom(
-        java.nio.ByteBuffer data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static SocksMsg parseFrom(
-        java.nio.ByteBuffer data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static SocksMsg parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static SocksMsg parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static SocksMsg parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static SocksMsg parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static SocksMsg parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input);
-    }
-    public static SocksMsg parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-    public static SocksMsg parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseDelimitedWithIOException(PARSER, input);
-    }
-    public static SocksMsg parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-    }
-    public static SocksMsg parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input);
-    }
-    public static SocksMsg parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    @Override
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder() {
-      return DEFAULT_INSTANCE.toBuilder();
-    }
-    public static Builder newBuilder(SocksMsg prototype) {
-      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
-    }
-    @Override
-    public Builder toBuilder() {
-      return this == DEFAULT_INSTANCE
-          ? new Builder() : new Builder().mergeFrom(this);
-    }
-
-    @Override
-    protected Builder newBuilderForType(
-        BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
-    }
-    /**
-     * Protobuf type {@code SocksMsg}
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:SocksMsg)
-        SocksMsgOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return MessageProbuf.internal_static_SocksMsg_descriptor;
-      }
-
-      @Override
-      protected FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return MessageProbuf.internal_static_SocksMsg_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                SocksMsg.class, Builder.class);
-      }
-
-      // Construct using MessageProbuf.SocksMsg.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
-
-      private Builder(
-          BuilderParent parent) {
-        super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
-      }
-      @Override
-      public Builder clear() {
-        super.clear();
-        type_ = 0;
-
-        dstAddr_ = "";
-
-        dstPort_ = 0;
-
-        return this;
-      }
-
-      @Override
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return MessageProbuf.internal_static_SocksMsg_descriptor;
-      }
-
-      @Override
-      public SocksMsg getDefaultInstanceForType() {
-        return SocksMsg.getDefaultInstance();
-      }
-
-      @Override
-      public SocksMsg build() {
-        SocksMsg result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(result);
-        }
-        return result;
-      }
-
-      @Override
-      public SocksMsg buildPartial() {
-        SocksMsg result = new SocksMsg(this);
-        result.type_ = type_;
-        result.dstAddr_ = dstAddr_;
-        result.dstPort_ = dstPort_;
-        onBuilt();
-        return result;
-      }
-
-      @Override
-      public Builder clone() {
-        return super.clone();
-      }
-      @Override
-      public Builder setField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return super.setField(field, value);
-      }
-      @Override
-      public Builder clearField(
-          com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return super.clearField(field);
-      }
-      @Override
-      public Builder clearOneof(
-          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return super.clearOneof(oneof);
-      }
-      @Override
-      public Builder setRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
-        return super.setRepeatedField(field, index, value);
-      }
-      @Override
-      public Builder addRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return super.addRepeatedField(field, value);
-      }
-      @Override
-      public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof SocksMsg) {
-          return mergeFrom((SocksMsg)other);
-        } else {
-          super.mergeFrom(other);
-          return this;
-        }
-      }
-
-      public Builder mergeFrom(SocksMsg other) {
-        if (other == SocksMsg.getDefaultInstance()) return this;
-        if (other.getType() != 0) {
-          setType(other.getType());
-        }
-        if (!other.getDstAddr().isEmpty()) {
-          dstAddr_ = other.dstAddr_;
-          onChanged();
-        }
-        if (other.getDstPort() != 0) {
-          setDstPort(other.getDstPort());
-        }
-        this.mergeUnknownFields(other.unknownFields);
-        onChanged();
-        return this;
-      }
-
-      @Override
-      public final boolean isInitialized() {
-        return true;
-      }
-
-      @Override
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        SocksMsg parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (SocksMsg) e.getUnfinishedMessage();
-          throw e.unwrapIOException();
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
-        return this;
-      }
-
-      private int type_ ;
-      /**
-       * <code>int32 type = 1;</code>
-       */
-      public int getType() {
-        return type_;
-      }
-      /**
-       * <code>int32 type = 1;</code>
-       */
-      public Builder setType(int value) {
-        
-        type_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>int32 type = 1;</code>
-       */
-      public Builder clearType() {
-        
-        type_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private Object dstAddr_ = "";
-      /**
-       * <code>string dstAddr = 2;</code>
-       */
-      public String getDstAddr() {
-        Object ref = dstAddr_;
-        if (!(ref instanceof String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
-          dstAddr_ = s;
-          return s;
-        } else {
-          return (String) ref;
-        }
-      }
-      /**
-       * <code>string dstAddr = 2;</code>
-       */
-      public com.google.protobuf.ByteString
-          getDstAddrBytes() {
-        Object ref = dstAddr_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
-          dstAddr_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string dstAddr = 2;</code>
-       */
-      public Builder setDstAddr(
-          String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        dstAddr_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string dstAddr = 2;</code>
-       */
-      public Builder clearDstAddr() {
-        
-        dstAddr_ = getDefaultInstance().getDstAddr();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string dstAddr = 2;</code>
-       */
-      public Builder setDstAddrBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        dstAddr_ = value;
-        onChanged();
-        return this;
-      }
-
-      private int dstPort_ ;
-      /**
-       * <code>int32 dstPort = 3;</code>
-       */
-      public int getDstPort() {
-        return dstPort_;
-      }
-      /**
-       * <code>int32 dstPort = 3;</code>
-       */
-      public Builder setDstPort(int value) {
-        
-        dstPort_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>int32 dstPort = 3;</code>
-       */
-      public Builder clearDstPort() {
-        
-        dstPort_ = 0;
-        onChanged();
-        return this;
-      }
-      @Override
-      public final Builder setUnknownFields(
-          final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return super.setUnknownFields(unknownFields);
-      }
-
-      @Override
-      public final Builder mergeUnknownFields(
-          final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return super.mergeUnknownFields(unknownFields);
-      }
-
-
-      // @@protoc_insertion_point(builder_scope:SocksMsg)
-    }
-
-    // @@protoc_insertion_point(class_scope:SocksMsg)
-    private static final SocksMsg DEFAULT_INSTANCE;
-    static {
-      DEFAULT_INSTANCE = new SocksMsg();
-    }
-
-    public static SocksMsg getDefaultInstance() {
-      return DEFAULT_INSTANCE;
-    }
-
-    private static final com.google.protobuf.Parser<SocksMsg>
-        PARSER = new com.google.protobuf.AbstractParser<SocksMsg>() {
-      @Override
-      public SocksMsg parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new SocksMsg(input, extensionRegistry);
-      }
-    };
-
-    public static com.google.protobuf.Parser<SocksMsg> parser() {
-      return PARSER;
-    }
-
-    @Override
-    public com.google.protobuf.Parser<SocksMsg> getParserForType() {
-      return PARSER;
-    }
-
-    @Override
-    public SocksMsg getDefaultInstanceForType() {
-      return DEFAULT_INSTANCE;
-    }
-
-  }
-
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_Message_descriptor;
   private static final 
@@ -5232,11 +4560,6 @@ public final class MessageProbuf {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_Response_HeaderEntry_fieldAccessorTable;
-  private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_SocksMsg_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_SocksMsg_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -5250,8 +4573,8 @@ public final class MessageProbuf {
       "\001(\005\022\032\n\004type\030\002 \001(\0162\014.MessageType\022\021\n\treque" +
       "stId\030\003 \001(\t\022\031\n\007request\030\004 \001(\0132\010.Request\022\033\n" +
       "\010response\030\005 \001(\0132\t.Response\022\033\n\010register\030\006" +
-      " \001(\0132\t.Register\022\016\n\006extend\030\007 \001(\t\022\033\n\010socks" +
-      "Msg\030\010 \001(\0132\t.SocksMsg\"\'\n\010Register\022\r\n\005toke" +
+      " \001(\0132\t.Register\022\016\n\006extend\030\007 \001(\t\022\033\n\010proto" +
+      "col\030\010 \001(\0162\t.Protocol\"\'\n\010Register\022\r\n\005toke" +
       "n\030\001 \001(\t\022\014\n\004path\030\002 \001(\t\"\236\001\n\007Request\022\023\n\013htt" +
       "pVersion\030\001 \001(\t\022\016\n\006method\030\002 \001(\t\022\013\n\003url\030\003 " +
       "\001(\t\022\014\n\004body\030\004 \001(\014\022$\n\006header\030\005 \003(\0132\024.Requ" +
@@ -5259,11 +4582,11 @@ public final class MessageProbuf {
       "\001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"|\n\010Response\022\014\n\004co" +
       "de\030\001 \001(\005\022\014\n\004body\030\002 \001(\014\022%\n\006header\030\003 \003(\0132\025" +
       ".Response.HeaderEntry\032-\n\013HeaderEntry\022\013\n\003" +
-      "key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\":\n\010SocksMsg" +
-      "\022\014\n\004type\030\001 \001(\005\022\017\n\007dstAddr\030\002 \001(\t\022\017\n\007dstPo" +
-      "rt\030\003 \001(\005*T\n\013MessageType\022\010\n\004INIT\020\000\022\n\n\006HEA" +
-      "LTH\020\001\022\t\n\005CLOSE\020\002\022\t\n\005VALID\020\003\022\013\n\007REQUEST\020\004" +
-      "\022\014\n\010RESPONSE\020\005B\017B\rMessageProbufb\006proto3"
+      "key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001*T\n\013MessageT" +
+      "ype\022\010\n\004INIT\020\000\022\n\n\006HEALTH\020\001\022\t\n\005CLOSE\020\002\022\t\n\005" +
+      "VALID\020\003\022\013\n\007REQUEST\020\004\022\014\n\010RESPONSE\020\005*(\n\010Pr" +
+      "otocol\022\010\n\004HTTP\020\000\022\007\n\003TCP\020\001\022\t\n\005SOCKS\020\003B\017B\r" +
+      "MessageProbufb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -5274,7 +4597,7 @@ public final class MessageProbuf {
     internal_static_Message_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Message_descriptor,
-        new String[] { "Length", "Type", "RequestId", "Request", "Response", "Register", "Extend", "SocksMsg", });
+        new String[] { "Length", "Type", "RequestId", "Request", "Response", "Register", "Extend", "Protocol", });
     internal_static_Register_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_Register_fieldAccessorTable = new
@@ -5305,12 +4628,6 @@ public final class MessageProbuf {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Response_HeaderEntry_descriptor,
         new String[] { "Key", "Value", });
-    internal_static_SocksMsg_descriptor =
-      getDescriptor().getMessageTypes().get(4);
-    internal_static_SocksMsg_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_SocksMsg_descriptor,
-        new String[] { "Type", "DstAddr", "DstPort", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

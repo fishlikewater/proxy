@@ -2,14 +2,10 @@ package com.github.fishlikewater.proxy.handler.proxy_server;
 
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.kit.ChannelGroupKit;
+import com.github.fishlikewater.proxy.kit.HandleKit;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
@@ -40,75 +36,25 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
     protected void channelRead0(ChannelHandlerContext ctx, MessageProbuf.Message msg) throws Exception {
         Attribute<String> attr = ctx.channel().attr(CLIENT_PATH);
         MessageProbuf.MessageType type = msg.getType();
+        final MessageProbuf.Protocol protocol = msg.getProtocol();
         /* 连接验证*/
         if (type == MessageProbuf.MessageType.VALID) {
-            MessageProbuf.Register register = msg.getRegister();
-            boolean validate = connectionValidate.validate(register.getToken(), proxyConfig.getToken());
-            if (!validate) {
-                log.info("valid fail");
-                ChannelGroupKit.sendVailFail(ctx.channel(), "token验证失败");
-                return;
-            }
-            log.info("valid successful");
-            /* 路由*/
-            String path = register.getPath();
-            if (StringUtils.isEmpty(path)) {
-                /* 没有注册路由的无效连接*/
-                ChannelGroupKit.sendVailFail(ctx.channel(), "请配置路由");
-            } else {
-                Channel channel = ChannelGroupKit.find(path);
-                if(channel != null){
-                    if(channel.isActive() && channel.isWritable()){
-                        log.warn("this path {} is existed", path);
-                        ChannelGroupKit.sendVailFail(ctx.channel(), "路由已被其他链接使用");
-                        return;
-                    }else {
-                        ChannelGroupKit.remove(path);
-                        channel.close();
-                    }
-                }
-                if(StringUtils.isEmpty(attr.get())){
-                    log.info("set path {} successful", path);
-                    attr.setIfAbsent(path);
-                }
-                ChannelGroupKit.add(path, ctx.channel());
-                ChannelGroupKit.sendVailSuccess(ctx.channel());
-                log.info("register path {} successful", path);
-            }
+            HandleKit.handleRegister(ctx, msg, attr, connectionValidate, proxyConfig);
         } else {
             if (StringUtils.isEmpty(attr.get())) {
                 /* 连接后没有经过验证的请求 直接关闭*/
                 ChannelGroupKit.sendVailFail(ctx.channel(), "非法请求");
                 return;
             }
-            switch (type) {
-                case RESPONSE:
-                    String requestid = msg.getRequestId();
-                    Channel channel = CacheUtil.get(requestid);
-                    if(channel != null && channel.isActive()){
-                        //ChannelPipeline pipeline = channel.pipeline();
-                        FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST);
-                        MessageProbuf.Response response = msg.getResponse();
-                        response.getHeaderMap().forEach((key, value) -> resp.headers().set(key, value));
-                        resp.content().writeBytes(response.getBody().toByteArray());
-                        resp.setStatus(HttpResponseStatus.valueOf(response.getCode()));
-                        channel.writeAndFlush(resp).addListener(t->{
-                            //resp.release();
-                        });
-                        CacheUtil.remove(requestid);
-                    }
-                    break;
-                case HEALTH:
-                    break;
-                case CLOSE:
-                    ctx.close();
-                default:
-                    log.info("接收到不支持的消息类型");
-                    //ctx.channel().writeAndFlush(MessageProbuf.Message.newBuilder().setType())
+            if (protocol == MessageProbuf.Protocol.HTTP){
+                HandleKit.handleHttp(ctx, msg, type);
             }
+            if (protocol == MessageProbuf.Protocol.TCP){
+                //HandleKit.handleHttp(ctx, msg, type);
+            }
+
         }
     }
-
 
     /**
      * 服务端监听到客户端活动

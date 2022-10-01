@@ -19,9 +19,9 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ConnectionListener implements ChannelFutureListener {
 
-    private NettyProxyClient client;
+    private TcpProxyClient client;
 
-    public ConnectionListener(NettyProxyClient client){
+    public ConnectionListener(TcpProxyClient client){
         this.client = client;
     }
 
@@ -30,7 +30,7 @@ public class ConnectionListener implements ChannelFutureListener {
         if (!channelFuture.isSuccess()) {
             log.info("connect fail, will reconnect");
             ConnectionUtils.setStateText("connect fail, will reconnect");
-            //NettyProxyClient.build().retryOne();
+            //TcpProxyClient.build().retryOne();
             final EventLoop loop = channelFuture.channel().eventLoop();
             loop.schedule(new Runnable() {
                 @Override

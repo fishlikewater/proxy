@@ -11,7 +11,7 @@ message Message {
     Response response = 5;
     Register register = 6;
     string extend = 7;
-    SocksMsg socksMsg = 8;
+    Protocol protocol = 8;
 }
 
 message Register{
@@ -42,8 +42,8 @@ enum MessageType {
     RESPONSE = 5;
 }
 
-message SocksMsg{
-    int32 type = 1;
-    string dstAddr = 2;
-    int32 dstPort = 3;
+enum Protocol {
+    HTTP = 0;
+    TCP = 1;
+    SOCKS = 3;
 }

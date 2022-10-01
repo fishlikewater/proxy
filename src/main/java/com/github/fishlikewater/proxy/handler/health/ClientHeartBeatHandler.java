@@ -1,7 +1,7 @@
 package com.github.fishlikewater.proxy.handler.health;
 
 
-import com.github.fishlikewater.proxy.boot.NettyProxyClient;
+import com.github.fishlikewater.proxy.boot.TcpProxyClient;
 import com.github.fishlikewater.proxy.kit.IdUtil;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -16,9 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
-    private NettyProxyClient client;
+    private TcpProxyClient client;
 
-    public ClientHeartBeatHandler(NettyProxyClient client){
+    public ClientHeartBeatHandler(TcpProxyClient client){
         this.client = client;
     }
 
