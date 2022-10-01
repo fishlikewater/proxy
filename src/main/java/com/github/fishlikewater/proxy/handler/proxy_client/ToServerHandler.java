@@ -14,8 +14,7 @@ import java.util.Map;
 
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
- * @date 2019年07月13日 13:57
- * @since
+ * @since 2019年07月13日 13:57
  **/
 @Slf4j
 public class ToServerHandler extends SimpleChannelInboundHandler {
