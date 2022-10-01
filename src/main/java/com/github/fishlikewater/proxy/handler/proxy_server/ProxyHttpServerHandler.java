@@ -25,6 +25,12 @@ import java.util.Map;
 @Slf4j
 public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObject> {
 
+    public static void main(String[] args) {
+        String url = "";
+        final String[] split = url.split("/");
+        System.out.println(split.length);
+    }
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
         if (msg instanceof FullHttpRequest) {
@@ -33,42 +39,42 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
             HttpHeaders headers = req.headers();
             String uri = req.uri();//headers.get("Host");
             /* 获取连接目标路由*/
-            if (StrUtil.isBlank(uri)){
+            if (StrUtil.isBlank(uri)) {
                 return;
             }
             final String[] split = uri.split("/");
             String triger = split[1];
             Channel channel = null;
-            if (StrUtil.isBlank(triger)){
+            if (StrUtil.isBlank(triger)) {
                 channel = ChannelGroupKit.find("default");
-            }else {
+            } else {
                 channel = ChannelGroupKit.find(triger);
-                if (channel == null){
+                if (channel == null) {
                     channel = ChannelGroupKit.find("default");
                 }
             }
-            uri = uri.replace("/"+triger, "");
-            if(channel == null){
+            uri = uri.replace("/" + triger, "");
+            if (channel == null) {
                 byte[] bytes = "没有穿透路由".getBytes(Charset.defaultCharset());
                 FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST);
                 resp.content().writeBytes(bytes);
                 resp.headers().set("Content-Type", "text/html;charset=UTF-8");
                 resp.headers().setInt("Content-Length", resp.content().readableBytes());
                 ctx.writeAndFlush(resp);
-            }else {
+            } else {
                 MessageProbuf.Request.Builder builder = MessageProbuf.Request.newBuilder();
                 builder.setHttpVersion(req.protocolVersion().text());
                 builder.setUrl(uri);
                 builder.setMethod(req.method().name());
                 Map<String, String> header = new HashMap<>();
-                headers.entries().forEach(t->{
+                headers.entries().forEach(t -> {
                     header.put(t.getKey(), t.getValue());
                 });
                 builder.putAllHeader(header);
                 ByteBuf content = req.content();
-                if(content.hasArray()){
+                if (content.hasArray()) {
                     builder.setBody(ByteString.copyFrom(content.array()));
-                }else {
+                } else {
                     byte[] bytes = new byte[content.readableBytes()];
                     content.readBytes(bytes);
                     builder.setBody(ByteString.copyFrom(bytes));
@@ -76,19 +82,20 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
                 String requestId = IdUtil.next();
                 channel.writeAndFlush(MessageProbuf.Message.newBuilder()
                         .setType(MessageProbuf.MessageType.REQUEST)
+                        .setProtocol(MessageProbuf.Protocol.HTTP)
                         .setRequest(builder.build())
-                        .setRequestId(requestId)).addListener((f)->{
-                            if(f.isSuccess()){
-                                CacheUtil.put(requestId, ctx.channel(), 10);
-                            }else {
-                                log.info("转送失败");
-                            }
+                        .setRequestId(requestId)).addListener((f) -> {
+                    if (f.isSuccess()) {
+                        CacheUtil.put(requestId, ctx.channel(), 10);
+                    } else {
+                        log.info("转送失败");
+                    }
                 });
                 builder = null;
             }
 
 
-        }else {
+        } else {
             log.info("not found http or https request, will close this channel");
             ctx.close();
         }
@@ -102,11 +109,5 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
         } else {
             super.exceptionCaught(ctx, cause);
         }
-    }
-
-    public static void main(String[] args) {
-        String url = "";
-        final String[] split = url.split("/");
-        System.out.println(split.length);
     }
 }

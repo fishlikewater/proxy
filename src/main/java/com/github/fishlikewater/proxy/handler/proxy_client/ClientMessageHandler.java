@@ -70,14 +70,22 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MessageProbuf.Message msg) throws Exception {
         MessageProbuf.MessageType type = msg.getType();
+        final MessageProbuf.Protocol protocol = msg.getProtocol();
+        if (protocol == MessageProbuf.Protocol.HTTP){
+            handleHttp(ctx, msg, type);
+        }
+        if (protocol == MessageProbuf.Protocol.TCP){
+
+        }
+    }
+
+    private void handleHttp(ChannelHandlerContext ctx, MessageProbuf.Message msg, MessageProbuf.MessageType type) {
         switch (type) {
             case REQUEST:
                 String requestid = msg.getRequestId();
                 MessageProbuf.Request request = msg.getRequest();
                 FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.valueOf(request.getHttpVersion()), HttpMethod.valueOf(request.getMethod()), request.getUrl());
-                request.getHeaderMap().entrySet().forEach(t->{
-                    req.headers().set(t.getKey(), t.getValue());
-                });
+                request.getHeaderMap().forEach((key, value) -> req.headers().set(key, value));
                 req.headers().set("Host", client.getProxyConfig().getLocalAddress() + ":" + client.getProxyConfig().getLocalPort());
                 req.content().writeBytes(request.getBody().toByteArray());
                 Promise<Channel> promise = createPromise(client.getProxyConfig().getLocalAddress(), client.getProxyConfig().getLocalPort());
