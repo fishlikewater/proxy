@@ -106,8 +106,8 @@ public class TcpProxyClient implements DisposableBean {
             ChannelFuture future = clientstrap.connect().addListener(connectionListener).sync();
             this.channel = future.channel();
             ConnectionUtils.setConnState(true);
-            afterConnectionSuccessful(channel);
             if (proxyType == ProxyType.proxy_client){
+                afterConnectionSuccessful(channel);
                 ChannelKit.setChannel(this.channel);
             }
             if (proxyType == ProxyType.tcp_client){
@@ -132,13 +132,18 @@ public class TcpProxyClient implements DisposableBean {
         /* 发送首先发送验证信息*/
         MessageProbuf.Register.Builder builder = MessageProbuf.Register.newBuilder();
         builder.setPath(proxyConfig.getProxyPath()).setToken(proxyConfig.getToken());
-        MessageProbuf.Message validMessage = MessageProbuf.Message
+        final MessageProbuf.Message.Builder messageBuild = MessageProbuf.Message
                 .newBuilder()
                 .setRequestId(IdUtil.next())
                 .setRegister(builder.build())
-                .setType(MessageProbuf.MessageType.VALID)
-                .build();
-        channel.writeAndFlush(validMessage).addListener(f -> log.info("发送验证信息成功"));
+                .setType(MessageProbuf.MessageType.VALID);
+        if (proxyConfig.getClientType() == 0){
+            messageBuild.setExtend("client");
+        }
+        if (proxyConfig.getClientType() == 1){
+            messageBuild.setExtend("call");
+        }
+        channel.writeAndFlush(messageBuild.build()).addListener(f -> log.info("发送验证信息成功"));
     }
 
 
