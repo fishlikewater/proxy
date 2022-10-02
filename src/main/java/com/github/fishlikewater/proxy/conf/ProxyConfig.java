@@ -77,6 +77,9 @@ public class ProxyConfig {
     /** 读限制*/
     private long readLimit = 256*1024;
 
+    /** 客户端类型 0-> 访问对象 客户端  1->发起访问 客户端*/
+    private int clientType = 0;
+
     public boolean getIsOpenCheckMemoryLeak() {
         return isOpenCheckMemoryLeak;
     }

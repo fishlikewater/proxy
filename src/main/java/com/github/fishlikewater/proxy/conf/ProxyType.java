@@ -9,5 +9,5 @@ package com.github.fishlikewater.proxy.conf;
  * @since 2019年03月05日 16:15
  **/
 public enum ProxyType{
-    http, tcp, socks, dns, proxy_server, proxy_server_http, proxy_client;
+    http, tcp_client, tcp_server, socks, dns, proxy_server, proxy_server_http, proxy_client;
 }

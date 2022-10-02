@@ -73,10 +73,20 @@ public class TcpProxyServer implements DisposableBean {
         try {
             Channel ch;
             if (proxyConfig.getAddress() == null) {
-                ch = bootstrap.bind(proxyConfig.getPort()).sync().channel();
+                if (proxyType == ProxyType.tcp_server){
+                    ch = bootstrap.bind(proxyConfig.getLocalPort()).sync().channel();
+                }else {
+                    ch = bootstrap.bind(proxyConfig.getPort()).sync().channel();
+                }
             } else {
-                ch = bootstrap.bind(proxyConfig.getAddress(), proxyConfig.getPort()).sync().channel();
-                log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyConfig.getPort(), proxyConfig.getAddress(), proxyType);
+                if (proxyType == ProxyType.tcp_server){
+                    ch = bootstrap.bind(proxyConfig.getLocalAddress(), proxyConfig.getLocalPort()).sync().channel();
+                    log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyConfig.getLocalPort(), proxyConfig.getLocalAddress(), proxyType);
+
+                }else {
+                    ch = bootstrap.bind(proxyConfig.getAddress(), proxyConfig.getPort()).sync().channel();
+                    log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyConfig.getPort(), proxyConfig.getAddress(), proxyType);
+                }
             }
 
             ch.closeFuture().addListener(t -> log.info("⬢  {}服务开始关闭", proxyType));

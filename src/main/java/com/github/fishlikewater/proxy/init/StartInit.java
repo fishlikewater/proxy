@@ -28,10 +28,10 @@ public class StartInit implements CommandLineRunner {
     public void run(String... args) throws Exception {
         final ProxyType[] type = proxyConfig.getType();
         for (ProxyType proxyType : type) {
-            if (proxyType == ProxyType.proxy_server || proxyType == ProxyType.socks){
+            if (proxyType == ProxyType.proxy_server || proxyType == ProxyType.socks || proxyType == ProxyType.tcp_server){
                 new TcpProxyServer(proxyConfig, proxyType).start();
             }
-            if (proxyType == ProxyType.proxy_client){
+            if (proxyType == ProxyType.proxy_client || proxyType == ProxyType.tcp_client){
                 new TcpProxyClient(proxyConfig, proxyType).run();
             }
             if (proxyType == ProxyType.http || proxyType == ProxyType.proxy_server_http){

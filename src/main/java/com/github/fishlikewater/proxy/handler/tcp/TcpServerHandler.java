@@ -1,18 +1,10 @@
 package com.github.fishlikewater.proxy.handler.tcp;
 
-import com.github.fishlikewater.proxy.boot.TcpProxyClient;
 import com.github.fishlikewater.proxy.handler.proxy_client.ChannelKit;
-import com.github.fishlikewater.proxy.handler.proxy_server.CacheUtil;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import com.google.protobuf.ByteString;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.util.CharsetUtil;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @Description:
@@ -21,11 +13,11 @@ import java.util.Map;
  * @version: V1.0.0
  * @since:
  **/
-public class TcpHandler extends SimpleChannelInboundHandler<byte[]> {
+public class TcpServerHandler extends SimpleChannelInboundHandler<byte[]> {
 
     private final String path;
 
-    public TcpHandler(String path){
+    public TcpServerHandler(String path){
         this.path = path;
     }
 
