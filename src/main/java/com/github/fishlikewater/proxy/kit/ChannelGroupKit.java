@@ -22,9 +22,10 @@ public class ChannelGroupKit {
 
     @Getter
     private static final ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
-
     @Getter
     private static final ConcurrentHashMap<String, Channel> clientChannelMap = new ConcurrentHashMap<>();
+    @Getter
+    private static final ConcurrentHashMap<String, Channel> callClientChannelMap = new ConcurrentHashMap<>();
 
     public static void add(String path, Channel channel){
         clientChannelMap.put(path, channel);
@@ -35,6 +36,19 @@ public class ChannelGroupKit {
     public static Channel find(String path){
         return clientChannelMap.get(path);
     }
+
+
+    public static void addCall(String path, Channel channel){
+        callClientChannelMap.put(path, channel);
+    }
+    public static void removeCall(String path){
+        callClientChannelMap.remove(path);
+    }
+    public static Channel findCall(String path){
+        return callClientChannelMap.get(path);
+    }
+
+
     public static Channel find(ChannelId id){
         return group.find(id);
     }
@@ -46,6 +60,7 @@ public class ChannelGroupKit {
     public static boolean removeChannel(Channel channel){
         return group.remove(channel);
     }
+
 
     public static void remove(Channel channel){
         final String string = channel.localAddress().toString();

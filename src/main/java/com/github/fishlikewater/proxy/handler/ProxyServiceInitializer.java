@@ -12,6 +12,7 @@ import com.github.fishlikewater.proxy.handler.proxy_server.ProxyProtobufServerHa
 import com.github.fishlikewater.proxy.handler.socks.Socks5CommandRequestHandler;
 import com.github.fishlikewater.proxy.handler.socks.Socks5InitialAuthHandler;
 import com.github.fishlikewater.proxy.handler.socks.Socks5PasswordAuthRequestHandler;
+import com.github.fishlikewater.proxy.handler.tcp.TcpServerHandler;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -117,6 +118,12 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
             p.addFirst(new ProtobufDecoder(MessageProbuf.Message.getDefaultInstance()));
             p.addFirst(new ProtobufVarint32FrameDecoder());
             p.addLast("proxyProtobufServerHandler", new ProxyProtobufServerHandler(new DefaultConnectionValidate(), proxyConfig));
+        }
+        /* tcp服务端 */
+        else if (proxyType == ProxyType.tcp_server){
+            p.addLast(new ByteArrayCodec());
+            p.addLast(new ChunkedWriteHandler());
+            p.addLast(new TcpServerHandler(proxyConfig.getProxyPath()));
         }
         /* sockes5代理服务器*/
         else if (proxyType == ProxyType.socks){

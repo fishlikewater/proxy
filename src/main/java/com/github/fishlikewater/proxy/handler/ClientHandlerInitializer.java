@@ -7,7 +7,7 @@ import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.conf.ProxyType;
 import com.github.fishlikewater.proxy.handler.health.ClientHeartBeatHandler;
 import com.github.fishlikewater.proxy.handler.proxy_client.ClientMessageHandler;
-import com.github.fishlikewater.proxy.handler.tcp.TcpHandler;
+import com.github.fishlikewater.proxy.handler.tcp.TcpClientHandler;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -61,10 +61,10 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
                     .addLast(new ClientHeartBeatHandler(client))
                     .addLast(new ClientMessageHandler(client));
         } /* tcp代理*/
-        else if (proxyType == ProxyType.tcp){
+        else if (proxyType == ProxyType.tcp_client){
             pipeline.addLast(new ByteArrayCodec());
             pipeline.addLast(new ChunkedWriteHandler());
-            pipeline.addLast(new TcpHandler(proxyConfig.getProxyPath()));
+            pipeline.addLast(new TcpClientHandler(proxyConfig.getProxyPath()));
         }
 
     }

@@ -4,7 +4,6 @@ import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.kit.ChannelGroupKit;
 import com.github.fishlikewater.proxy.kit.HandleKit;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.Attribute;
@@ -13,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
@@ -52,19 +50,7 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
                 HandleKit.handleHttp(ctx, msg, type);
             }
             if (protocol == MessageProbuf.Protocol.TCP){
-                final String path = msg.getRequestId();
-                Channel channel = ChannelGroupKit.find(path);
-                if (Objects.isNull(channel)){
-                    MessageProbuf.Message respFailVailMsg = MessageProbuf.Message.newBuilder()
-                            .setType(MessageProbuf.MessageType.RESPONSE).setExtend("没有指定path的客户端注册").build();
-                    ctx.writeAndFlush(respFailVailMsg);
-                    return;
-                }
-                MessageProbuf.Message req = MessageProbuf.Message.newBuilder()
-                        .setType(MessageProbuf.MessageType.REQUEST)
-                        .setProtocol(MessageProbuf.Protocol.TCP)
-                        .build();
-                channel.writeAndFlush(req);
+                HandleKit.handleTcp(ctx, msg, type);
             }
 
         }
@@ -110,7 +96,9 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
         if (!StringUtils.isEmpty(path)) {
             log.info("close chanel and clean path {}", path);
             ChannelGroupKit.remove(path);
+            ChannelGroupKit.removeCall(path);
         }
+        ChannelGroupKit.removeChannel(ctx.channel());
         super.handlerRemoved(ctx);
     }
 

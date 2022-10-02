@@ -93,15 +93,26 @@ public class TcpProxyClient implements DisposableBean {
      * 开始连接
      */
     public void start() {
-        clientstrap.remoteAddress(new InetSocketAddress(proxyConfig.getAddress(), proxyConfig.getPort()));
+        if (proxyType == ProxyType.proxy_client){
+            clientstrap.remoteAddress(new InetSocketAddress(proxyConfig.getAddress(), proxyConfig.getPort()));
+            log.info("start {} this port:{} and adress:{}", proxyType, proxyConfig.getPort(), proxyConfig.getAddress());
+            ConnectionUtils.setStateText(StrUtil.format("start {} this port:{} and adress:{}", proxyType, proxyConfig.getPort(), proxyConfig.getAddress()));
+        }else {
+            clientstrap.remoteAddress(new InetSocketAddress(proxyConfig.getLocalAddress(), proxyConfig.getLocalPort()));
+            log.info("start {} this port:{} and adress:{}", proxyType, proxyConfig.getLocalPort(), proxyConfig.getLocalAddress());
+            ConnectionUtils.setStateText(StrUtil.format("start {} this port:{} and adress:{}", proxyType, proxyConfig.getLocalPort(), proxyConfig.getLocalAddress()));
+        }
         try {
             ChannelFuture future = clientstrap.connect().addListener(connectionListener).sync();
             this.channel = future.channel();
-            log.info("start {} this port:{} and adress:{}", proxyConfig.getType(), proxyConfig.getPort(), proxyConfig.getAddress());
-            ConnectionUtils.setStateText(StrUtil.format("start {} this port:{} and adress:{}", proxyType, proxyConfig.getPort(), proxyConfig.getAddress()));
             ConnectionUtils.setConnState(true);
             afterConnectionSuccessful(channel);
-            ChannelKit.setChannel(this.channel);
+            if (proxyType == ProxyType.proxy_client){
+                ChannelKit.setChannel(this.channel);
+            }
+            if (proxyType == ProxyType.tcp_client){
+                ChannelKit.setLocalChannel(this.channel);
+            }
             //future.channel().closeFuture().sync();
         } catch (Exception e) {
             log.error("start {} server fail", proxyType);
