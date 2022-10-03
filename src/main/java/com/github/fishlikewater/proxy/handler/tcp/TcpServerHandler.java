@@ -33,4 +33,10 @@ public class TcpServerHandler extends SimpleChannelInboundHandler<byte[]> {
                 .build();
         ChannelKit.sendMessage(message, t->{});
     }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+
+        super.channelActive(ctx);
+    }
 }

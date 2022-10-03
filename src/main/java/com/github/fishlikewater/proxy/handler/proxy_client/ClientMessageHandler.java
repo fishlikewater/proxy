@@ -75,7 +75,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
             handleHttp(ctx, msg, type);
         }
         if (protocol == MessageProbuf.Protocol.TCP){
-            final byte[] bytes = msg.getResponse().getBody().toByteArray();
+            final byte[] bytes = msg.getRequest().getBody().toByteArray();
             ChannelKit.getLocalChannel().writeAndFlush(bytes);
         }
     }

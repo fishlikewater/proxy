@@ -3,6 +3,7 @@ package com.github.fishlikewater.proxy.boot;
 import com.github.fishlikewater.proxy.conf.ProxyConfig;
 import com.github.fishlikewater.proxy.conf.ProxyType;
 import com.github.fishlikewater.proxy.handler.ProxyServiceInitializer;
+import com.github.fishlikewater.proxy.handler.proxy_client.ChannelKit;
 import com.github.fishlikewater.proxy.kit.EpollKit;
 import com.github.fishlikewater.proxy.kit.NamedThreadFactory;
 import io.netty.bootstrap.Bootstrap;
@@ -69,22 +70,26 @@ public class TcpProxyServer implements DisposableBean {
             workerGroup = new NioEventLoopGroup(0, new NamedThreadFactory("nio-worker@"));
             bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class);
         }
-        bootstrap.childHandler(new ProxyServiceInitializer(proxyConfig, ProxyType.proxy_server));
+        bootstrap.childHandler(new ProxyServiceInitializer(proxyConfig, proxyType));
         try {
             Channel ch;
             if (proxyConfig.getAddress() == null) {
                 if (proxyType == ProxyType.tcp_server){
                     ch = bootstrap.bind(proxyConfig.getLocalPort()).sync().channel();
+                    ChannelKit.setLocalChannel(ch);
                 }else {
                     ch = bootstrap.bind(proxyConfig.getPort()).sync().channel();
+                    ChannelKit.setChannel(ch);
                 }
             } else {
                 if (proxyType == ProxyType.tcp_server){
                     ch = bootstrap.bind(proxyConfig.getLocalAddress(), proxyConfig.getLocalPort()).sync().channel();
+                    ChannelKit.setLocalChannel(ch);
                     log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyConfig.getLocalPort(), proxyConfig.getLocalAddress(), proxyType);
 
                 }else {
                     ch = bootstrap.bind(proxyConfig.getAddress(), proxyConfig.getPort()).sync().channel();
+                    ChannelKit.setChannel(ch);
                     log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyConfig.getPort(), proxyConfig.getAddress(), proxyType);
                 }
             }

@@ -85,12 +85,12 @@ public class HandleKit {
                     }
                 }
                 if(StringUtils.isEmpty(attr.get())){
-                    log.info("set path {} successful", path);
+                    log.info("set client path {} successful", path);
                     attr.setIfAbsent(path);
                 }
                 ChannelGroupKit.add(path, ctx.channel());
                 ChannelGroupKit.sendVailSuccess(ctx.channel());
-                log.info("register path {} successful", path);
+                log.info("register client path {} successful", path);
             }
             if (extend.equals("call")){
                 Channel channel = ChannelGroupKit.findCall(path);
@@ -100,17 +100,17 @@ public class HandleKit {
                         ChannelGroupKit.sendVailFail(ctx.channel(), "路由已被其他链接使用");
                         return;
                     }else {
-                        ChannelGroupKit.remove(path);
+                        ChannelGroupKit.removeCall(path);
                         channel.close();
                     }
                 }
                 if(StringUtils.isEmpty(attr.get())){
-                    log.info("set path {} successful", path);
+                    log.info("set call client path {} successful", path);
                     attr.setIfAbsent(path);
                 }
-                ChannelGroupKit.add(path, ctx.channel());
+                ChannelGroupKit.addCall(path, ctx.channel());
                 ChannelGroupKit.sendVailSuccess(ctx.channel());
-                log.info("register path {} successful", path);
+                log.info("register call client path {} successful", path);
 
             }
         }
@@ -129,11 +129,7 @@ public class HandleKit {
                     ctx.writeAndFlush(respFailVailMsg);
                     return;
                 }
-                MessageProbuf.Message req = MessageProbuf.Message.newBuilder()
-                        .setType(MessageProbuf.MessageType.REQUEST)
-                        .setProtocol(MessageProbuf.Protocol.TCP)
-                        .build();
-                channel.writeAndFlush(req);
+                channel.writeAndFlush(msg);
                 break;
             case RESPONSE:
                 Channel callChannel = ChannelGroupKit.findCall(path);
