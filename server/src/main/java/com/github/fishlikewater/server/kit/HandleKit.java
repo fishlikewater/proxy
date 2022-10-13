@@ -1,5 +1,6 @@
 package com.github.fishlikewater.server.kit;
 
+import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.kit.MessageProbuf;
 import com.github.fishlikewater.server.config.ProxyConfig;
 import com.github.fishlikewater.server.handle.ConnectionValidate;
@@ -11,7 +12,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.Attribute;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
 
 import java.util.Objects;
 
@@ -68,7 +68,7 @@ public class HandleKit {
         log.info("valid successful");
         /* 路由*/
         String path = register.getPath();
-        if (StringUtils.isEmpty(path)) {
+        if (StrUtil.isEmpty(path)) {
             /* 没有注册路由的无效连接*/
             ChannelGroupKit.sendVailFail(ctx.channel(), "请配置路由");
         } else {
@@ -84,7 +84,7 @@ public class HandleKit {
                         channel.close();
                     }
                 }
-                if(StringUtils.isEmpty(attr.get())){
+                if(StrUtil.isEmpty(attr.get())){
                     log.info("set client path {} successful", path);
                     attr.setIfAbsent(path);
                 }
@@ -104,7 +104,7 @@ public class HandleKit {
                         channel.close();
                     }
                 }
-                if(StringUtils.isEmpty(attr.get())){
+                if(StrUtil.isEmpty(attr.get())){
                     log.info("set call client path {} successful", path);
                     attr.setIfAbsent(path);
                 }
