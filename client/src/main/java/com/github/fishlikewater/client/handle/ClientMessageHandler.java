@@ -1,11 +1,11 @@
-package com.github.fishlikewater.proxy.handler.proxy_client;
+package com.github.fishlikewater.client.handle;
 
 
-import cn.hutool.core.util.StrUtil;
-import com.github.fishlikewater.proxy.boot.TcpProxyClient;
-import com.github.fishlikewater.proxy.gui.ConnectionUtils;
-import com.github.fishlikewater.proxy.kit.EpollKit;
-import com.github.fishlikewater.proxy.kit.MessageProbuf;
+import com.github.fishlikewater.client.boot.ClientHandlerInitializer;
+import com.github.fishlikewater.client.boot.ProxyClient;
+import com.github.fishlikewater.config.ProxyType;
+import com.github.fishlikewater.kit.EpollKit;
+import com.github.fishlikewater.kit.MessageProbuf;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -15,13 +15,11 @@ import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.Promise;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author zhangx
@@ -31,14 +29,14 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ClientMessageHandler extends SimpleChannelInboundHandler<MessageProbuf.Message> {
 
-    private TcpProxyClient client;
+    private final ProxyClient client;
 
     private Bootstrap clientstrap;
 
     //保留全局ctx
     private ChannelHandlerContext ctx;
 
-    public ClientMessageHandler(TcpProxyClient client){
+    public ClientMessageHandler(ProxyClient client){
         this.client = client;
     }
 
@@ -50,41 +48,33 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
         this.ctx = ctx;
     }
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        ConnectionUtils.setConnState(false);
-        if(ConnectionUtils.isRetry()){
-            log.warn("this service has dropped, will retry");
-            ConnectionUtils.setStateText("this service has dropped, will retry");
-            final EventLoop loop = ctx.channel().eventLoop();
-            loop.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    client.start();
-                }
-            }, 30, TimeUnit.SECONDS);
-        }
+    public void channelInactive(ChannelHandlerContext ctx) {
         ctx.close();
         //super.channelInactive(ctx);
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, MessageProbuf.Message msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, MessageProbuf.Message msg) {
         MessageProbuf.MessageType type = msg.getType();
         final MessageProbuf.Protocol protocol = msg.getProtocol();
         if (protocol == MessageProbuf.Protocol.HTTP){
             handleHttp(ctx, msg, type);
         }
         if (protocol == MessageProbuf.Protocol.TCP){
-            final byte[] bytes = msg.getRequest().getBody().toByteArray();
-            if (type == MessageProbuf.MessageType.REQUEST){
-                ChannelKit.getLocalChannel().writeAndFlush(bytes);
-                log.info("发送tcp数据到目标地址");
-            }
-            if (type == MessageProbuf.MessageType.RESPONSE){
-                final Channel channel = ChannelKit.getChannel().attr(ChannelKit.CHANNELS).get();
-                if (channel != null){
+            if (type == MessageProbuf.MessageType.INIT){
+                Bootstrap bootstrap = bootstrapConfig();
+                bootstrap.handler(new ClientHandlerInitializer(ProxyType.tcp_client));
+                bootstrap.connect(client.getProxyConfig().getLocalAddress(), client.getProxyConfig().getLocalPort()).addListener((ChannelFutureListener) future -> {
+                    if (future.isSuccess()) {
+                        ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).set(future.channel());
+                    }
+                });
+            }else {
+                final byte[] bytes = msg.getRequest().getBody().toByteArray();
+                if (type == MessageProbuf.MessageType.REQUEST){
+                    final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get();
                     channel.writeAndFlush(bytes);
-                    log.info("发送tcp数据请求端");
+                    log.info("发送tcp数据到目标地址");
                 }
             }
         }
@@ -100,14 +90,11 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 req.headers().set("Host", client.getProxyConfig().getLocalAddress() + ":" + client.getProxyConfig().getLocalPort());
                 req.content().writeBytes(request.getBody().toByteArray());
                 Promise<Channel> promise = createPromise(client.getProxyConfig().getLocalAddress(), client.getProxyConfig().getLocalPort());
-                promise.addListener(new FutureListener<Channel>() {
-                    @Override
-                    public void operationComplete(Future<Channel> channelFuture) throws Exception {
-                        if(channelFuture.isSuccess()){
-                            ChannelPipeline p = channelFuture.get().pipeline();
-                            p.addLast(new ToServerHandler(requestid));
-                            channelFuture.get().writeAndFlush(req);
-                        }
+                promise.addListener((FutureListener<Channel>) channelFuture -> {
+                    if(channelFuture.isSuccess()){
+                        ChannelPipeline p = channelFuture.get().pipeline();
+                        p.addLast(new ToServerHandler(requestid));
+                        channelFuture.get().writeAndFlush(req);
                     }
                 });
                 break;
@@ -115,12 +102,8 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 String extend = msg.getExtend();
                 if(!"SUCCESS".equals(extend)){
                     log.warn(extend);
-                    ConnectionUtils.setStateText(extend);
-                    ConnectionUtils.setConnState(false);
                 }else {
                     log.info("验证成功");
-                    ConnectionUtils.setStateText("验证成功");
-                    ConnectionUtils.setConnState(true);
                 }
                 break;
             case HEALTH:
@@ -146,19 +129,16 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
     //根据host和端口，创建一个连接web的连接
     private Promise<Channel> createPromise(String host, int port) {
         Bootstrap bootstrap = bootstrapConfig();
+        bootstrap.handler(new TempClientServiceInitializer());
         final Promise<Channel> promise = ctx.executor().newPromise();
         bootstrap.remoteAddress(host, port);
         bootstrap.connect()
-                .addListener(new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                        if (channelFuture.isSuccess()) {
-                            promise.setSuccess(channelFuture.channel());
-                        } else {
-                            log.warn("connection fail address {}, port {}", host, port);
-                            ConnectionUtils.setStateText(StrUtil.format("connection fail address {}, port {}", host, port));
-                            channelFuture.cancel(true);
-                        }
+                .addListener((ChannelFutureListener) channelFuture -> {
+                    if (channelFuture.isSuccess()) {
+                        promise.setSuccess(channelFuture.channel());
+                    } else {
+                        log.warn("connection fail address {}, port {}", host, port);
+                        channelFuture.cancel(true);
                     }
                 });
         return promise;
@@ -168,6 +148,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
         if (clientstrap == null) clientstrap = new Bootstrap();
         else return this.clientstrap;
         clientstrap.option(ChannelOption.SO_REUSEADDR, true);
+        clientstrap.option(ChannelOption.SO_KEEPALIVE, true);
         clientstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5*60*1000);
         clientstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
@@ -176,7 +157,6 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
             clientstrap.channel(NioSocketChannel.class);
         }
         clientstrap.group(ctx.channel().eventLoop());
-        clientstrap.handler(new TempClientServiceInitializer());
         return clientstrap;
     }
 }

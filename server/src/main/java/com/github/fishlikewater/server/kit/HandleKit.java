@@ -1,8 +1,8 @@
-package com.github.fishlikewater.proxy.kit;
+package com.github.fishlikewater.server.kit;
 
-import com.github.fishlikewater.proxy.conf.ProxyConfig;
-import com.github.fishlikewater.proxy.handler.proxy_server.CacheUtil;
-import com.github.fishlikewater.proxy.handler.proxy_server.ConnectionValidate;
+import com.github.fishlikewater.kit.MessageProbuf;
+import com.github.fishlikewater.server.config.ProxyConfig;
+import com.github.fishlikewater.server.handle.ConnectionValidate;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -118,31 +118,29 @@ public class HandleKit {
 
     public static void handleTcp(ChannelHandlerContext ctx, MessageProbuf.Message msg, MessageProbuf.MessageType type) {
         final String path = msg.getRequestId();
-        switch (type) {
-            case REQUEST:
-                Channel channel = ChannelGroupKit.find(path);
-                if (Objects.isNull(channel)) {
-                    log.warn("没有指定path的客户端注册");
-                    return;
-                }
-                channel.writeAndFlush(msg);
-                log.info("发送数据到tcp客户端");
-                break;
-            case RESPONSE:
-                log.info("处理tcp 响应数据");
-                Channel callChannel = ChannelGroupKit.findCall(path);
-                if (Objects.isNull(callChannel)) {
-                    log.info("调用方已离线");
-                    MessageProbuf.Message respFailVailMsg = MessageProbuf.Message.newBuilder()
-                            .setType(MessageProbuf.MessageType.RESPONSE)
-                            .setProtocol(MessageProbuf.Protocol.TCP)
-                            .setExtend("调用方已离线").build();
-                    ctx.writeAndFlush(respFailVailMsg);
-                }else {
-                    log.info("发送数据到tcp服务端");
-                    callChannel.writeAndFlush(msg);
-                }
-
+        if (type == MessageProbuf.MessageType.REQUEST || type == MessageProbuf.MessageType.INIT){
+            Channel channel = ChannelGroupKit.find(path);
+            if (Objects.isNull(channel)) {
+                log.warn("没有指定path的客户端注册");
+                return;
+            }
+            channel.writeAndFlush(msg);
+            log.info("发送数据到tcp客户端");
+        }
+        if (type == MessageProbuf.MessageType.RESPONSE){
+            log.info("处理tcp 响应数据");
+            Channel callChannel = ChannelGroupKit.findCall(path);
+            if (Objects.isNull(callChannel)) {
+                log.info("调用方已离线");
+                MessageProbuf.Message respFailVailMsg = MessageProbuf.Message.newBuilder()
+                        .setType(MessageProbuf.MessageType.RESPONSE)
+                        .setProtocol(MessageProbuf.Protocol.TCP)
+                        .setExtend("调用方已离线").build();
+                ctx.writeAndFlush(respFailVailMsg);
+            }else {
+                log.info("发送数据到tcp服务端");
+                callChannel.writeAndFlush(msg);
+            }
         }
     }
 

@@ -1,10 +1,14 @@
 package com.github.fishlikewater.proxy.handler.tcp;
 
 import com.github.fishlikewater.proxy.handler.proxy_client.ChannelKit;
+import com.github.fishlikewater.proxy.kit.ChannelGroupKit;
 import com.github.fishlikewater.proxy.kit.MessageProbuf;
 import com.google.protobuf.ByteString;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.Optional;
 
 /**
  * @Description:
@@ -13,6 +17,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
  * @version: V1.0.0
  * @since:
  **/
+@Slf4j
 public class TcpServerHandler extends SimpleChannelInboundHandler<byte[]> {
 
     private final String path;
@@ -23,6 +28,7 @@ public class TcpServerHandler extends SimpleChannelInboundHandler<byte[]> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, byte[] msg) throws Exception {
+        log.info("接受tcp服务端请求");
         MessageProbuf.Request.Builder builder = MessageProbuf.Request.newBuilder();
         builder.setBody(ByteString.copyFrom(msg));
         final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
@@ -35,8 +41,22 @@ public class TcpServerHandler extends SimpleChannelInboundHandler<byte[]> {
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+        ChannelKit.getChannel().attr(ChannelKit.CHANNELS).set(ctx.channel());
+    }
 
-        super.channelActive(ctx);
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        //Optional.ofNullable(ChannelKit.getChannel().attr(ChannelKit.CHANNELS).get()).ifPresent(channelMap -> channelMap.remove(ctx.channel().id().asLongText()));
+        ChannelKit.getChannel().attr(ChannelKit.CHANNELS).set(null);
+        super.channelInactive(ctx);
+    }
+
+    /**
+     * 连接异常
+     */
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        ctx.close();
     }
 }

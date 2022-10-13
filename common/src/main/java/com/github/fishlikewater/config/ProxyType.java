@@ -1,4 +1,4 @@
-package com.github.fishlikewater.proxy.conf;
+package com.github.fishlikewater.config;
 
 /**
  * @author zhangx

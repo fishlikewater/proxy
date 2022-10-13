@@ -1,7 +1,6 @@
-package com.github.fishlikewater.proxy.handler.tcp;
+package com.github.fishlikewater.client.handle;
 
-import com.github.fishlikewater.proxy.handler.proxy_client.ChannelKit;
-import com.github.fishlikewater.proxy.kit.MessageProbuf;
+import com.github.fishlikewater.kit.MessageProbuf;
 import com.google.protobuf.ByteString;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
