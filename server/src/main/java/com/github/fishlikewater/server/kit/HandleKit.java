@@ -55,8 +55,7 @@ public class HandleKit {
     }
 
     public static void handleRegister(ChannelHandlerContext ctx, MessageProbuf.Message msg,
-                                      Attribute<String> attr, ConnectionValidate connectionValidate,
-                                      ProxyConfig proxyConfig) {
+                                      ConnectionValidate connectionValidate, ProxyConfig proxyConfig) {
         MessageProbuf.Register register = msg.getRegister();
         final String extend = msg.getExtend();
         boolean validate = connectionValidate.validate(register.getToken(), proxyConfig.getToken());
@@ -73,6 +72,7 @@ public class HandleKit {
             ChannelGroupKit.sendVailFail(ctx.channel(), "请配置路由");
         } else {
             if (extend.equals("client")){
+                Attribute<String> attr = ctx.channel().attr(ChannelGroupKit.CLIENT_PATH);
                 Channel channel = ChannelGroupKit.find(path);
                 if(channel != null){
                     if(channel.isActive() && channel.isWritable()){
@@ -93,24 +93,12 @@ public class HandleKit {
                 log.info("register client path {} successful", path);
             }
             if (extend.equals("call")){
-                Channel channel = ChannelGroupKit.findCall(path);
-                if(channel != null){
-                    if(channel.isActive() && channel.isWritable()){
-                        log.warn("this path {} is existed", path);
-                        ChannelGroupKit.sendVailFail(ctx.channel(), "路由已被其他链接使用");
-                        return;
-                    }else {
-                        ChannelGroupKit.removeCall(path);
-                        channel.close();
-                    }
-                }
-                if(StrUtil.isEmpty(attr.get())){
-                    log.info("set call client path {} successful", path);
-                    attr.setIfAbsent(path);
-                }
-                ChannelGroupKit.addCall(path, ctx.channel());
+                Attribute<String> attr = ctx.channel().attr(ChannelGroupKit.CALL_CLIENT);
+                final String requestId = msg.getRequestId();
+                ChannelGroupKit.addCall(requestId, ctx.channel());
+                attr.set(requestId);
                 ChannelGroupKit.sendVailSuccess(ctx.channel());
-                log.info("register call client path {} successful", path);
+                log.info("register call client requestId {} successful", requestId);
 
             }
         }
@@ -118,7 +106,7 @@ public class HandleKit {
 
     public static void handleTcp(ChannelHandlerContext ctx, MessageProbuf.Message msg, MessageProbuf.MessageType type) {
         final String path = msg.getRequestId();
-        if (type == MessageProbuf.MessageType.REQUEST || type == MessageProbuf.MessageType.INIT){
+        if (type == MessageProbuf.MessageType.REQUEST || type == MessageProbuf.MessageType.INIT ||  type == MessageProbuf.MessageType.CLOSE){
             Channel channel = ChannelGroupKit.find(path);
             if (Objects.isNull(channel)) {
                 log.warn("没有指定path的客户端注册");

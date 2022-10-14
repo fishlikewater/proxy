@@ -35,13 +35,20 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
 
     private final ProxyType proxyType;
 
-    private ProxyClient client;
+    private ProxyConfig.Mapping mapping;
 
-    public ClientHandlerInitializer(ProxyConfig proxyConfig, ProxyClient client, ProxyType proxyType) {
+
+    public ClientHandlerInitializer(ProxyConfig proxyConfig, ProxyType proxyType) {
         this.proxyConfig = proxyConfig;
-        this.client = client;
         this.proxyType = proxyType;
     }
+
+    public ClientHandlerInitializer(ProxyConfig proxyConfig, ProxyType proxyType, ProxyConfig.Mapping mapping) {
+        this.proxyConfig = proxyConfig;
+        this.proxyType = proxyType;
+        this.mapping = mapping;
+    }
+
     public ClientHandlerInitializer(ProxyType proxyType){
         this.proxyType = proxyType;
     }
@@ -60,13 +67,13 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
                     .addLast(new ProtobufVarint32LengthFieldPrepender())
                     .addLast(new ProtobufEncoder())
                     .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
-                    .addLast(new ClientHeartBeatHandler(client))
-                    .addLast(new ClientMessageHandler(client));
+                    .addLast(new ClientHeartBeatHandler())
+                    .addLast(new ClientMessageHandler());
         } /* tcp代理*/
         else if (proxyType == ProxyType.tcp_server){
             pipeline.addLast(new ByteArrayCodec());
             pipeline.addLast(new ChunkedWriteHandler());
-            pipeline.addLast(new TcpServerHandler(proxyConfig.getProxyPath()));
+            pipeline.addLast(new TcpServerHandler(proxyConfig.getProxyPath(), mapping));
         }
 
     }

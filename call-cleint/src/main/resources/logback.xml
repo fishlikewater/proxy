@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="60 seconds">
-    <property name="log.home" value="logs\\client"/>
+    <property name="log.home" value="logs\\call-client"/>
 
     <!-- 彩色日志 -->
     <!-- 彩色日志依赖的渲染类 -->

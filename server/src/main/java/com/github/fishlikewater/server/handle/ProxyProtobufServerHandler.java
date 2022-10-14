@@ -21,8 +21,6 @@ import java.io.IOException;
 @Slf4j
 public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<MessageProbuf.Message> {
 
-    private static final AttributeKey<String> CLIENT_PATH = AttributeKey.valueOf("client_path");
-
     private final ConnectionValidate connectionValidate;
 
     private final ProxyConfig proxyConfig;
@@ -34,18 +32,12 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MessageProbuf.Message msg) throws Exception {
-        Attribute<String> attr = ctx.channel().attr(CLIENT_PATH);
         MessageProbuf.MessageType type = msg.getType();
         final MessageProbuf.Protocol protocol = msg.getProtocol();
         /* 连接验证*/
         if (type == MessageProbuf.MessageType.VALID) {
-            HandleKit.handleRegister(ctx, msg, attr, connectionValidate, proxyConfig);
+            HandleKit.handleRegister(ctx, msg, connectionValidate, proxyConfig);
         } else {
-            if (StringUtils.isEmpty(attr.get())) {
-                /* 连接后没有经过验证的请求 直接关闭*/
-                ChannelGroupKit.sendVailFail(ctx.channel(), "非法请求");
-                return;
-            }
             if (protocol == MessageProbuf.Protocol.HTTP){
                 HandleKit.handleHttp(ctx, msg, type);
             }
@@ -90,13 +82,19 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
      */
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        Attribute<String> attr = ctx.channel().attr(CLIENT_PATH);
+        Attribute<String> attr = ctx.channel().attr(ChannelGroupKit.CLIENT_PATH);
         String path = attr.get();
-        log.info(path + "断开连接");
         if (!StringUtils.isEmpty(path)) {
+            log.info(path + "断开连接");
             log.info("close chanel and clean path {}", path);
             ChannelGroupKit.remove(path);
-            ChannelGroupKit.removeCall(path);
+        }
+        final Attribute<String> attribute = ctx.channel().attr(ChannelGroupKit.CALL_CLIENT);
+        final String requestId = attribute.get();
+        if (!StringUtils.isEmpty(requestId)) {
+            log.info(requestId + "断开连接");
+            log.info("close chanel and clean requestId {}", requestId);
+            ChannelGroupKit.removeCall(requestId);
         }
         ChannelGroupKit.removeChannel(ctx.channel());
         super.handlerRemoved(ctx);

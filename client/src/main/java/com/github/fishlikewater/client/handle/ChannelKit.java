@@ -8,6 +8,8 @@ import io.netty.util.concurrent.GenericFutureListener;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Map;
+
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
  * @since 2019年08月24日 22:04
@@ -15,7 +17,8 @@ import lombok.Setter;
 public class ChannelKit {
 
     public final static AttributeKey<Channel> CHANNELS = AttributeKey.newInstance("CHANNELS");
-    public final static AttributeKey<Channel> CHANNELS_LOCAL = AttributeKey.newInstance("CHANNELS_LOCAL");
+    public final static AttributeKey<String> LOCAL_INFO = AttributeKey.newInstance("LOCAL_INFO");
+    public final static AttributeKey<Map<String, Channel>> CHANNELS_LOCAL = AttributeKey.newInstance("CHANNELS_LOCAL");
 
     @Setter
     @Getter

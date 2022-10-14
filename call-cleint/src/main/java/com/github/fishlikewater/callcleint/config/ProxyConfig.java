@@ -17,16 +17,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProxyConfig {
 
-    /** 监控地址*/
+    /** 服务器地址*/
     private String address;
 
-    /** 监控端口*/
+    /** 服务器端口*/
     private int port;
 
-    /** 验证密码*/
-    private String password;
-
-    /** token(http 及内网穿透代理)*/
+    /** token */
     private String token;
 
     /** 心跳检测间隔*/
@@ -35,46 +32,31 @@ public class ProxyConfig {
     /** 是否使用netty日志处理器*/
     private boolean logging;
 
-    /** 内网穿透代理路劲*/
+    /** 内网穿透代理路劲 匹配目标机*/
     private String proxyPath;
 
-    /** 客户端本地 映射端口*/
-    private int localPort = 8081;
+    /** 映射*/
+    private Mapping[] mappings = new Mapping[]{};
 
-    /** 客户端 http 映射地址*/
-    private String localAddress = "127.0.0.1";
-
-    /** 打开内存泄漏检测*/
-    private boolean isOpenCheckMemoryLeak = false;
-
-    /** 是否开启全局流量限制*/
-    private boolean isOpenGlobalTrafficLimit = false;
-
-    /** 写限制*/
-    private long writeLimit = 256*1024;
-
-    /** 读限制*/
-    private long readLimit = 256*1024;
 
     /** 客户端类型 0-> 访问对象 客户端  1->发起访问 客户端*/
     private int clientType = 0;
 
-    public boolean getIsOpenCheckMemoryLeak() {
-        return isOpenCheckMemoryLeak;
-    }
 
-    public ProxyConfig setIsOpenCheckMemoryLeak(boolean openCheckMemoryLeak) {
-        isOpenCheckMemoryLeak = openCheckMemoryLeak;
-        return this;
-    }
+    @Data
+    public static class Mapping{
 
-    public boolean getIsOpenGlobalTrafficLimit() {
-        return isOpenGlobalTrafficLimit;
-    }
+        private String localAddress;
 
-    public ProxyConfig setIsOpenGlobalTrafficLimit(boolean openGlobalTrafficLimit) {
-        isOpenGlobalTrafficLimit = openGlobalTrafficLimit;
-        return this;
+        private int localPort;
+
+        private String protocol;
+
+        private String remoteAddress;
+
+        private int remotePort;
+
+
     }
 }
 

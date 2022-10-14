@@ -35,11 +35,9 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
 
     private final ProxyType proxyType;
 
-    private ProxyClient client;
 
-    public ClientHandlerInitializer(ProxyConfig proxyConfig, ProxyClient client, ProxyType proxyType) {
+    public ClientHandlerInitializer(ProxyConfig proxyConfig, ProxyType proxyType) {
         this.proxyConfig = proxyConfig;
-        this.client = client;
         this.proxyType = proxyType;
     }
     public ClientHandlerInitializer(ProxyType proxyType){
@@ -50,7 +48,7 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
     protected void initChannel(Channel ch) {
         ChannelPipeline pipeline = ch.pipeline();
         /* 是否打开日志*/
-        if (proxyConfig.isLogging()) {
+        if (proxyConfig != null && proxyConfig.isLogging()) {
             pipeline.addLast(new LoggingHandler());
         }
         if (proxyType == ProxyType.proxy_client) {
@@ -60,8 +58,8 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
                     .addLast(new ProtobufVarint32LengthFieldPrepender())
                     .addLast(new ProtobufEncoder())
                     .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
-                    .addLast(new ClientHeartBeatHandler(client))
-                    .addLast(new ClientMessageHandler(client));
+                    .addLast(new ClientHeartBeatHandler())
+                    .addLast(new ClientMessageHandler(proxyConfig));
         } /* tcp代理*/
         else if (proxyType == ProxyType.tcp_client){
             pipeline.addLast(new ByteArrayCodec());

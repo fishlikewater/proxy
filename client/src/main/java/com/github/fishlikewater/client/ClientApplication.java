@@ -20,12 +20,7 @@ public class ClientApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        ProxyType[] type = proxyConfig.getType();
-        for (ProxyType proxyType : type) {
-            if (proxyType == ProxyType.proxy_client || proxyType == ProxyType.tcp_client) {
-                new ProxyClient(proxyConfig, proxyType).run();
-            }
-        }
+        new ProxyClient(proxyConfig).run();
 
     }
 }

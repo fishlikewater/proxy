@@ -5,6 +5,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelId;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,9 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 @Slf4j
 public class ChannelGroupKit {
+
+    public static final AttributeKey<String> CLIENT_PATH = AttributeKey.valueOf("client_path");
+    public static final AttributeKey<String> CALL_CLIENT = AttributeKey.valueOf("call_client");
 
     @Getter
     private static final ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);

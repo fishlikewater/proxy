@@ -1,7 +1,6 @@
 package com.github.fishlikewater.callcleint.handle;
 
 
-import com.github.fishlikewater.callcleint.boot.ProxyClient;
 import com.github.fishlikewater.kit.IdUtil;
 import com.github.fishlikewater.kit.MessageProbuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -16,11 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
-    private ProxyClient client;
-
-    public ClientHeartBeatHandler(ProxyClient client){
-        this.client = client;
-    }
 
     public static final MessageProbuf.Message HEARTBEAT_SEQUENCE = MessageProbuf.Message.newBuilder()
             .setLength(10)
@@ -34,7 +28,7 @@ public class ClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
         // 判断evt是否是IdleStateEvent（用于触发用户事件，包含 读空闲/写空闲/读写空闲 ）
         if (evt instanceof IdleStateEvent) {
-            IdleStateEvent event = (IdleStateEvent) evt;        // 强制类型转换
+            //IdleStateEvent event = (IdleStateEvent) evt;        // 强制类型转换
             ctx.channel().writeAndFlush(HEARTBEAT_SEQUENCE)
                     .addListener((future)->{
                         if(!future.isSuccess()){

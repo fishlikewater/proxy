@@ -45,11 +45,8 @@ public class ProxyClient implements DisposableBean {
     @Getter
     private final ProxyConfig proxyConfig;
 
-    private final ProxyType proxyType;
-
-    public ProxyClient(ProxyConfig proxyConfig, ProxyType proxyType) {
+    public ProxyClient(ProxyConfig proxyConfig) {
         this.proxyConfig = proxyConfig;
-        this.proxyType = proxyType;
     }
 
     /**
@@ -77,16 +74,15 @@ public class ProxyClient implements DisposableBean {
             bossGroup = new NioEventLoopGroup(0, new NamedThreadFactory("client-nio-boss@"));
             clientstrap.group(bossGroup).channel(NioSocketChannel.class);
         }
-        clientstrap.handler(new ClientHandlerInitializer(proxyConfig, this, proxyType));
+        clientstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.proxy_client));
     }
 
     /**
      * 开始连接
      */
     public void start() {
-
         clientstrap.remoteAddress(new InetSocketAddress(proxyConfig.getAddress(), proxyConfig.getPort()));
-        log.info("start {} this port:{} and adress:{}", proxyType, proxyConfig.getPort(), proxyConfig.getAddress());
+        log.info("start {} this port:{} and adress:{}", ProxyType.proxy_client, proxyConfig.getPort(), proxyConfig.getAddress());
         try {
             ChannelFuture future = clientstrap.connect().addListener(connectionListener).sync();
             this.channel = future.channel();
@@ -95,7 +91,7 @@ public class ProxyClient implements DisposableBean {
             ChannelKit.setChannel(this.channel);
 
         } catch (Exception e) {
-            log.error("start {} server fail", proxyType);
+            log.error("start {} server fail", ProxyType.proxy_client);
         }
     }
 
@@ -108,20 +104,17 @@ public class ProxyClient implements DisposableBean {
      */
     void afterConnectionSuccessful(Channel channel) {
         /* 发送首先发送验证信息*/
+        final String requestId = IdUtil.next();//调用方标识
         MessageProbuf.Register.Builder builder = MessageProbuf.Register.newBuilder();
         builder.setPath(proxyConfig.getProxyPath()).setToken(proxyConfig.getToken());
         final MessageProbuf.Message.Builder messageBuild = MessageProbuf.Message
                 .newBuilder()
-                .setRequestId(IdUtil.next())
+                .setRequestId(requestId)
                 .setRegister(builder.build())
+                .setExtend("call")
                 .setType(MessageProbuf.MessageType.VALID);
-        if (proxyConfig.getClientType() == 0) {
-            messageBuild.setExtend("client");
-        }
-        if (proxyConfig.getClientType() == 1) {
-            messageBuild.setExtend("call");
-        }
         channel.writeAndFlush(messageBuild.build()).addListener(f -> log.info("发送验证信息成功"));
+        ChannelKit.setRequestId(requestId);
     }
 
 
@@ -129,16 +122,16 @@ public class ProxyClient implements DisposableBean {
      * 关闭服务
      */
     public void stop() {
-        log.info("⬢ {} shutdown ...", proxyType);
+        log.info("⬢ {} shutdown ...", ProxyType.proxy_client);
         try {
             if (this.bossGroup != null) {
                 this.bossGroup.shutdownGracefully().addListener(f -> {
 
                 });
             }
-            log.info("⬢ {} shutdown successful", proxyType);
+            log.info("⬢ {} shutdown successful", ProxyType.proxy_client);
         } catch (Exception e) {
-            log.error("⬢ {} shutdown error", proxyType);
+            log.error("⬢ {} shutdown error", ProxyType.proxy_client);
         }
     }
 

@@ -15,11 +15,14 @@ import lombok.Setter;
 public class ChannelKit {
 
     public final static AttributeKey<Channel> CHANNELS = AttributeKey.newInstance("CHANNELS");
-    public final static AttributeKey<Channel> CHANNELS_LOCAL = AttributeKey.newInstance("CHANNELS_LOCAL");
 
     @Setter
     @Getter
     public static Channel channel = null;
+
+    @Setter
+    @Getter
+    public static String requestId = null;
 
 
     public static void sendMessage(MessageProbuf.Message message, GenericFutureListener<? extends Future<? super Void>> listener){
