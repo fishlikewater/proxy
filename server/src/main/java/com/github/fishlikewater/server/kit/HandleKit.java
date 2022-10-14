@@ -105,9 +105,8 @@ public class HandleKit {
     }
 
     public static void handleTcp(ChannelHandlerContext ctx, MessageProbuf.Message msg, MessageProbuf.MessageType type) {
-        final String path = msg.getRequestId();
         if (type == MessageProbuf.MessageType.REQUEST || type == MessageProbuf.MessageType.INIT ||  type == MessageProbuf.MessageType.CLOSE){
-            Channel channel = ChannelGroupKit.find(path);
+            Channel channel = ChannelGroupKit.find(msg.getExtend());
             if (Objects.isNull(channel)) {
                 log.warn("没有指定path的客户端注册");
                 return;
@@ -117,7 +116,7 @@ public class HandleKit {
         }
         if (type == MessageProbuf.MessageType.RESPONSE){
             log.info("处理tcp 响应数据");
-            Channel callChannel = ChannelGroupKit.findCall(path);
+            Channel callChannel = ChannelGroupKit.findCall(msg.getRequestId());
             if (Objects.isNull(callChannel)) {
                 log.info("调用方已离线");
                 MessageProbuf.Message respFailVailMsg = MessageProbuf.Message.newBuilder()

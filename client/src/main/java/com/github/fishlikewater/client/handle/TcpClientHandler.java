@@ -24,15 +24,15 @@ public class TcpClientHandler extends SimpleChannelInboundHandler<byte[]> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, byte[] msg) throws Exception {
-        final String localInfo = ctx.channel().attr(ChannelKit.LOCAL_INFO).get();
+        final String requestId = ctx.channel().attr(ChannelKit.LOCAL_INFO).get();
         MessageProbuf.Request.Builder builder = MessageProbuf.Request.newBuilder();
         builder.setBody(ByteString.copyFrom(msg));
         final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
                 .setType(MessageProbuf.MessageType.RESPONSE)
                 .setProtocol(MessageProbuf.Protocol.TCP)
                 .setRequest(builder.build())
-                .setRequestId(path)
-                .setExtend(localInfo)
+                .setRequestId(requestId)
+                .setExtend(path)
                 .build();
         ChannelKit.sendMessage(message, t->{
             log.info("发送数据到服务端成功");

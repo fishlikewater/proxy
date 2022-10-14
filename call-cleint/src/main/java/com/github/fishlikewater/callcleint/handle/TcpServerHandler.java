@@ -36,7 +36,8 @@ public class TcpServerHandler extends SimpleChannelInboundHandler<byte[]> {
                 .setType(MessageProbuf.MessageType.REQUEST)
                 .setProtocol(MessageProbuf.Protocol.TCP)
                 .setRequest(builder.build())
-                .setRequestId(path)
+                .setRequestId(ChannelKit.getRequestId())
+                .setExtend(path)
                 .build();
         ChannelKit.sendMessage(message, t->{});
     }
@@ -73,7 +74,8 @@ public class TcpServerHandler extends SimpleChannelInboundHandler<byte[]> {
                 .setType(MessageProbuf.MessageType.CLOSE)
                 .setProtocol(MessageProbuf.Protocol.TCP)
                 .setRequest(builder.build())
-                .setRequestId(path)
+                .setExtend(path)
+                .setRequestId(ChannelKit.getRequestId())
                 .build();
         ChannelKit.sendMessage(message, t->{});
     }

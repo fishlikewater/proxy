@@ -83,18 +83,22 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         Attribute<String> attr = ctx.channel().attr(ChannelGroupKit.CLIENT_PATH);
-        String path = attr.get();
-        if (!StringUtils.isEmpty(path)) {
-            log.info(path + "断开连接");
-            log.info("close chanel and clean path {}", path);
-            ChannelGroupKit.remove(path);
+        if(attr != null){
+            String path = attr.get();
+            if (!StringUtils.isEmpty(path)) {
+                log.info(path + "断开连接");
+                log.info("close chanel and clean path {}", path);
+                ChannelGroupKit.remove(path);
+            }
         }
         final Attribute<String> attribute = ctx.channel().attr(ChannelGroupKit.CALL_CLIENT);
-        final String requestId = attribute.get();
-        if (!StringUtils.isEmpty(requestId)) {
-            log.info(requestId + "断开连接");
-            log.info("close chanel and clean requestId {}", requestId);
-            ChannelGroupKit.removeCall(requestId);
+        if (attribute != null){
+            final String requestId = attribute.get();
+            if (!StringUtils.isEmpty(requestId)) {
+                log.info(requestId + "断开连接");
+                log.info("close chanel and clean requestId {}", requestId);
+                ChannelGroupKit.removeCall(requestId);
+            }
         }
         ChannelGroupKit.removeChannel(ctx.channel());
         super.handlerRemoved(ctx);

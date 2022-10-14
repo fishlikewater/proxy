@@ -84,7 +84,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                         bootstrap.connect().addListener((ChannelFutureListener) future -> {
                             if (future.isSuccess()) {
                                 ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().put(flag, future.channel());
-                                future.channel().attr(ChannelKit.LOCAL_INFO).set(flag);
+                                future.channel().attr(ChannelKit.LOCAL_INFO).set(msg.getRequestId());
                                 future.channel().writeAndFlush(bytes);
                                 log.info("连接成功");
                             } else {
