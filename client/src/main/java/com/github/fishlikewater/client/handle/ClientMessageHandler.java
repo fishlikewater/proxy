@@ -76,7 +76,6 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                     final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(flag);
                     if (channel != null && channel.isActive()) {
                         channel.writeAndFlush(bytes);
-                        log.info("发送tcp数据到目标地址");
                     } else {
                         Bootstrap bootstrap = bootstrapConfig();
                         bootstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.tcp_client));

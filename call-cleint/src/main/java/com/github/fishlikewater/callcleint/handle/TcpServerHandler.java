@@ -27,7 +27,6 @@ public class TcpServerHandler extends SimpleChannelInboundHandler<byte[]> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, byte[] msg) {
-        log.info("接受tcp服务端请求");
         MessageProbuf.Request.Builder builder = MessageProbuf.Request.newBuilder();
         builder.setBody(ByteString.copyFrom(msg));
         builder.putHeader("address", mapping.getRemoteAddress());

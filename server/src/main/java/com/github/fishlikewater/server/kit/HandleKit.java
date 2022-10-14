@@ -112,10 +112,8 @@ public class HandleKit {
                 return;
             }
             channel.writeAndFlush(msg);
-            log.info("发送数据到tcp客户端");
         }
         if (type == MessageProbuf.MessageType.RESPONSE){
-            log.info("处理tcp 响应数据");
             Channel callChannel = ChannelGroupKit.findCall(msg.getRequestId());
             if (Objects.isNull(callChannel)) {
                 log.info("调用方已离线");
@@ -125,7 +123,6 @@ public class HandleKit {
                         .setExtend("调用方已离线").build();
                 ctx.writeAndFlush(respFailVailMsg);
             }else {
-                log.info("发送数据到tcp服务端");
                 callChannel.writeAndFlush(msg);
             }
         }

@@ -35,7 +35,6 @@ public class TcpClientHandler extends SimpleChannelInboundHandler<byte[]> {
                 .setExtend(path)
                 .build();
         ChannelKit.sendMessage(message, t->{
-            log.info("发送数据到服务端成功");
         });
     }
 }
