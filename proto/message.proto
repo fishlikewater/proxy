@@ -12,6 +12,7 @@ message Message {
     Register register = 6;
     string extend = 7;
     Protocol protocol = 8;
+    Socks scoks = 9;
 }
 
 message Register{
@@ -46,4 +47,9 @@ enum Protocol {
     HTTP = 0;
     TCP = 1;
     SOCKS = 3;
+}
+
+message Socks {
+    string address = 1;
+    int32 port = 2;
 }
