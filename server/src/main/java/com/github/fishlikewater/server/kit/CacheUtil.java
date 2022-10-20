@@ -14,7 +14,7 @@ public class CacheUtil {
 
     private  static Cache<String, Channel> cache =  CaffeineCacheBuilder.createCaffeineCacheBuilder()
             .limit(100)
-            .expireAfterWrite(5, TimeUnit.SECONDS)
+            .expireAfterWrite(300, TimeUnit.SECONDS)
             .buildCache();
 
     public static void init(Cache<String, Channel> cache){

@@ -105,9 +105,9 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 MessageProbuf.Request request = msg.getRequest();
                 FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.valueOf(request.getHttpVersion()), HttpMethod.valueOf(request.getMethod()), request.getUrl());
                 request.getHeaderMap().forEach((key, value) -> req.headers().set(key, value));
-                req.headers().set("Host", headerMap.get("address") + ":" + headerMap.get("port"));
+                req.headers().set("Host", (proxyConfig.getHttpAdress() + ":" + proxyConfig.getHttpPort()));
                 req.content().writeBytes(request.getBody().toByteArray());
-                Promise<Channel> promise = createPromise(headerMap.get("address"), Integer.parseInt(headerMap.get("port")));
+                Promise<Channel> promise = createPromise(proxyConfig.getHttpAdress(), proxyConfig.getHttpPort());
                 promise.addListener((FutureListener<Channel>) channelFuture -> {
                     if (channelFuture.isSuccess()) {
                         ChannelPipeline p = channelFuture.get().pipeline();
