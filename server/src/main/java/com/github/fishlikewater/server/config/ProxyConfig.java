@@ -33,15 +33,6 @@ public class ProxyConfig {
     /** 服务端 http开放端口*/
     private int httpPort;
 
-    /** 验证用户名(客户端用户名) */
-    private String username;
-
-    /** 验证目标机器用户名(socks5) */
-    private String clientUsername;
-
-    /** 验证密码*/
-    private String password;
-
     /** token(http 及内网穿透代理)*/
     private String token;
 

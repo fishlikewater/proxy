@@ -70,8 +70,8 @@ public class ProxyServer implements DisposableBean {
         }
         bootstrap.childHandler(new ProxyServiceInitializer(proxyConfig, proxyType));
         try {
-            Channel ch = bootstrap.bind(proxyConfig.getAddress(), proxyType==ProxyType.proxy_server?proxyConfig.getPort():proxyConfig.getHttpPort()).sync().channel();
-            log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyType==ProxyType.proxy_server?proxyConfig.getPort():proxyConfig.getHttpPort(), proxyConfig.getAddress(), proxyType);
+            Channel ch = bootstrap.bind(proxyConfig.getAddress(), proxyType==ProxyType.proxy_server_http?proxyConfig.getHttpPort():proxyConfig.getPort()).sync().channel();
+            log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyType==ProxyType.proxy_server_http?proxyConfig.getHttpPort():proxyConfig.getPort(), proxyConfig.getAddress(), proxyType);
             ch.closeFuture().addListener(t -> log.info("⬢  {}服务开始关闭", proxyType));
         } catch (InterruptedException e) {
             log.error("⬢ start server fail", e);

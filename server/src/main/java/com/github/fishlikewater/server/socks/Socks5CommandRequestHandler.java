@@ -33,7 +33,7 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 
     @Override
     protected void channelRead0(final ChannelHandlerContext ctx, DefaultSocks5CommandRequest msg) throws Exception {
-		log.info("目标服务器  : " + msg.type() + "," + msg.dstAddr() + "," + msg.dstPort());
+		log.debug("目标服务器  : " + msg.type() + "," + msg.dstAddr() + "," + msg.dstPort());
         if (msg.type().equals(Socks5CommandType.CONNECT)) {
             if (bootstrap != null) {
                 future.await();
