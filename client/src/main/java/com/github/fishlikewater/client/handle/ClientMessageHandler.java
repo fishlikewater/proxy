@@ -2,6 +2,7 @@ package com.github.fishlikewater.client.handle;
 
 
 import com.github.fishlikewater.client.boot.ClientHandlerInitializer;
+import com.github.fishlikewater.client.boot.ProxyClient;
 import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.config.ProxyType;
 import com.github.fishlikewater.kit.EpollKit;
@@ -21,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author zhangx
@@ -34,9 +36,11 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
     private final ProxyConfig proxyConfig;
     private Bootstrap clientstrap;
     private ChannelHandlerContext ctx;
+    private final ProxyClient client;
 
-    public ClientMessageHandler(ProxyConfig proxyConfig) {
+    public ClientMessageHandler(ProxyConfig proxyConfig, ProxyClient client) {
         this.proxyConfig = proxyConfig;
+        this.client = client;
     }
 
 
@@ -48,9 +52,11 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) {
-        ctx.close();
-        //super.channelInactive(ctx);
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        //ctx.close();
+        final EventLoop loop = ctx.channel().eventLoop();
+        loop.schedule(client::start, 30, TimeUnit.SECONDS);
+        super.channelInactive(ctx);
     }
 
     @Override
@@ -78,7 +84,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                         channel.writeAndFlush(bytes);
                     } else {
                         Bootstrap bootstrap = bootstrapConfig();
-                        bootstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.tcp_client));
+                        bootstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.tcp_client, null));
                         bootstrap.remoteAddress(headerMap.get("address"), Integer.parseInt(headerMap.get("port")));
                         bootstrap.connect().addListener((ChannelFutureListener) future -> {
                             if (future.isSuccess()) {

@@ -34,11 +34,13 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
     private ProxyConfig proxyConfig;
 
     private final ProxyType proxyType;
+    private ProxyClient client;
 
 
-    public ClientHandlerInitializer(ProxyConfig proxyConfig, ProxyType proxyType) {
+    public ClientHandlerInitializer(ProxyConfig proxyConfig, ProxyType proxyType, ProxyClient client) {
         this.proxyConfig = proxyConfig;
         this.proxyType = proxyType;
+        this.client = client;
     }
     public ClientHandlerInitializer(ProxyType proxyType){
         this.proxyType = proxyType;
@@ -59,7 +61,7 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
                     .addLast(new ProtobufEncoder())
                     .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
                     .addLast(new ClientHeartBeatHandler())
-                    .addLast(new ClientMessageHandler(proxyConfig));
+                    .addLast(new ClientMessageHandler(proxyConfig, client));
         } /* tcp代理*/
         else if (proxyType == ProxyType.tcp_client){
             pipeline.addLast(new ByteArrayCodec());

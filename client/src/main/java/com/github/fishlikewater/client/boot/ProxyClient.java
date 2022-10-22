@@ -76,7 +76,7 @@ public class ProxyClient implements DisposableBean {
             bossGroup = new NioEventLoopGroup(0, new NamedThreadFactory("client-nio-boss@"));
             clientstrap.group(bossGroup).channel(NioSocketChannel.class);
         }
-        clientstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.proxy_client));
+        clientstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.proxy_client, this));
     }
 
     /**
