@@ -39,9 +39,7 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                 future.await();
                 future.channel().writeAndFlush(msg);
             }
-            log.trace("准备连接目标服务器");
             bootstrap = BootStrapFactroy.bootstrapConfig(ctx);
-            log.trace("连接目标服务器");
             future = bootstrap.connect(msg.dstAddr(), msg.dstPort());
             future.addListener(new ChannelFutureListener() {
                 public void operationComplete(final ChannelFuture future) throws Exception {

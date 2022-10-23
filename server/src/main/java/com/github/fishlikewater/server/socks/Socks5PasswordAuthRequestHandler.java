@@ -21,23 +21,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class Socks5PasswordAuthRequestHandler extends SimpleChannelInboundHandler<DefaultSocks5PasswordAuthRequest> {
 
-	private final ProxyConfig proxyConfig;
 
-	private static final AtomicInteger ips = new AtomicInteger(1);
-
-	public Socks5PasswordAuthRequestHandler(ProxyConfig proxyConfig) {
-		this.proxyConfig = proxyConfig;
+	public Socks5PasswordAuthRequestHandler() {
 	}
 	
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, DefaultSocks5PasswordAuthRequest msg) throws Exception {
-		log.debug("用户名密码 : " + msg.username() + "," + msg.password());
+		log.info("用户名密码 : " + msg.username() + "," + msg.password());
 		final Map<String, String> map = JSON.parseObject(new FileInputStream(FileUtil.file("account.json")), Map.class);
 		final String pass = map.get(msg.username());
 		if (StrUtil.isNotBlank(pass) && StrUtil.equals(pass, msg.password())){
 			//log.info("目标机器验证成功");
 			Socks5PasswordAuthResponse passwordAuthResponse = new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.SUCCESS);
 			ctx.writeAndFlush(passwordAuthResponse);
+			ctx.channel().attr(Socks5Contans.ACCOUNT).set(msg.username());
 		} else {
 			log.info("验证失败");
 			Socks5PasswordAuthResponse passwordAuthResponse = new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.FAILURE);

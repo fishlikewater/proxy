@@ -117,7 +117,7 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
             p.addFirst(new Socks5CommandRequestDecoder()); //7
             if (proxyConfig.isAuth()) {
                 /* 添加验证机制*/
-                p.addFirst(new Socks5PasswordAuthRequestHandler(proxyConfig)); //5
+                p.addFirst(new Socks5PasswordAuthRequestHandler()); //5
                 p.addFirst(new Socks5PasswordAuthRequestDecoder()); //4
             }
             p.addFirst(new Socks5InitialAuthHandler(proxyConfig.isAuth())); //3
@@ -125,6 +125,7 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
             p.addFirst(new Socks5InitialRequestDecoder());  //1
             /* Socks connection handler */
             p.addLast(new Socks5CommandRequestHandler());
+            p.addFirst(new StatisticsHandler(true, true));
 
         }
 
