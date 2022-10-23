@@ -1,9 +1,12 @@
 package com.github.fishlikewater.server.handle;
 
+import com.github.fishlikewater.server.socks.Socks5Contans;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * <p>
@@ -27,7 +30,17 @@ public class StatisticsHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (InData){
-            System.out.println("入站数据: " + ((ByteBuf)msg).readableBytes());
+            final String account = ctx.attr(Socks5Contans.ACCOUNT).get();
+            if (account != null){
+                final AtomicLong atomicLong = Socks5Contans.accountFlow.get(account);
+                if (atomicLong != null){
+                    atomicLong.addAndGet(((ByteBuf)msg).readableBytes());
+                    System.out.println("入站总数据: " + atomicLong.get());
+                }else {
+                    final AtomicLong atomicLong1 = new AtomicLong(((ByteBuf) msg).readableBytes());
+                    Socks5Contans.accountFlow.put(account, atomicLong1);
+                }
+            }
         }
         super.channelRead(ctx, msg);
     }

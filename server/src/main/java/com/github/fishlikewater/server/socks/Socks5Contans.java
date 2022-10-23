@@ -2,6 +2,10 @@ package com.github.fishlikewater.server.socks;
 
 import io.netty.util.AttributeKey;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * <p>
  *
@@ -13,4 +17,6 @@ import io.netty.util.AttributeKey;
 public class Socks5Contans {
 
     public static final AttributeKey<String> ACCOUNT = AttributeKey.valueOf("account");
+
+    public static final Map<String, AtomicLong> accountFlow = new ConcurrentHashMap<>();
 }
