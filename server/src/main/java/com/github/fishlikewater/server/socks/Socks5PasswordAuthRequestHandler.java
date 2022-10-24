@@ -28,8 +28,7 @@ public class Socks5PasswordAuthRequestHandler extends SimpleChannelInboundHandle
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, DefaultSocks5PasswordAuthRequest msg) throws Exception {
 		log.debug("用户名密码 : " + msg.username() + "," + msg.password());
-		final Map<String, String> map = JSON.parseObject(new FileInputStream(FileUtil.file("account.json")), Map.class);
-		final String pass = map.get(msg.username());
+		final String pass = Socks5Contans.getAccountMap().get(msg.username());
 		if (StrUtil.isNotBlank(pass) && StrUtil.equals(pass, msg.password())){
 			//log.info("目标机器验证成功");
 			Socks5PasswordAuthResponse passwordAuthResponse = new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.SUCCESS);

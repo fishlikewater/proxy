@@ -30,26 +30,30 @@ public class StatisticsHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (InData){
-            final String account = ctx.attr(Socks5Contans.ACCOUNT).get();
-            if (account != null){
-                final AtomicLong atomicLong = Socks5Contans.accountFlow.get(account);
-                if (atomicLong != null){
-                    atomicLong.addAndGet(((ByteBuf)msg).readableBytes());
-                    System.out.println("入站总数据: " + atomicLong.get());
-                }else {
-                    final AtomicLong atomicLong1 = new AtomicLong(((ByteBuf) msg).readableBytes());
-                    Socks5Contans.accountFlow.put(account, atomicLong1);
-                }
-            }
+            flow(ctx, (ByteBuf) msg);
         }
         super.channelRead(ctx, msg);
     }
 
+
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (outData){
-            System.out.println("出站数据: " + ((ByteBuf)msg).readableBytes());
+            flow(ctx, (ByteBuf) msg);
         }
         super.write(ctx, msg, promise);
+    }
+
+    private void flow(ChannelHandlerContext ctx, ByteBuf msg) {
+        final String account = ctx.attr(Socks5Contans.ACCOUNT).get();
+        if (account != null){
+            final AtomicLong atomicLong = Socks5Contans.accountFlow.get(account);
+            if (atomicLong != null){
+                atomicLong.addAndGet(msg.readableBytes());
+            }else {
+                final AtomicLong atomicLong1 = new AtomicLong(msg.readableBytes());
+                Socks5Contans.accountFlow.put(account, atomicLong1);
+            }
+        }
     }
 }

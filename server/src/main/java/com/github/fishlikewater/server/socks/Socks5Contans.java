@@ -1,6 +1,8 @@
 package com.github.fishlikewater.server.socks;
 
 import io.netty.util.AttributeKey;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,5 +20,10 @@ public class Socks5Contans {
 
     public static final AttributeKey<String> ACCOUNT = AttributeKey.valueOf("account");
 
-    public static final Map<String, AtomicLong> accountFlow = new ConcurrentHashMap<>();
+    @Setter
+    public static Map<String, AtomicLong> accountFlow = new ConcurrentHashMap<>();
+
+    @Setter
+    @Getter
+    public static  Map<String, String> accountMap = new ConcurrentHashMap<>();
 }

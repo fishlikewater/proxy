@@ -23,12 +23,10 @@ import org.springframework.beans.factory.DisposableBean;
 /**
  * @author zhangx
  * @version V1.0
- * @mail fishlikewater@126.com
- * @ClassName TcpProxyServer
- * @date 2019年02月26日 21:45
+ * @since: 2019年02月26日 21:45
  **/
 @Slf4j
-public class ProxyServer implements DisposableBean {
+public class ProxyServer{
     /**
      * 处理连接
      */
@@ -111,10 +109,5 @@ public class ProxyServer implements DisposableBean {
 
         return bootstrap;
 
-    }
-
-    @Override
-    public void destroy() throws Exception {
-        stop();
     }
 }
