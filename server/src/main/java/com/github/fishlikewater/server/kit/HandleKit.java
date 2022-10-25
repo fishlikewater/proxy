@@ -10,7 +10,6 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.util.Attribute;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
@@ -60,7 +59,6 @@ public class HandleKit {
         final String extend = msg.getExtend();
         boolean validate = connectionValidate.validate(register.getToken(), proxyConfig.getToken());
         if (!validate) {
-            log.info("valid fail");
             ChannelGroupKit.sendVailFail(ctx.channel(), "token验证失败");
             return;
         }
@@ -72,34 +70,36 @@ public class HandleKit {
             ChannelGroupKit.sendVailFail(ctx.channel(), "请配置路由");
         } else {
             if (extend.equals("client")){
-                Attribute<String> attr = ctx.channel().attr(ChannelGroupKit.CLIENT_PATH);
                 Channel channel = ChannelGroupKit.find(path);
                 if(channel != null){
                     if(channel.isActive() && channel.isWritable()){
-                        log.warn("this path {} is existed", path);
                         ChannelGroupKit.sendVailFail(ctx.channel(), "路由已被其他链接使用");
                         return;
                     }else {
                         ChannelGroupKit.remove(path);
                         channel.close();
                     }
+                }else {
+                    ctx.channel().attr(ChannelGroupKit.CLIENT_PATH).set(path);
+                    ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).set("client");
+                    ChannelGroupKit.add(path, ctx.channel());
+                    ChannelGroupKit.sendVailSuccess(ctx.channel());
+                    log.info("register client path {} successful", path);
                 }
-                if(StrUtil.isEmpty(attr.get())){
-                    log.info("set client path {} successful", path);
-                    attr.setIfAbsent(path);
-                }
-                ChannelGroupKit.add(path, ctx.channel());
-                ChannelGroupKit.sendVailSuccess(ctx.channel());
-                log.info("register client path {} successful", path);
             }
             if (extend.equals("call")){
-                Attribute<String> attr = ctx.channel().attr(ChannelGroupKit.CALL_CLIENT);
                 final String requestId = msg.getRequestId();
                 ChannelGroupKit.addCall(requestId, ctx.channel());
-                attr.set(requestId);
-                ChannelGroupKit.sendVailSuccess(ctx.channel());
-                log.info("register call client requestId {} successful", requestId);
-
+                Channel channel = ChannelGroupKit.find(path);
+                if (channel != null){
+                    ctx.channel().attr(ChannelGroupKit.CALL_REMOTE_CLIENT).set(channel);
+                    ctx.channel().attr(ChannelGroupKit.CALL_FLAG).set(requestId);
+                    ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).set("call");
+                    ChannelGroupKit.sendVailSuccess(ctx.channel());
+                    log.info("register call client requestId {} successful", requestId);
+                }else {
+                    ChannelGroupKit.sendVailFail(ctx.channel(), "未匹配到目标机");
+                }
             }
         }
     }
@@ -128,4 +128,21 @@ public class HandleKit {
         }
     }
 
+    public static void handleSocks(ChannelHandlerContext ctx, MessageProbuf.Message msg) {
+        //判断是 目标机 还是请求机
+        final String clientType = ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).get();
+        if (clientType.equals("call")){
+            final Channel channel = ctx.channel().attr(ChannelGroupKit.CALL_REMOTE_CLIENT).get();
+            if (channel != null && channel.isActive() && channel.isWritable()){
+                channel.writeAndFlush(msg);
+            }
+        }
+        if (clientType.equals("client")){
+            final String callId = msg.getExtend();
+            final Channel call = ChannelGroupKit.findCall(callId);
+            if (call != null && call.isActive() && call.isWritable()){
+                call.writeAndFlush(msg);
+            }
+        }
+    }
 }

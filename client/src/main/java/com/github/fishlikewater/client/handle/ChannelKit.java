@@ -16,7 +16,6 @@ import java.util.Map;
  **/
 public class ChannelKit {
 
-    public final static AttributeKey<Channel> CHANNELS = AttributeKey.newInstance("CHANNELS");
     public final static AttributeKey<String> LOCAL_INFO = AttributeKey.newInstance("LOCAL_INFO");
     public final static AttributeKey<Map<String, Channel>> CHANNELS_LOCAL = AttributeKey.newInstance("CHANNELS_LOCAL");
 

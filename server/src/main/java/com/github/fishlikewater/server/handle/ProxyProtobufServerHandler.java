@@ -1,5 +1,6 @@
 package com.github.fishlikewater.server.handle;
 
+import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.kit.MessageProbuf;
 import com.github.fishlikewater.server.config.ProxyConfig;
 import com.github.fishlikewater.server.kit.ChannelGroupKit;
@@ -7,9 +8,7 @@ import com.github.fishlikewater.server.kit.HandleKit;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.Attribute;
-import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 
@@ -31,18 +30,28 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, MessageProbuf.Message msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, MessageProbuf.Message msg) {
         MessageProbuf.MessageType type = msg.getType();
         final MessageProbuf.Protocol protocol = msg.getProtocol();
         /* 连接验证*/
         if (type == MessageProbuf.MessageType.VALID) {
             HandleKit.handleRegister(ctx, msg, connectionValidate, proxyConfig);
         } else {
+            /* 检验是否通过验证*/
+            final String path = ctx.channel().attr(ChannelGroupKit.CLIENT_PATH).get();
+            if (StrUtil.isBlank(path)){
+                log.warn("收到非法请求: {}", ctx.channel().remoteAddress().toString());
+                ctx.close();
+                return;
+            }
             if (protocol == MessageProbuf.Protocol.HTTP){
                 HandleKit.handleHttp(ctx, msg, type);
             }
             if (protocol == MessageProbuf.Protocol.TCP){
                 HandleKit.handleTcp(ctx, msg, type);
+            }
+            if (protocol == MessageProbuf.Protocol.SOCKS){
+                HandleKit.handleSocks(ctx, msg);
             }
 
         }
@@ -72,7 +81,6 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
      */
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-        ChannelGroupKit.add(ctx.channel());
         super.handlerAdded(ctx);
     }
 
@@ -85,22 +93,21 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
         Attribute<String> attr = ctx.channel().attr(ChannelGroupKit.CLIENT_PATH);
         if(attr != null){
             String path = attr.get();
-            if (!StringUtils.isEmpty(path)) {
+            if (StrUtil.isNotBlank(path)) {
                 log.info(path + "断开连接");
                 log.info("close chanel and clean path {}", path);
                 ChannelGroupKit.remove(path);
             }
         }
-        final Attribute<String> attribute = ctx.channel().attr(ChannelGroupKit.CALL_CLIENT);
+        final Attribute<String> attribute = ctx.channel().attr(ChannelGroupKit.CALL_FLAG);
         if (attribute != null){
             final String requestId = attribute.get();
-            if (!StringUtils.isEmpty(requestId)) {
+            if (StrUtil.isNotBlank(requestId)) {
                 log.info(requestId + "断开连接");
                 log.info("close chanel and clean requestId {}", requestId);
                 ChannelGroupKit.removeCall(requestId);
             }
         }
-        ChannelGroupKit.removeChannel(ctx.channel());
         super.handlerRemoved(ctx);
     }
 

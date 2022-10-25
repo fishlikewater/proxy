@@ -60,83 +60,22 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, MessageProbuf.Message msg) throws InterruptedException {
+    protected void channelRead0(ChannelHandlerContext ctx, MessageProbuf.Message msg) {
         MessageProbuf.MessageType type = msg.getType();
         final MessageProbuf.Protocol protocol = msg.getProtocol();
         if (protocol == MessageProbuf.Protocol.HTTP) {
-            handleHttp(ctx, msg, type);
+            HandleKit.handleHttp(ctx, msg, proxyConfig);
         }
         if (protocol == MessageProbuf.Protocol.TCP) {
-            final Map<String, String> headerMap = msg.getRequest().getHeaderMap();
-            final String flag = headerMap.get("address") + ":" +  headerMap.get("port");
-            if (type == MessageProbuf.MessageType.CLOSE) {
-                final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(flag);
-                if (channel != null && channel.isActive()) {
-                    channel.close();
-                    ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().remove(flag);
-                }
-            } else {
-                final byte[] bytes = msg.getRequest().getBody().toByteArray();
-                if (type == MessageProbuf.MessageType.REQUEST) {
-                    //先判断是否建立连接
-                    final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(flag);
-                    if (channel != null && channel.isActive()) {
-                        channel.writeAndFlush(bytes);
-                    } else {
-                        Bootstrap bootstrap = bootstrapConfig();
-                        bootstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.tcp_client, null));
-                        bootstrap.remoteAddress(headerMap.get("address"), Integer.parseInt(headerMap.get("port")));
-                        bootstrap.connect().addListener((ChannelFutureListener) future -> {
-                            if (future.isSuccess()) {
-                                ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().put(flag, future.channel());
-                                future.channel().attr(ChannelKit.LOCAL_INFO).set(msg.getRequestId());
-                                future.channel().writeAndFlush(bytes);
-                                log.info("连接成功");
-                            } else {
-                                log.warn("连接失败");
-                            }
-                        });
-
-                    }
-                }
-            }
+            HandleKit.handleTcp(ctx, msg, type, proxyConfig);
         }
+        if (protocol == MessageProbuf.Protocol.SOCKS){
+
+        }
+
+
     }
 
-    private void handleHttp(ChannelHandlerContext ctx, MessageProbuf.Message msg, MessageProbuf.MessageType type) {
-        switch (type) {
-            case REQUEST:
-                String requestid = msg.getRequestId();
-                final Map<String, String> headerMap = msg.getRequest().getHeaderMap();
-                MessageProbuf.Request request = msg.getRequest();
-                FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.valueOf(request.getHttpVersion()), HttpMethod.valueOf(request.getMethod()), request.getUrl());
-                request.getHeaderMap().forEach((key, value) -> req.headers().set(key, value));
-                req.headers().set("Host", (proxyConfig.getHttpAdress() + ":" + proxyConfig.getHttpPort()));
-                req.content().writeBytes(request.getBody().toByteArray());
-                Promise<Channel> promise = createPromise(proxyConfig.getHttpAdress(), proxyConfig.getHttpPort());
-                promise.addListener((FutureListener<Channel>) channelFuture -> {
-                    if (channelFuture.isSuccess()) {
-                        ChannelPipeline p = channelFuture.get().pipeline();
-                        p.addLast(new ToServerHandler(requestid));
-                        channelFuture.get().writeAndFlush(req);
-                    }
-                });
-                break;
-            case VALID:
-                String extend = msg.getExtend();
-                if (!"SUCCESS".equals(extend)) {
-                    log.warn(extend);
-                } else {
-                    log.info("验证成功");
-                }
-                break;
-            case HEALTH:
-                log.info("get receipt health packet from server");
-                break;
-            case CLOSE:
-                ctx.channel().close();
-        }
-    }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
@@ -150,37 +89,4 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
     }
 
 
-    //根据host和端口，创建一个连接web的连接
-    private Promise<Channel> createPromise(String host, int port) {
-        Bootstrap bootstrap = bootstrapConfig();
-        bootstrap.handler(new TempClientServiceInitializer());
-        final Promise<Channel> promise = ctx.executor().newPromise();
-        bootstrap.remoteAddress(host, port);
-        bootstrap.connect()
-                .addListener((ChannelFutureListener) channelFuture -> {
-                    if (channelFuture.isSuccess()) {
-                        promise.setSuccess(channelFuture.channel());
-                    } else {
-                        log.warn("connection fail address {}, port {}", host, port);
-                        channelFuture.cancel(true);
-                    }
-                });
-        return promise;
-    }
-
-    private Bootstrap bootstrapConfig() {
-        if (clientstrap == null) clientstrap = new Bootstrap();
-        else return this.clientstrap;
-        clientstrap.option(ChannelOption.SO_REUSEADDR, true);
-        clientstrap.option(ChannelOption.SO_KEEPALIVE, true);
-        clientstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5 * 60 * 1000);
-        clientstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-        if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
-            clientstrap.channel(EpollSocketChannel.class);
-        } else {
-            clientstrap.channel(NioSocketChannel.class);
-        }
-        clientstrap.group(ctx.channel().eventLoop());
-        return clientstrap;
-    }
 }

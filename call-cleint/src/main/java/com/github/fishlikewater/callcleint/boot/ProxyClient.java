@@ -3,6 +3,7 @@ package com.github.fishlikewater.callcleint.boot;
 
 import com.github.fishlikewater.callcleint.config.ProxyConfig;
 import com.github.fishlikewater.callcleint.handle.ChannelKit;
+import com.github.fishlikewater.callcleint.handle.ClientHandlerInitializer;
 import com.github.fishlikewater.config.ProxyType;
 import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.IdUtil;
@@ -18,10 +19,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.DisposableBean;
 
 import java.net.InetSocketAddress;
-import java.util.function.Supplier;
 
 /**
  * @version V1.0
@@ -32,7 +31,7 @@ import java.util.function.Supplier;
  **/
 @Slf4j
 @Accessors(chain = true)
-public class ProxyClient implements DisposableBean {
+public class ProxyClient{
 
     private final ConnectionListener connectionListener = new ConnectionListener(this);
     /**
@@ -74,7 +73,7 @@ public class ProxyClient implements DisposableBean {
             bossGroup = new NioEventLoopGroup(0, new NamedThreadFactory("client-nio-boss@"));
             clientstrap.group(bossGroup).channel(NioSocketChannel.class);
         }
-        clientstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.proxy_client));
+        clientstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.proxy_client, this));
     }
 
     /**
@@ -114,7 +113,6 @@ public class ProxyClient implements DisposableBean {
                 .setExtend("call")
                 .setType(MessageProbuf.MessageType.VALID);
         channel.writeAndFlush(messageBuild.build()).addListener(f -> log.info("发送验证信息成功"));
-        ChannelKit.setRequestId(requestId);
     }
 
 
@@ -133,23 +131,5 @@ public class ProxyClient implements DisposableBean {
         } catch (Exception e) {
             log.error("⬢ {} shutdown error", ProxyType.proxy_client);
         }
-    }
-
-    private void registerShutdownHook(Supplier<?> supplier) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                System.out.println("startting shutdown working......");
-                supplier.get();
-            } catch (Throwable e) {
-                log.error("shutdownHook error", e);
-            } finally {
-                log.info("jvm shutdown");
-            }
-        }));
-    }
-
-    @Override
-    public void destroy() throws Exception {
-        stop();
     }
 }

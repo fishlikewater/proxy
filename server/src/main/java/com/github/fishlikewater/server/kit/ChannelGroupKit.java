@@ -2,31 +2,28 @@ package com.github.fishlikewater.server.kit;
 
 import com.github.fishlikewater.kit.MessageProbuf;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelId;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.AttributeKey;
-import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
- * @date 2019年07月09日 17:16
- * @since
+ * @since: 2019年07月09日 17:16
  **/
 @Slf4j
 public class ChannelGroupKit {
 
+    //目标机路径属性
     public static final AttributeKey<String> CLIENT_PATH = AttributeKey.valueOf("client_path");
-    public static final AttributeKey<String> CALL_CLIENT = AttributeKey.valueOf("call_client");
+    //请求机绑定目标机属性
+    public static final AttributeKey<Channel> CALL_REMOTE_CLIENT = AttributeKey.valueOf("call_remote_client");
+    //请求机唯一属性
+    public static final AttributeKey<String> CALL_FLAG = AttributeKey.valueOf("call_flag");
+    //客户端类型属性
+    public static final AttributeKey<String> CLIENT_TYPE = AttributeKey.valueOf("client_path");
 
-    @Getter
-    private static final ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     @Getter
     private static final ConcurrentHashMap<String, Channel> clientChannelMap = new ConcurrentHashMap<>();
     @Getter
@@ -43,45 +40,16 @@ public class ChannelGroupKit {
     }
 
 
-    public static void addCall(String path, Channel channel){
-        callClientChannelMap.put(path, channel);
+    public static void addCall(String callId, Channel channel){
+        callClientChannelMap.put(callId, channel);
     }
-    public static void removeCall(String path){
-        callClientChannelMap.remove(path);
+    public static void removeCall(String callId){
+        callClientChannelMap.remove(callId);
     }
-    public static Channel findCall(String path){
-        return callClientChannelMap.get(path);
-    }
-
-
-    public static Channel find(ChannelId id){
-        return group.find(id);
+    public static Channel findCall(String callId){
+        return callClientChannelMap.get(callId);
     }
 
-    public static void add(Channel channel){
-        group.add(channel);
-    }
-
-    public static boolean removeChannel(Channel channel){
-        return group.remove(channel);
-    }
-
-
-    public static void remove(Channel channel){
-        final String string = channel.localAddress().toString();
-        group.remove(channel);
-        String path = null;
-        for (Map.Entry<String, Channel> entry:clientChannelMap.entrySet()){
-            if (entry.getValue().localAddress().toString().equals(string)){
-                path = entry.getKey();
-                break;
-            }
-        }
-        if (!StringUtils.isEmpty(path)){
-            clientChannelMap.remove(path);
-        }
-        channel.close();
-    }
 
 
     private static final MessageProbuf.Message respSuccessVailMsg = MessageProbuf.Message.newBuilder()
@@ -94,9 +62,7 @@ public class ChannelGroupKit {
     public static void sendVailFail(Channel channel, String failCause){
         MessageProbuf.Message respFailVailMsg = MessageProbuf.Message.newBuilder()
                 .setType(MessageProbuf.MessageType.VALID).setExtend(failCause).build();
-        channel.writeAndFlush(respFailVailMsg).addListener(f->{
-            channel.close();
-        });
+        channel.writeAndFlush(respFailVailMsg).addListener(f-> channel.close());
     }
 
 }
