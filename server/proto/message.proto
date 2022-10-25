@@ -13,6 +13,7 @@ message Message {
     string extend = 7;
     Protocol protocol = 8;
     Socks scoks = 9;
+    string clientId = 10;
 }
 
 message Register{

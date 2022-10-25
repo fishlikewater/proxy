@@ -21,6 +21,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @version V1.0
@@ -113,6 +114,7 @@ public class ProxyClient{
                 .setExtend("call")
                 .setType(MessageProbuf.MessageType.VALID);
         channel.writeAndFlush(messageBuild.build()).addListener(f -> log.info("发送验证信息成功"));
+        channel.attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>());
     }
 
 

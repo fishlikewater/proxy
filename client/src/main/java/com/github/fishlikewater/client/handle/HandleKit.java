@@ -107,22 +107,25 @@ public class HandleKit {
 
     public static void handleSocks(ChannelHandlerContext ctx, MessageProbuf.Message msg, MessageProbuf.MessageType type){
         final String requestId = msg.getRequestId();
+        final String callId = msg.getExtend();
         if (type == MessageProbuf.MessageType.INIT){
             final MessageProbuf.Socks scoks = msg.getScoks();
             Bootstrap bootstrap = BootStrapFactroy.bootstrapConfig(ctx);
+            bootstrap.handler(new NoneClientInitializer());
             bootstrap.remoteAddress(scoks.getAddress(), scoks.getPort());
             bootstrap.connect().addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
                     ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().put(requestId, future.channel());
                     future.channel().pipeline().addLast(new ByteArrayCodec());
                     future.channel().pipeline().addLast(new ChunkedWriteHandler());
-                    future.channel().pipeline().addLast(new Dest2ClientHandler(ctx, requestId));
+                    future.channel().pipeline().addLast(new Dest2ClientHandler(ctx, requestId, callId));
                     log.debug("连接成功");
                     final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
                             .setRequestId(requestId)
                             .setProtocol(MessageProbuf.Protocol.SOCKS)
                             .setType(MessageProbuf.MessageType.INIT)
                             .setExtend("success")
+                            .setClientId(callId)
                             .build();
                     ctx.channel().writeAndFlush(message);
                 } else {
@@ -132,21 +135,22 @@ public class HandleKit {
                             .setProtocol(MessageProbuf.Protocol.SOCKS)
                             .setType(MessageProbuf.MessageType.INIT)
                             .setExtend("fail")
+                            .setClientId(callId)
                             .build();
                     ctx.channel().writeAndFlush(message);
                 }
             });
         }
         if (type == MessageProbuf.MessageType.REQUEST){
-            final Channel channel = ctx.channel().attr(ChannelGroupKit.CHANNELS_REMOTE).get().get(requestId);
+            final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(requestId);
             final byte[] bytes = msg.getRequest().getBody().toByteArray();
             channel.writeAndFlush(bytes);
         }
         if (type == MessageProbuf.MessageType.CLOSE){
-            final Channel channel = ctx.channel().attr(ChannelGroupKit.CHANNELS_REMOTE).get().get(requestId);
+            final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(requestId);
             if (Objects.nonNull(channel)){
                 channel.close();
-                ctx.channel().attr(ChannelGroupKit.CHANNELS_REMOTE).get().remove(requestId);
+                ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().remove(requestId);
             }
 
         }

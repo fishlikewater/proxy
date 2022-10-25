@@ -351,6 +351,16 @@ public final class MessageProbuf {
      * <code>.Socks scoks = 9;</code>
      */
     SocksOrBuilder getScoksOrBuilder();
+
+    /**
+     * <code>string clientId = 10;</code>
+     */
+    String getClientId();
+    /**
+     * <code>string clientId = 10;</code>
+     */
+    com.google.protobuf.ByteString
+        getClientIdBytes();
   }
   /**
    * Protobuf type {@code Message}
@@ -369,6 +379,7 @@ public final class MessageProbuf {
       requestId_ = "";
       extend_ = "";
       protocol_ = 0;
+      clientId_ = "";
     }
 
     @Override
@@ -482,6 +493,12 @@ public final class MessageProbuf {
 
               break;
             }
+            case 82: {
+              String s = input.readStringRequireUtf8();
+
+              clientId_ = s;
+              break;
+            }
             default: {
               if (!parseUnknownField(
                   input, unknownFields, extensionRegistry, tag)) {
@@ -507,7 +524,7 @@ public final class MessageProbuf {
     }
 
     @Override
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return MessageProbuf.internal_static_Message_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -709,6 +726,40 @@ public final class MessageProbuf {
       return getScoks();
     }
 
+    public static final int CLIENTID_FIELD_NUMBER = 10;
+    private volatile Object clientId_;
+    /**
+     * <code>string clientId = 10;</code>
+     */
+    public String getClientId() {
+      Object ref = clientId_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        clientId_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string clientId = 10;</code>
+     */
+    public com.google.protobuf.ByteString
+        getClientIdBytes() {
+      Object ref = clientId_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (String) ref);
+        clientId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     @Override
     public final boolean isInitialized() {
@@ -749,6 +800,9 @@ public final class MessageProbuf {
       }
       if (scoks_ != null) {
         output.writeMessage(9, getScoks());
+      }
+      if (!getClientIdBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 10, clientId_);
       }
       unknownFields.writeTo(output);
     }
@@ -793,6 +847,9 @@ public final class MessageProbuf {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(9, getScoks());
       }
+      if (!getClientIdBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, clientId_);
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -836,6 +893,8 @@ public final class MessageProbuf {
         if (!getScoks()
             .equals(other.getScoks())) return false;
       }
+      if (!getClientId()
+          .equals(other.getClientId())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -873,6 +932,8 @@ public final class MessageProbuf {
         hash = (37 * hash) + SCOKS_FIELD_NUMBER;
         hash = (53 * hash) + getScoks().hashCode();
       }
+      hash = (37 * hash) + CLIENTID_FIELD_NUMBER;
+      hash = (53 * hash) + getClientId().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -964,7 +1025,7 @@ public final class MessageProbuf {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -981,7 +1042,7 @@ public final class MessageProbuf {
       }
 
       @Override
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return MessageProbuf.internal_static_Message_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -994,7 +1055,7 @@ public final class MessageProbuf {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1040,6 +1101,8 @@ public final class MessageProbuf {
           scoks_ = null;
           scoksBuilder_ = null;
         }
+        clientId_ = "";
+
         return this;
       }
 
@@ -1091,6 +1154,7 @@ public final class MessageProbuf {
         } else {
           result.scoks_ = scoksBuilder_.build();
         }
+        result.clientId_ = clientId_;
         onBuilt();
         return result;
       }
@@ -1167,6 +1231,10 @@ public final class MessageProbuf {
         }
         if (other.hasScoks()) {
           mergeScoks(other.getScoks());
+        }
+        if (!other.getClientId().isEmpty()) {
+          clientId_ = other.clientId_;
+          onChanged();
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -1918,6 +1986,75 @@ public final class MessageProbuf {
         }
         return scoksBuilder_;
       }
+
+      private Object clientId_ = "";
+      /**
+       * <code>string clientId = 10;</code>
+       */
+      public String getClientId() {
+        Object ref = clientId_;
+        if (!(ref instanceof String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          clientId_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      /**
+       * <code>string clientId = 10;</code>
+       */
+      public com.google.protobuf.ByteString
+          getClientIdBytes() {
+        Object ref = clientId_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (String) ref);
+          clientId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string clientId = 10;</code>
+       */
+      public Builder setClientId(
+          String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        clientId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string clientId = 10;</code>
+       */
+      public Builder clearClientId() {
+        
+        clientId_ = getDefaultInstance().getClientId();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string clientId = 10;</code>
+       */
+      public Builder setClientIdBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        clientId_ = value;
+        onChanged();
+        return this;
+      }
       @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -2079,7 +2216,7 @@ public final class MessageProbuf {
     }
 
     @Override
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return MessageProbuf.internal_static_Register_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -2314,7 +2451,7 @@ public final class MessageProbuf {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -2331,7 +2468,7 @@ public final class MessageProbuf {
       }
 
       @Override
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return MessageProbuf.internal_static_Register_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -2344,7 +2481,7 @@ public final class MessageProbuf {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2859,7 +2996,7 @@ public final class MessageProbuf {
       }
     }
     @Override
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return MessageProbuf.internal_static_Request_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -3256,7 +3393,7 @@ public final class MessageProbuf {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -3295,7 +3432,7 @@ public final class MessageProbuf {
         }
       }
       @Override
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return MessageProbuf.internal_static_Request_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -3308,7 +3445,7 @@ public final class MessageProbuf {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -4023,7 +4160,7 @@ public final class MessageProbuf {
       }
     }
     @Override
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return MessageProbuf.internal_static_Response_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -4308,7 +4445,7 @@ public final class MessageProbuf {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -4347,7 +4484,7 @@ public final class MessageProbuf {
         }
       }
       @Override
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return MessageProbuf.internal_static_Response_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -4360,7 +4497,7 @@ public final class MessageProbuf {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -4825,7 +4962,7 @@ public final class MessageProbuf {
     }
 
     @Override
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return MessageProbuf.internal_static_Socks_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -5036,7 +5173,7 @@ public final class MessageProbuf {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -5053,7 +5190,7 @@ public final class MessageProbuf {
       }
 
       @Override
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return MessageProbuf.internal_static_Socks_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -5066,7 +5203,7 @@ public final class MessageProbuf {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -5385,26 +5522,26 @@ public final class MessageProbuf {
       descriptor;
   static {
     String[] descriptorData = {
-      "\n\rmessage.proto\"\341\001\n\007Message\022\016\n\006length\030\001 " +
+      "\n\rmessage.proto\"\363\001\n\007Message\022\016\n\006length\030\001 " +
       "\001(\005\022\032\n\004type\030\002 \001(\0162\014.MessageType\022\021\n\treque" +
       "stId\030\003 \001(\t\022\031\n\007request\030\004 \001(\0132\010.Request\022\033\n" +
       "\010response\030\005 \001(\0132\t.Response\022\033\n\010register\030\006" +
       " \001(\0132\t.Register\022\016\n\006extend\030\007 \001(\t\022\033\n\010proto" +
       "col\030\010 \001(\0162\t.Protocol\022\025\n\005scoks\030\t \001(\0132\006.So" +
-      "cks\"\'\n\010Register\022\r\n\005token\030\001 \001(\t\022\014\n\004path\030\002" +
-      " \001(\t\"\236\001\n\007Request\022\023\n\013httpVersion\030\001 \001(\t\022\016\n" +
-      "\006method\030\002 \001(\t\022\013\n\003url\030\003 \001(\t\022\014\n\004body\030\004 \001(\014" +
-      "\022$\n\006header\030\005 \003(\0132\024.Request.HeaderEntry\032-" +
-      "\n\013HeaderEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(" +
-      "\t:\0028\001\"|\n\010Response\022\014\n\004code\030\001 \001(\005\022\014\n\004body\030" +
-      "\002 \001(\014\022%\n\006header\030\003 \003(\0132\025.Response.HeaderE" +
-      "ntry\032-\n\013HeaderEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005valu" +
-      "e\030\002 \001(\t:\0028\001\"&\n\005Socks\022\017\n\007address\030\001 \001(\t\022\014\n" +
-      "\004port\030\002 \001(\005*T\n\013MessageType\022\010\n\004INIT\020\000\022\n\n\006" +
-      "HEALTH\020\001\022\t\n\005CLOSE\020\002\022\t\n\005VALID\020\003\022\013\n\007REQUES" +
-      "T\020\004\022\014\n\010RESPONSE\020\005*(\n\010Protocol\022\010\n\004HTTP\020\000\022" +
-      "\007\n\003TCP\020\001\022\t\n\005SOCKS\020\003B\017B\rMessageProbufb\006pr" +
-      "oto3"
+      "cks\022\020\n\010clientId\030\n \001(\t\"\'\n\010Register\022\r\n\005tok" +
+      "en\030\001 \001(\t\022\014\n\004path\030\002 \001(\t\"\236\001\n\007Request\022\023\n\013ht" +
+      "tpVersion\030\001 \001(\t\022\016\n\006method\030\002 \001(\t\022\013\n\003url\030\003" +
+      " \001(\t\022\014\n\004body\030\004 \001(\014\022$\n\006header\030\005 \003(\0132\024.Req" +
+      "uest.HeaderEntry\032-\n\013HeaderEntry\022\013\n\003key\030\001" +
+      " \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"|\n\010Response\022\014\n\004c" +
+      "ode\030\001 \001(\005\022\014\n\004body\030\002 \001(\014\022%\n\006header\030\003 \003(\0132" +
+      "\025.Response.HeaderEntry\032-\n\013HeaderEntry\022\013\n" +
+      "\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"&\n\005Socks\022\017" +
+      "\n\007address\030\001 \001(\t\022\014\n\004port\030\002 \001(\005*T\n\013Message" +
+      "Type\022\010\n\004INIT\020\000\022\n\n\006HEALTH\020\001\022\t\n\005CLOSE\020\002\022\t\n" +
+      "\005VALID\020\003\022\013\n\007REQUEST\020\004\022\014\n\010RESPONSE\020\005*(\n\010P" +
+      "rotocol\022\010\n\004HTTP\020\000\022\007\n\003TCP\020\001\022\t\n\005SOCKS\020\003B\017B" +
+      "\rMessageProbufb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -5415,7 +5552,7 @@ public final class MessageProbuf {
     internal_static_Message_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Message_descriptor,
-        new String[] { "Length", "Type", "RequestId", "Request", "Response", "Register", "Extend", "Protocol", "Scoks", });
+        new String[] { "Length", "Type", "RequestId", "Request", "Response", "Register", "Extend", "Protocol", "Scoks", "ClientId", });
     internal_static_Register_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_Register_fieldAccessorTable = new

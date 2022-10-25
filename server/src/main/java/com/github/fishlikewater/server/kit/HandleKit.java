@@ -130,15 +130,17 @@ public class HandleKit {
 
     public static void handleSocks(ChannelHandlerContext ctx, MessageProbuf.Message msg) {
         //判断是 目标机 还是请求机
+
         final String clientType = ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).get();
         if (clientType.equals("call")){
+            final MessageProbuf.Message message = MessageProbuf.Message.newBuilder(msg).setExtend(ctx.channel().attr(ChannelGroupKit.CALL_FLAG).get()).build();
             final Channel channel = ctx.channel().attr(ChannelGroupKit.CALL_REMOTE_CLIENT).get();
             if (channel != null && channel.isActive() && channel.isWritable()){
-                channel.writeAndFlush(msg);
+                channel.writeAndFlush(message);
             }
         }
         if (clientType.equals("client")){
-            final String callId = msg.getExtend();
+            final String callId = msg.getClientId();
             final Channel call = ChannelGroupKit.findCall(callId);
             if (call != null && call.isActive() && call.isWritable()){
                 call.writeAndFlush(msg);

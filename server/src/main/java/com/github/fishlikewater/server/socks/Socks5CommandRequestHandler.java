@@ -1,8 +1,6 @@
 package com.github.fishlikewater.server.socks;
 
 import com.github.fishlikewater.server.kit.BootStrapFactroy;
-import com.github.fishlikewater.server.kit.ChannelGroupKit;
-import com.github.fishlikewater.server.kit.IpCacheKit;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.handler.codec.socksx.v5.*;
@@ -24,10 +22,6 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        final boolean b = ChannelGroupKit.removeChannel(ctx.channel());
-        if (!b) {
-            IpCacheKit.remove(ctx.channel());
-        }
         super.handlerRemoved(ctx);
     }
 

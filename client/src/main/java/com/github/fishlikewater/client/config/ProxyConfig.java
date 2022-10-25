@@ -35,9 +35,6 @@ public class ProxyConfig {
     /** 内网穿透代理路劲*/
     private String proxyPath;
 
-    /** 客户端类型 0-> 访问对象 客户端  1->发起访问 客户端*/
-    private int clientType = 0;
-
     private String httpAdress;
 
     private int httpPort;

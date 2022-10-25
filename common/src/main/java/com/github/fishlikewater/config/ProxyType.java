@@ -3,9 +3,6 @@ package com.github.fishlikewater.config;
 /**
  * @author zhangx
  * @version V1.0
- * @mail fishlikewater@126.com
- * @ClassName ProxyType
- * @Description
  * @since 2019年03月05日 16:15
  **/
 public enum ProxyType {

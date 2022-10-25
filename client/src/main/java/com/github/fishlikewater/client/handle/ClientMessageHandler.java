@@ -1,41 +1,27 @@
 package com.github.fishlikewater.client.handle;
 
 
-import com.github.fishlikewater.client.boot.ClientHandlerInitializer;
 import com.github.fishlikewater.client.boot.ProxyClient;
 import com.github.fishlikewater.client.config.ProxyConfig;
-import com.github.fishlikewater.config.ProxyType;
-import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.MessageProbuf;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.*;
-import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.util.concurrent.FutureListener;
-import io.netty.util.concurrent.Promise;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.EventLoop;
+import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author zhangx
  * @version V1.0
- * @date 2018年12月26日 10:52
+ * @since: 2018年12月26日 10:52
  **/
 @Slf4j
 public class ClientMessageHandler extends SimpleChannelInboundHandler<MessageProbuf.Message> {
 
     //保留全局ctx
     private final ProxyConfig proxyConfig;
-    private Bootstrap clientstrap;
-    private ChannelHandlerContext ctx;
     private final ProxyClient client;
 
     public ClientMessageHandler(ProxyConfig proxyConfig, ProxyClient client) {
@@ -46,7 +32,6 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        this.ctx = ctx;
         super.channelActive(ctx);
         //log.info("连接活动");
     }
@@ -70,7 +55,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
             HandleKit.handleTcp(ctx, msg, type, proxyConfig);
         }
         if (protocol == MessageProbuf.Protocol.SOCKS){
-
+            HandleKit.handleSocks(ctx, msg, type);
         }
 
 

@@ -38,8 +38,8 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
             HandleKit.handleRegister(ctx, msg, connectionValidate, proxyConfig);
         } else {
             /* 检验是否通过验证*/
-            final String path = ctx.channel().attr(ChannelGroupKit.CLIENT_PATH).get();
-            if (StrUtil.isBlank(path)){
+            final String clientType = ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).get();
+            if (StrUtil.isBlank(clientType)){
                 log.warn("收到非法请求: {}", ctx.channel().remoteAddress().toString());
                 ctx.close();
                 return;

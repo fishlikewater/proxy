@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author zhangx
  * @version V1.0
- * @date 2018年12月26日 10:52
+ * @since: 2018年12月26日 10:52
  **/
 @Slf4j
 public class ClientMessageHandler extends SimpleChannelInboundHandler<MessageProbuf.Message> {
@@ -51,9 +51,11 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
         final String requestId = msg.getRequestId();
         if (type == MessageProbuf.MessageType.VALID){
             log.info(msg.getExtend());
+            return;
         }
         if (type == MessageProbuf.MessageType.HEALTH){
             log.debug(msg.getExtend());
+            return;
         }
         if (type == MessageProbuf.MessageType.CLOSE) {
             final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(requestId);
@@ -64,11 +66,11 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
         } else if (type == MessageProbuf.MessageType.INIT){
             final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(requestId);
             if (channel != null && channel.isActive()) {
-                if ( msg.getExtend().equals("success")){
+                if (msg.getExtend().equals("success")){
                     Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
                     channel.writeAndFlush(commandResponse);
                 }
-                if ( msg.getExtend().equals("fail")){
+                if (msg.getExtend().equals("fail")){
                     Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, Socks5AddressType.IPv4);
                     channel.writeAndFlush(commandResponse);
                 }
