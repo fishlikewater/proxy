@@ -33,7 +33,7 @@ import java.util.function.Supplier;
  **/
 @Slf4j
 @Accessors(chain = true)
-public class ProxyClient implements DisposableBean {
+public class ProxyClient{
 
     private final ConnectionListener connectionListener = new ConnectionListener(this);
     /**
@@ -137,21 +137,4 @@ public class ProxyClient implements DisposableBean {
         }
     }
 
-    private void registerShutdownHook(Supplier<?> supplier) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                System.out.println("startting shutdown working......");
-                supplier.get();
-            } catch (Throwable e) {
-                log.error("shutdownHook error", e);
-            } finally {
-                log.info("jvm shutdown");
-            }
-        }));
-    }
-
-    @Override
-    public void destroy() throws Exception {
-        stop();
-    }
 }
