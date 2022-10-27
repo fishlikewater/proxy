@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.github.fishlikewater.config.ProxyType;
 import com.github.fishlikewater.server.boot.ProxyServer;
 import com.github.fishlikewater.server.config.ProxyConfig;
+import com.github.fishlikewater.server.kit.PassWordCheck;
 import com.github.fishlikewater.server.socks.Socks5Contans;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.DisposableBean;
@@ -31,6 +32,8 @@ public class ServerApplication implements CommandLineRunner, DisposableBean {
 
     @Override
     public void run(String... args) throws Exception {
+        PassWordCheck.setUsername(proxyConfig.getUsername());
+        PassWordCheck.setPassword(proxyConfig.getPassword());
         final Map<String, String> map = JSON.parseObject(new FileInputStream(FileUtil.file("account.json")),  Map.class);
         Socks5Contans.setAccountMap(map);
         //final Map<String, String> fowMap = JSONObject.parseObject(new FileInputStream(FileUtil.file("flow.json")),  Map.class);

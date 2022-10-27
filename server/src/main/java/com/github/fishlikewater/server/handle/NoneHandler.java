@@ -46,7 +46,7 @@ public class NoneHandler extends SimpleChannelInboundHandler {
         if (outChannel != null && outChannel.isActive()) {
             outChannel.writeAndFlush(PooledByteBufAllocator.DEFAULT.buffer()).addListener(future -> {
                 outChannel.close().addListener(future1 -> {
-                    log.info("返回0字节：browser关闭连接，因此关闭到webserver连接");
+                    log.debug("返回0字节：browser关闭连接，因此关闭到webserver连接");
                 });
             });
         }

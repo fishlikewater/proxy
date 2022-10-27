@@ -1,33 +1,24 @@
 package com.github.fishlikewater.server.kit;
 
 import io.netty.handler.codec.http.HttpRequest;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Base64;
 
 /**
  * @author zhangx
  * @version V1.0
- * @mail fishlikewater@126.com
- * @ClassName PassWordCheck
- * @Description
  * @since 2019年02月27日 12:51
  **/
 @Slf4j
 public class PassWordCheck {
 
+    @Setter
     private static String username;
+    @Setter
     private static String password;
 
-    @Value("${proxy.username}")
-    public void setUsername(String uname){
-        username = uname;
-    }
-    @Value("${proxy.password}")
-    public void setPassword(String pw){
-        password = pw;
-    }
 
     //basic方式登录
     public static boolean basicLogin(HttpRequest req) {
