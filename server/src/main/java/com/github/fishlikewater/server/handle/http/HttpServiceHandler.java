@@ -1,12 +1,11 @@
-package com.github.fishlikewater.server.handle;
+package com.github.fishlikewater.server.handle.http;
 
+import com.github.fishlikewater.server.handle.NoneHandler;
 import com.github.fishlikewater.server.kit.BootStrapFactroy;
 import com.github.fishlikewater.server.kit.PassWordCheck;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
-import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.*;
-import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.Promise;
 import lombok.extern.slf4j.Slf4j;
@@ -84,23 +83,23 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
             Promise<Channel> promise = createPromise(new InetSocketAddress(host, port), ctx);    //根据host和port创建连接到服务器的连接
             //如果是http连接，首先将接受的请求转换成原始字节数据
             log.debug("处理http 请求");
-            ReferenceCountUtil.retain(req);
+            /*ReferenceCountUtil.retain(req);
             EmbeddedChannel em = new EmbeddedChannel(new HttpRequestEncoder());
             em.writeOutbound(req);
             final Object o = em.readOutbound();
-            em.close();
+            em.close();*/
             promise.addListener((FutureListener<Channel>) channelFuture -> {
                 //移除	httpcode	httpservice 并添加	NoneHandler，并向服务器发送请求的byte数据
                 if(channelFuture.isSuccess()){
                     log.debug("连接http web 成功，开始发送数据");
                     ChannelPipeline p = ctx.pipeline();
-                    p.remove("httpcode");
+                    //p.remove("httpcode");
                     p.remove("httpservice");
                     p.addLast(new NoneHandler(channelFuture.get()));
                     //添加handler
                     ChannelPipeline pipeline = channelFuture.get().pipeline();
                     pipeline.addLast(new NoneHandler(ctx.channel()));
-                    channelFuture.get().writeAndFlush(o).addListener(t-> log.info("count:{}", ReferenceCountUtil.refCnt(req)));
+                    channelFuture.get().writeAndFlush(req).addListener(t-> {});
                 }else {
                     log.debug("连接http web 失败");
                 }
@@ -150,6 +149,7 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
             Bootstrap bootstrap = BootStrapFactroy.bootstrapConfig(ctx);
             final Promise<Channel> promise = ctx.executor().newPromise();
             bootstrap.remoteAddress(address);
+            //bootstrap.localAddress("192.168.5.217", 60051);
             bootstrap.connect()
                     .addListener((ChannelFutureListener) channelFuture -> {
                         if (channelFuture.isSuccess()) {

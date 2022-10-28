@@ -1,6 +1,6 @@
 package com.github.fishlikewater.server.handle;
 
-import com.github.fishlikewater.server.socks.Socks5Contans;
+import com.github.fishlikewater.server.handle.socks.Socks5Contans;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;

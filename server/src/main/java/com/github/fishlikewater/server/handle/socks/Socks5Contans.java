@@ -1,4 +1,4 @@
-package com.github.fishlikewater.server.socks;
+package com.github.fishlikewater.server.handle.socks;
 
 import io.netty.util.AttributeKey;
 import lombok.Getter;

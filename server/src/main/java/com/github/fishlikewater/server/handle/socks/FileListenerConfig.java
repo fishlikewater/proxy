@@ -1,4 +1,4 @@
-package com.github.fishlikewater.server.socks;
+package com.github.fishlikewater.server.handle.socks;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.watch.SimpleWatcher;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
