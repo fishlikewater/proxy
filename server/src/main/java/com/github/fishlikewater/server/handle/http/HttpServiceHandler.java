@@ -93,12 +93,13 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
                 if(channelFuture.isSuccess()){
                     log.debug("连接http web 成功，开始发送数据");
                     ChannelPipeline p = ctx.pipeline();
-                    //p.remove("httpcode");
+                    p.remove("httpcode");
                     p.remove("httpservice");
                     p.addLast(new NoneHandler(channelFuture.get()));
                     //添加handler
                     ChannelPipeline pipeline = channelFuture.get().pipeline();
                     pipeline.addLast(new NoneHandler(ctx.channel()));
+                    pipeline.addLast(new HttpRequestEncoder());
                     channelFuture.get().writeAndFlush(req).addListener(t-> {});
                 }else {
                     log.debug("连接http web 失败");
