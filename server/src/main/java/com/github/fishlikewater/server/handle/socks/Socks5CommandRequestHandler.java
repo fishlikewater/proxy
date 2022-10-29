@@ -1,4 +1,4 @@
-package com.github.fishlikewater.server.socks;
+package com.github.fishlikewater.server.handle.socks;
 
 import com.github.fishlikewater.server.kit.BootStrapFactroy;
 import io.netty.bootstrap.Bootstrap;

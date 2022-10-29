@@ -1,4 +1,4 @@
-package com.github.fishlikewater.server.handle;
+package com.github.fishlikewater.server.handle.http;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

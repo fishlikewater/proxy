@@ -1,9 +1,8 @@
-package com.github.fishlikewater.server.socks;
+package com.github.fishlikewater.server.handle.socks;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
-import com.github.fishlikewater.server.config.ProxyConfig;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -16,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class Socks5PasswordAuthRequestHandler extends SimpleChannelInboundHandler<DefaultSocks5PasswordAuthRequest> {
