@@ -1,10 +1,8 @@
-package com.github.fishlikewater.server.kit;
+package com.github.fishlikewater.proxyp2p.kit;
 
 import com.github.fishlikewater.kit.EpollKit;
-import com.github.fishlikewater.server.boot.NoneClientInitializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.epoll.EpollSocketChannel;
@@ -18,7 +16,7 @@ public class BootStrapFactroy {
 
     private static Bootstrap bootstrap = null;
 
-    public static Bootstrap bootstrapConfig(ChannelHandlerContext ctx){
+    public static Bootstrap bootstrapConfig(){
         if(bootstrap != null){
             return bootstrap.clone();
         }
@@ -32,8 +30,6 @@ public class BootStrapFactroy {
         } else {
             bootstrap.channel(NioSocketChannel.class);
         }
-        bootstrap.group(ctx.channel().eventLoop().parent());
-        bootstrap.handler(new NoneClientInitializer());
         return bootstrap;
     }
 }

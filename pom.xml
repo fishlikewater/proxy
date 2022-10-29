@@ -2,18 +2,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <groupId>com.github.fishlikewater</groupId>
+    <artifactId>proxy</artifactId>
+    <version>1.0.1</version>
     <packaging>pom</packaging>
+    <name>proxy</name>
+    <description>v project for Spring Boot</description>
+
     <modules>
         <module>common</module>
         <module>server</module>
         <module>call-cleint</module>
         <module>client</module>
+        <module>proxy-p2p</module>
     </modules>
-    <groupId>com.github.fishlikewater</groupId>
-    <artifactId>proxy</artifactId>
-    <version>${proxy.version}</version>
-    <name>proxy</name>
-    <description>v project for Spring Boot</description>
 
     <properties>
         <proxy.version>1.0.1</proxy.version>
@@ -43,9 +45,5 @@
             <version>${hutool.version}</version>
         </dependency>
     </dependencies>
-
-    <build>
-
-    </build>
 
 </project>

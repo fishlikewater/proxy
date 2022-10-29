@@ -8,12 +8,15 @@
         <version>1.0.1</version>
         <relativePath>../pom.xml</relativePath> <!-- lookup parent from repository -->
     </parent>
-    <artifactId>client</artifactId>
-    <name>client</name>
-    <description>client</description>
+
+    <artifactId>proxy-p2p</artifactId>
+    <name>proxy-p2p</name>
+    <description>proxy-p2p</description>
     <properties>
+        <java.version>1.8</java.version>
     </properties>
     <dependencies>
+
         <dependency>
             <groupId>com.github.fishlikewater</groupId>
             <artifactId>common</artifactId>
@@ -25,17 +28,12 @@
             <artifactId>netty-all</artifactId>
             <version>${netty-version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>${protobuf.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
@@ -45,6 +43,10 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -66,7 +68,7 @@
     </dependencyManagement>
 
     <build>
-        <finalName>client</finalName>
+        <finalName>proxy-p2p</finalName>
         <resources>
             <resource>
                 <directory>src/main/java</directory>
@@ -101,13 +103,33 @@
             </plugin>
 
             <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.5.1</version>
+                <configuration>
+                    <protoSourceRoot>${project.basedir}/proto</protoSourceRoot>
+                    <outputDirectory>${os.detected.classifier}</outputDirectory>
+                    <clearOutputDirectory>false</clearOutputDirectory>
+                    <protocExecutable>${project.basedir}/proto/protoc-3.9.0-win64/bin/protoc.exe</protocExecutable>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.4</version>
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.github.fishlikewater.client.ClientApplication</mainClass>
+                            <mainClass>com.github.fishlikewater.proxyp2p.ProxyP2pApplication</mainClass>
                             <classpathPrefix>lib/</classpathPrefix>
                             <addClasspath>true</addClasspath>
                         </manifest>
@@ -127,6 +149,5 @@
             </plugin>
         </plugins>
     </build>
-
 
 </project>

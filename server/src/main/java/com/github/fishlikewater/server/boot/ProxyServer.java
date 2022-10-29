@@ -53,7 +53,6 @@ public class ProxyServer{
         bootstrap.option(ChannelOption.SO_BACKLOG, 8192);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2 * 60 * 1000);
         bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
-        bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
         bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
         bootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);

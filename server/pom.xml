@@ -6,7 +6,7 @@
         <groupId>com.github.fishlikewater</groupId>
         <artifactId>proxy</artifactId>
         <version>1.0.1</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath>../pom.xml</relativePath> <!-- lookup parent from repository -->
     </parent>
     <artifactId>server</artifactId>
     <name>server</name>

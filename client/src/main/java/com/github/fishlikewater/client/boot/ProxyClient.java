@@ -89,7 +89,6 @@ public class ProxyClient{
         try {
             ChannelFuture future = clientstrap.connect().addListener(connectionListener).sync();
             this.channel = future.channel();
-
             afterConnectionSuccessful(channel);
             ChannelKit.setChannel(this.channel);
 
