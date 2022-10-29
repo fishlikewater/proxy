@@ -5,7 +5,7 @@
   <parent>
     <artifactId>proxy</artifactId>
     <groupId>com.github.fishlikewater</groupId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -14,12 +14,6 @@
   <name>common</name>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-      <netty-version>4.1.31.Final</netty-version>
-      <protobuf.version>3.9.0</protobuf.version>
-      <lombok-version>1.16.18</lombok-version>
   </properties>
 
   <dependencies>
