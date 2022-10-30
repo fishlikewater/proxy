@@ -1,13 +1,13 @@
-package com.github.fishlikewater.proxyp2p.server;
+package com.github.fishlikewater.proxyp2p.client;
 
 import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.NamedThreadFactory;
+import com.github.fishlikewater.proxyp2p.client.handle.UdpP2pDataHandler;
 import com.github.fishlikewater.proxyp2p.codec.MyDatagramPacketDecoder;
 import com.github.fishlikewater.proxyp2p.codec.MyProtobufDecoder;
-import com.github.fishlikewater.proxyp2p.config.ServerConfig;
+import com.github.fishlikewater.proxyp2p.config.ClientConfig;
 import com.github.fishlikewater.proxyp2p.kit.BootStrapFactroy;
 import com.github.fishlikewater.proxyp2p.kit.MessageProbuf;
-import com.github.fishlikewater.proxyp2p.server.handle.UdpP2pDataHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -31,23 +31,23 @@ import lombok.extern.slf4j.Slf4j;
  * @since: 2022年10月29日 14:28
  **/
 @Slf4j
-public class UdpServerBoot {
-
-    private final ServerConfig serverConfig;
+public class UdpCientBoot {
 
     private EventLoopGroup bossGroup;
 
-    public UdpServerBoot(ServerConfig serverConfig){
-        this.serverConfig = serverConfig;
+    private final ClientConfig clientConfig;
+
+    public UdpCientBoot(ClientConfig clientConfig){
+        this.clientConfig = clientConfig;
     }
 
     public void start() throws InterruptedException {
         final Bootstrap b = BootStrapFactroy.bootstrapConfig();
         if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
-            bossGroup =new EpollEventLoopGroup(0, new NamedThreadFactory("server-epoll-boss@"));
+            bossGroup =new EpollEventLoopGroup(0, new NamedThreadFactory("client-epoll-boss@"));
             b.group(bossGroup).channel(EpollDatagramChannel.class);
         } else {
-            bossGroup = new NioEventLoopGroup(0, new NamedThreadFactory("server-nio-boss@"));
+            bossGroup = new NioEventLoopGroup(0, new NamedThreadFactory("client-nio-boss@"));
             b.group(bossGroup).channel(NioDatagramChannel.class);
         }
         b.option(ChannelOption.SO_BROADCAST, true)
@@ -57,24 +57,26 @@ public class UdpServerBoot {
                         final ChannelPipeline pipeline = ch.pipeline();
                         pipeline.addFirst("udpEncoder", new DatagramPacketEncoder<>(new ProtobufEncoder()));
                         pipeline.addFirst("udpDecoder", new MyDatagramPacketDecoder(new MyProtobufDecoder(MessageProbuf.Message.getDefaultInstance())));
-                        pipeline.addLast(new UdpP2pDataHandler());
+                        pipeline.addLast(new UdpP2pDataHandler(clientConfig));
                     }
                 });
-        b.bind(serverConfig.getAddress(), serverConfig.getPort()).sync();
+        b.bind(clientConfig.getPort()).addListener(future -> {
+        }).sync();
     }
+
 
     /**
      * 关闭服务
      */
     public void stop() {
-        log.info("⬢ server shutdown ...");
+        log.info("⬢ client shutdown ...");
         try {
             if (this.bossGroup != null) {
                 this.bossGroup.shutdownGracefully().sync();
             }
-            log.info("⬢ shutdown server successful");
+            log.info("⬢ shutdown client successful");
         } catch (Exception e) {
-            log.error("⬢ server shutdown error", e);
+            log.error("⬢ client shutdown error", e);
         }
     }
 

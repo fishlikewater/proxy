@@ -14,12 +14,16 @@ import org.springframework.stereotype.Component;
  **/
 @Data
 @Component
-@ConfigurationProperties("proxy.server")
-public class ServerConfig {
+@ConfigurationProperties("proxy.client")
+public class ClientConfig {
 
     private String address;
 
     private int port;
+
+    private String serverAddress;
+
+    private int serverPort;
 
 
 }
