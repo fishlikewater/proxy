@@ -57,7 +57,7 @@ public class UdpServerBoot {
                         final ChannelPipeline pipeline = ch.pipeline();
                         pipeline.addFirst("udpEncoder", new DatagramPacketEncoder<>(new ProtobufEncoder()));
                         pipeline.addFirst("udpDecoder", new MyDatagramPacketDecoder(new MyProtobufDecoder(MessageProbuf.Message.getDefaultInstance())));
-                        pipeline.addLast(new UdpP2pDataHandler());
+                        pipeline.addLast(new UdpP2pDataHandler(serverConfig));
                     }
                 });
         b.bind(serverConfig.getAddress(), serverConfig.getPort()).sync();

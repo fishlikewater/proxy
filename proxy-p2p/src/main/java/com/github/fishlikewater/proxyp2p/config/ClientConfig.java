@@ -25,5 +25,9 @@ public class ClientConfig {
 
     private int serverPort;
 
+    private long timeout = 10;
+
+    private String name;
+
 
 }

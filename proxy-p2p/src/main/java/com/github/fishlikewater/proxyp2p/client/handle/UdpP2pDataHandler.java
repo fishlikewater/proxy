@@ -35,11 +35,12 @@ public class UdpP2pDataHandler extends SimpleChannelInboundHandler<ProbufData> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("客户端向服务器发送自己的IP和PORT");
+        final MessageProbuf.Register register = MessageProbuf.Register.newBuilder().setName(clientConfig.getName()).build();
         final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
-                .setLength(100)
-                .setType(MessageProbuf.MessageType.MAKE_HOLE_INIT)
+                .setRegister(register)
+                .setType(MessageProbuf.MessageType.VALID)
                 .build();
+
         final AddressedEnvelope<MessageProbuf.Message, InetSocketAddress> addressedEnvelope =
                 new DefaultAddressedEnvelope<>(message, new InetSocketAddress(clientConfig.getServerAddress(), clientConfig.getServerPort()), new InetSocketAddress(clientConfig.getPort()));
         ctx.writeAndFlush(addressedEnvelope);
