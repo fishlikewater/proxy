@@ -30,7 +30,24 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<ProbufDat
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ProbufData msg) {
         final MessageProbuf.Message msgMessage = (MessageProbuf.Message)msg.getMessage();
-        System.out.println(msgMessage);
+        System.out.println(msgMessage.getType());
+        final MessageProbuf.MessageType type = msgMessage.getType();
+        if (type == MessageProbuf.MessageType.MAKE_HOLE_INIT){
+            final MessageProbuf.Socks scoks = msgMessage.getScoks();
+            final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
+                    .setType(MessageProbuf.MessageType.MAKE_HOLE)
+                    .build();
+            final AddressedEnvelope<MessageProbuf.Message, InetSocketAddress> addressedEnvelope =
+                    new DefaultAddressedEnvelope<>(message, new InetSocketAddress(scoks.getAddress(), scoks.getPort()),
+                            new InetSocketAddress(callConfig.getPort()));
+            ctx.writeAndFlush(addressedEnvelope).addListener(future -> {
+                System.out.println(future.isSuccess());
+                ctx.writeAndFlush(addressedEnvelope);
+            });
+        }
+        if (type == MessageProbuf.MessageType.MAKE_HOLE){
+            log.info("打洞成功");
+        }
     }
 
     @Override
@@ -38,11 +55,12 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<ProbufDat
         final MessageProbuf.Register register = MessageProbuf.Register.newBuilder().setName(callConfig.getName()).build();
         final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
                 .setRegister(register)
-                .setType(MessageProbuf.MessageType.VALID)
+                .setType(MessageProbuf.MessageType.MAKE_HOLE_INIT)
                 .build();
 
         final AddressedEnvelope<MessageProbuf.Message, InetSocketAddress> addressedEnvelope =
-                new DefaultAddressedEnvelope<>(message, new InetSocketAddress(callConfig.getServerAddress(), callConfig.getServerPort()), new InetSocketAddress(callConfig.getPort()));
+                new DefaultAddressedEnvelope<>(message, new InetSocketAddress(callConfig.getServerAddress(), callConfig.getServerPort()),
+                        new InetSocketAddress(callConfig.getPort()));
         ctx.writeAndFlush(addressedEnvelope);
         super.channelActive(ctx);
     }

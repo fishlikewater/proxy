@@ -9,6 +9,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.DefaultAddressedEnvelope;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 
@@ -20,6 +21,7 @@ import java.net.InetSocketAddress;
  * @author: fishlikewater@126.com
  * @since: 2022年10月29日 14:44
  **/
+@Slf4j
 @RequiredArgsConstructor
 public class UdpP2pDataHandler extends SimpleChannelInboundHandler<ProbufData> {
 

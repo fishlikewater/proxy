@@ -66,7 +66,7 @@ public class UdpCallBoot {
                         pipeline.addLast(new CallUdpP2pDataHandler(callConfig));
                     }
                 });
-        b.bind(callConfig.getPort()).addListener(future -> {
+        b.bind(0).addListener(future -> {
         }).sync();
     }
 

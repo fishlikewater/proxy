@@ -30,7 +30,21 @@ public class ClientUdpP2pDataHandler extends SimpleChannelInboundHandler<ProbufD
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ProbufData msg) throws Exception {
         final MessageProbuf.Message msgMessage = (MessageProbuf.Message)msg.getMessage();
+        final MessageProbuf.MessageType type = msgMessage.getType();
         System.out.println(msgMessage);
+        if (type == MessageProbuf.MessageType.MAKE_HOLE_INIT){
+            final MessageProbuf.Socks scoks = msgMessage.getScoks();
+            final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
+                    .setType(MessageProbuf.MessageType.MAKE_HOLE)
+                    .build();
+            final AddressedEnvelope<MessageProbuf.Message, InetSocketAddress> addressedEnvelope =
+                    new DefaultAddressedEnvelope<>(message, new InetSocketAddress(scoks.getAddress(), scoks.getPort()),
+                            new InetSocketAddress(clientConfig.getPort()));
+            ctx.writeAndFlush(addressedEnvelope);
+        }
+        if (type == MessageProbuf.MessageType.MAKE_HOLE){
+            log.info("打洞成功");
+        }
     }
 
     @Override
