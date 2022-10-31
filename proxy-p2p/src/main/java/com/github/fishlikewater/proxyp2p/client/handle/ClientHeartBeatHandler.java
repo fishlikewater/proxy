@@ -17,7 +17,7 @@ import java.net.InetSocketAddress;
  * 继承ChannelInboundHandlerAdapter，从而不需要实现channelRead0方法
  */
 @Slf4j
-public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
+public class ClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
     private final ClientConfig clientConfig;
 
@@ -25,7 +25,7 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
 
     public static MessageProbuf.Message HEARTBEAT_SEQUENCE;
 
-    public HeartBeatHandler(ClientConfig clientConfig){
+    public ClientHeartBeatHandler(ClientConfig clientConfig){
         this.clientConfig = clientConfig;
         register = MessageProbuf.Register.newBuilder().setName(clientConfig.getName()).build();
         HEARTBEAT_SEQUENCE = MessageProbuf.Message.newBuilder()

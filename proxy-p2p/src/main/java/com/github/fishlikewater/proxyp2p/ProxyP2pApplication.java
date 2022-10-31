@@ -1,6 +1,8 @@
 package com.github.fishlikewater.proxyp2p;
 
+import com.github.fishlikewater.proxyp2p.call.UdpCallBoot;
 import com.github.fishlikewater.proxyp2p.client.UdpCientBoot;
+import com.github.fishlikewater.proxyp2p.config.CallConfig;
 import com.github.fishlikewater.proxyp2p.config.ClientConfig;
 import com.github.fishlikewater.proxyp2p.config.ServerConfig;
 import com.github.fishlikewater.proxyp2p.server.UdpServerBoot;
@@ -20,9 +22,11 @@ public class ProxyP2pApplication implements CommandLineRunner, DisposableBean {
 
     private UdpServerBoot udpServerBoot;
     private UdpCientBoot udpCientBoot;
+    private UdpCallBoot udpCallBoot;
 
     private final ServerConfig serverConfig;
     private final ClientConfig clientConfig;
+    private final CallConfig callConfig;
 
     public static void main(String[] args) {
         SpringApplication.run(ProxyP2pApplication.class, args);
@@ -39,15 +43,22 @@ public class ProxyP2pApplication implements CommandLineRunner, DisposableBean {
             udpCientBoot = new UdpCientBoot(clientConfig);
             udpCientBoot.start();
         }
+        if (env.equals("call")){
+            udpCallBoot = new UdpCallBoot(callConfig);
+            udpCallBoot.start();
+        }
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         if (udpServerBoot != null){
             udpServerBoot.stop();
         }
         if (udpCientBoot != null){
             udpCientBoot.stop();
+        }
+        if (udpCallBoot != null){
+            udpCallBoot.stop();
         }
     }
 }

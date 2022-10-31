@@ -22,7 +22,7 @@ import java.net.InetSocketAddress;
  **/
 @Slf4j
 @RequiredArgsConstructor
-public class UdpP2pDataHandler extends SimpleChannelInboundHandler<ProbufData> {
+public class ClientUdpP2pDataHandler extends SimpleChannelInboundHandler<ProbufData> {
 
     private final ClientConfig clientConfig;
 

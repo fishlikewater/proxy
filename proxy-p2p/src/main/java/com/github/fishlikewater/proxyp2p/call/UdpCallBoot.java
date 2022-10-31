@@ -1,12 +1,12 @@
-package com.github.fishlikewater.proxyp2p.client;
+package com.github.fishlikewater.proxyp2p.call;
 
 import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.NamedThreadFactory;
-import com.github.fishlikewater.proxyp2p.client.handle.ClientHeartBeatHandler;
-import com.github.fishlikewater.proxyp2p.client.handle.ClientUdpP2pDataHandler;
+import com.github.fishlikewater.proxyp2p.call.handle.CallHeartBeatHandler;
+import com.github.fishlikewater.proxyp2p.call.handle.CallUdpP2pDataHandler;
 import com.github.fishlikewater.proxyp2p.codec.MyDatagramPacketDecoder;
 import com.github.fishlikewater.proxyp2p.codec.MyProtobufDecoder;
-import com.github.fishlikewater.proxyp2p.config.ClientConfig;
+import com.github.fishlikewater.proxyp2p.config.CallConfig;
 import com.github.fishlikewater.proxyp2p.kit.BootStrapFactroy;
 import com.github.fishlikewater.proxyp2p.kit.MessageProbuf;
 import io.netty.bootstrap.Bootstrap;
@@ -32,17 +32,17 @@ import java.util.concurrent.TimeUnit;
  * </p>
  *
  * @author: fishlikewater@126.com
- * @since: 2022年10月29日 14:28
+ * @since: 2022年10月31日 12:52
  **/
 @Slf4j
-public class UdpCientBoot {
+public class UdpCallBoot {
 
     private EventLoopGroup bossGroup;
 
-    private final ClientConfig clientConfig;
+    private final CallConfig callConfig;
 
-    public UdpCientBoot(ClientConfig clientConfig){
-        this.clientConfig = clientConfig;
+    public UdpCallBoot(CallConfig callConfig){
+        this.callConfig = callConfig;
     }
 
     public void start() throws InterruptedException {
@@ -61,12 +61,12 @@ public class UdpCientBoot {
                         final ChannelPipeline pipeline = ch.pipeline();
                         pipeline.addFirst("udpEncoder", new DatagramPacketEncoder<>(new ProtobufEncoder()));
                         pipeline.addFirst("udpDecoder", new MyDatagramPacketDecoder(new MyProtobufDecoder(MessageProbuf.Message.getDefaultInstance())));
-                        pipeline.addLast(new IdleStateHandler(0, 0, clientConfig.getTimeout(), TimeUnit.SECONDS))
-                                .addLast(new ClientHeartBeatHandler(clientConfig));
-                        pipeline.addLast(new ClientUdpP2pDataHandler(clientConfig));
+                        pipeline.addLast(new IdleStateHandler(0, 0, callConfig.getTimeout(), TimeUnit.SECONDS))
+                                .addLast(new CallHeartBeatHandler(callConfig));
+                        pipeline.addLast(new CallUdpP2pDataHandler(callConfig));
                     }
                 });
-        b.bind(clientConfig.getPort()).addListener(future -> {
+        b.bind(callConfig.getPort()).addListener(future -> {
         }).sync();
     }
 
@@ -75,15 +75,14 @@ public class UdpCientBoot {
      * 关闭服务
      */
     public void stop() {
-        log.info("⬢ client shutdown ...");
+        log.info("⬢ call shutdown ...");
         try {
             if (this.bossGroup != null) {
                 this.bossGroup.shutdownGracefully().sync();
             }
-            log.info("⬢ shutdown client successful");
+            log.info("⬢ shutdown call successful");
         } catch (Exception e) {
-            log.error("⬢ client shutdown error", e);
+            log.error("⬢ call shutdown error", e);
         }
     }
-
 }
