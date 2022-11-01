@@ -20,8 +20,7 @@ import java.util.Map;
 
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
- * @date 2019年07月12日 22:16
- * @since
+ * @since: 2019年07月12日 22:16
  **/
 @Slf4j
 public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObject> {
@@ -33,7 +32,7 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
         if (msg instanceof FullHttpRequest) {
             //转成 HttpRequest
             FullHttpRequest req = (FullHttpRequest) msg;
@@ -45,7 +44,7 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
             }
             final String[] split = uri.split("/");
             String triger = split[1];
-            Channel channel = null;
+            Channel channel;
             if (StrUtil.isBlank(triger)) {
                 channel = ChannelGroupKit.find("default");
             } else {
@@ -68,9 +67,7 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
                 builder.setUrl(uri);
                 builder.setMethod(req.method().name());
                 Map<String, String> header = new HashMap<>();
-                headers.entries().forEach(t -> {
-                    header.put(t.getKey(), t.getValue());
-                });
+                headers.entries().forEach(t -> header.put(t.getKey(), t.getValue()));
                 builder.putAllHeader(header);
                 ByteBuf content = req.content();
                 if (content.hasArray()) {
@@ -92,9 +89,7 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
                         log.info("转送失败");
                     }
                 });
-                builder = null;
             }
-
 
         } else {
             log.info("not found http or https request, will close this channel");

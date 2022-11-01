@@ -18,9 +18,9 @@ import java.io.IOException;
  * @date 2019年02月26日 21:51
  **/
 @Slf4j
-public class NoneHandler extends SimpleChannelInboundHandler {
+public class NoneHandler extends SimpleChannelInboundHandler<Object> {
 
-    private Channel outChannel;
+    private final Channel outChannel;
 
     public NoneHandler(Channel outChannel) {
         this.outChannel = outChannel;
@@ -30,7 +30,7 @@ public class NoneHandler extends SimpleChannelInboundHandler {
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
         boolean canWrite = ctx.channel().isWritable();
-        log.warn(ctx.channel() + " 可写性：" + canWrite);
+        log.debug(ctx.channel() + " 可写性：" + canWrite);
         //流量控制，不允许继续读
         outChannel.config().setAutoRead(canWrite);
         super.channelWritabilityChanged(ctx);
@@ -38,29 +38,24 @@ public class NoneHandler extends SimpleChannelInboundHandler {
 
     /**
      *  关闭远程目标连接
-     * @param ctx
-     * @throws Exception
+     * @param: ctx
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         if (outChannel != null && outChannel.isActive()) {
-            outChannel.writeAndFlush(PooledByteBufAllocator.DEFAULT.buffer()).addListener(future -> {
-                outChannel.close().addListener(future1 -> {
-                    log.debug("返回0字节：browser关闭连接，因此关闭到webserver连接");
-                });
-            });
+            outChannel.writeAndFlush(PooledByteBufAllocator.DEFAULT.buffer()).addListener(future -> outChannel.close().addListener(future1 -> log.debug("返回0字节：browser关闭连接，因此关闭到webserver连接")));
         }
         super.channelInactive(ctx);
     }
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead0(ChannelHandlerContext ctx, Object msg) {
         ReferenceCountUtil.retain(msg);
         outChannel.writeAndFlush(msg);
     }
 
     @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+    public void channelReadComplete(ChannelHandlerContext ctx) {
 
     }
     @Override
