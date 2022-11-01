@@ -28,9 +28,9 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<ProbufDat
 
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, ProbufData msg) {
+    protected void channelRead0(ChannelHandlerContext ctx, ProbufData msg) throws Exception {
         final MessageProbuf.Message msgMessage = (MessageProbuf.Message)msg.getMessage();
-        System.out.println(msgMessage.getType());
+        System.out.println(msgMessage);
         final MessageProbuf.MessageType type = msgMessage.getType();
         if (type == MessageProbuf.MessageType.MAKE_HOLE_INIT){
             final MessageProbuf.Socks scoks = msgMessage.getScoks();
@@ -40,10 +40,9 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<ProbufDat
             final AddressedEnvelope<MessageProbuf.Message, InetSocketAddress> addressedEnvelope =
                     new DefaultAddressedEnvelope<>(message, new InetSocketAddress(scoks.getAddress(), scoks.getPort()),
                             new InetSocketAddress(callConfig.getPort()));
-            ctx.writeAndFlush(addressedEnvelope).addListener(future -> {
-                System.out.println(future.isSuccess());
-                ctx.writeAndFlush(addressedEnvelope);
-            });
+            ctx.writeAndFlush(addressedEnvelope);
+            Thread.sleep(5000);
+            ctx.writeAndFlush(addressedEnvelope);
         }
         if (type == MessageProbuf.MessageType.MAKE_HOLE){
             log.info("打洞成功");

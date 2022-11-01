@@ -41,6 +41,8 @@ public class ClientUdpP2pDataHandler extends SimpleChannelInboundHandler<ProbufD
                     new DefaultAddressedEnvelope<>(message, new InetSocketAddress(scoks.getAddress(), scoks.getPort()),
                             new InetSocketAddress(clientConfig.getPort()));
             ctx.writeAndFlush(addressedEnvelope);
+            Thread.sleep(1000);
+            ctx.writeAndFlush(addressedEnvelope);
         }
         if (type == MessageProbuf.MessageType.MAKE_HOLE){
             log.info("打洞成功");
