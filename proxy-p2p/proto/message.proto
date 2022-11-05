@@ -11,6 +11,7 @@ message Message {
     Register register = 5;
     Protocol protocol = 6;
     Socks scoks = 7;
+    string id = 8;
 }
 
 message Register{
@@ -19,13 +20,11 @@ message Register{
 }
 
 message Request {
-    string requestId = 1;
-    bytes requestBody = 2;
+    bytes requestBody = 1;
 }
 
 message Response {
-    string responseId = 1;
-    bytes responseBody = 2;
+    bytes responseBody = 1;
 }
 
 enum MessageType {
@@ -36,6 +35,7 @@ enum MessageType {
     RESPONSE = 4;
     HEALTH = 5;
     CLOSE = 6;
+    CONNECTION = 7;
 }
 
 enum Protocol {

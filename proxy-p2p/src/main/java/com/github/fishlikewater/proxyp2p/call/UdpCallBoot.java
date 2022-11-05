@@ -8,12 +8,10 @@ import com.github.fishlikewater.proxyp2p.codec.MyDatagramPacketDecoder;
 import com.github.fishlikewater.proxyp2p.codec.MyProtobufDecoder;
 import com.github.fishlikewater.proxyp2p.config.CallConfig;
 import com.github.fishlikewater.proxyp2p.kit.BootStrapFactroy;
+import com.github.fishlikewater.proxyp2p.kit.MessageKit;
 import com.github.fishlikewater.proxyp2p.kit.MessageProbuf;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.epoll.EpollDatagramChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -24,6 +22,7 @@ import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -66,8 +65,11 @@ public class UdpCallBoot {
                         pipeline.addLast(new CallUdpP2pDataHandler(callConfig));
                     }
                 });
-        b.bind(0).addListener(future -> {
-        }).sync();
+        CallHeartBeatHandler.setInetSocketAddress(new InetSocketAddress(callConfig.getServerAddress(), callConfig.getServerPort()));
+        final ChannelFuture channelFuture = b.bind(0).addListener(future -> {}).sync();
+        if (channelFuture.isSuccess()){
+            CallKit.setChannel(channelFuture.channel());
+        }
     }
 
 
@@ -77,6 +79,7 @@ public class UdpCallBoot {
     public void stop() {
         log.info("⬢ call shutdown ...");
         try {
+            CallKit.channel.writeAndFlush(MessageKit.getCloseMsg(CallKit.p2pInetSocketAddress));
             if (this.bossGroup != null) {
                 this.bossGroup.shutdownGracefully().sync();
             }

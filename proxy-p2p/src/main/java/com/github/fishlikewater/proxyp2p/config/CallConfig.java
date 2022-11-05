@@ -29,5 +29,11 @@ public class CallConfig {
 
     private String name;
 
+    private int socksProt;
+
+    private String socksAddress;
+
+    /** 是否开启验证*/
+    private boolean auth;
 
 }

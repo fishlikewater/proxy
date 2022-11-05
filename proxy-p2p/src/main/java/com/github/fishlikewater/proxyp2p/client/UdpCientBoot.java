@@ -10,10 +10,7 @@ import com.github.fishlikewater.proxyp2p.config.ClientConfig;
 import com.github.fishlikewater.proxyp2p.kit.BootStrapFactroy;
 import com.github.fishlikewater.proxyp2p.kit.MessageProbuf;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.epoll.EpollDatagramChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -24,6 +21,7 @@ import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -66,8 +64,12 @@ public class UdpCientBoot {
                         pipeline.addLast(new ClientUdpP2pDataHandler(clientConfig));
                     }
                 });
-        b.bind(clientConfig.getPort()).addListener(future -> {
+        ClientHeartBeatHandler.setInetSocketAddress(new InetSocketAddress(clientConfig.getServerAddress(), clientConfig.getServerPort()));
+        final ChannelFuture channelFuture = b.bind(clientConfig.getPort()).addListener(future -> {
         }).sync();
+        if (channelFuture.isSuccess()){
+            ClientKit.setChannel(channelFuture.channel());
+        }
     }
 
 

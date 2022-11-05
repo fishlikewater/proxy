@@ -8,6 +8,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.DefaultAddressedEnvelope;
 import io.netty.handler.timeout.IdleStateEvent;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
@@ -25,6 +26,9 @@ public class ClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
     public static MessageProbuf.Message HEARTBEAT_SEQUENCE;
 
+    @Setter
+    public static InetSocketAddress inetSocketAddress;
+
     public ClientHeartBeatHandler(ClientConfig clientConfig){
         this.clientConfig = clientConfig;
         register = MessageProbuf.Register.newBuilder().setName(clientConfig.getName()).build();
@@ -40,7 +44,7 @@ public class ClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
         // 判断evt是否是IdleStateEvent（用于触发用户事件，包含 读空闲/写空闲/读写空闲 ）
         if (evt instanceof IdleStateEvent) {
             final AddressedEnvelope<MessageProbuf.Message, InetSocketAddress> addressedEnvelope =
-                    new DefaultAddressedEnvelope<>(HEARTBEAT_SEQUENCE, new InetSocketAddress(clientConfig.getServerAddress(), clientConfig.getServerPort()), new InetSocketAddress(clientConfig.getPort()));
+                    new DefaultAddressedEnvelope<>(HEARTBEAT_SEQUENCE, inetSocketAddress, new InetSocketAddress(clientConfig.getPort()));
 
             ctx.writeAndFlush(addressedEnvelope)
                     .addListener((future)->{
