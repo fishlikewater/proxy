@@ -2,6 +2,7 @@ package com.github.fishlikewater.proxyp2p.client.handle;
 import com.github.fishlikewater.proxyp2p.client.ClientKit;
 import com.github.fishlikewater.proxyp2p.kit.MessageProbuf;
 import com.google.protobuf.ByteString;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.DefaultAddressedEnvelope;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -19,7 +20,7 @@ import java.net.InetSocketAddress;
  * @since: 2022年10月18日 22:16
  */
 @Slf4j
-public class Dest2ClientHandler extends SimpleChannelInboundHandler<byte[]> {
+public class Dest2ClientHandler extends SimpleChannelInboundHandler<Object> {
 
     private final String requestId;
     private final InetSocketAddress inetSocketAddress;
@@ -39,10 +40,13 @@ public class Dest2ClientHandler extends SimpleChannelInboundHandler<byte[]> {
     }
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, byte[] destMsg) {
+    public void channelRead0(ChannelHandlerContext ctx, Object destMsg) {
         log.info("return data");
         final MessageProbuf.Response.Builder builder = MessageProbuf.Response.newBuilder();
-        builder.setResponseBody(ByteString.copyFrom(destMsg));
+        final ByteBuf buf = (ByteBuf) destMsg;
+        byte[] data = new byte[buf.readableBytes()];
+        buf.readBytes(data);
+        builder.setResponseBody(ByteString.copyFrom(data));
         final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
                 .setId(requestId)
                 .setResponse(builder.build())

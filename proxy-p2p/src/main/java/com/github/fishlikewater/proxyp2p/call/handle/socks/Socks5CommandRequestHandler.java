@@ -55,12 +55,6 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                             new InetSocketAddress(callConfig.getPort()));
             CallKit.getChannelMap().put(requestId, ctx.channel());
             CallKit.channel.writeAndFlush(addressedEnvelope).addListener((ChannelFutureListener) channelFuture -> {
-                if (channelFuture.isSuccess()){
-                    if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
-                        ctx.pipeline().remove(Socks5CommandRequestHandler.class);
-                    }
-                    ctx.pipeline().addLast(new Client2DestHandler(requestId, callConfig));
-                }
             });
         } else {
             ctx.fireChannelRead(msg);
@@ -95,7 +89,7 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
      *
      * @author huchengyi
      */
-	private static class Client2DestHandler extends SimpleChannelInboundHandler<Object> {
+	public static class Client2DestHandler extends SimpleChannelInboundHandler<Object> {
 
         private final String requestId;
 

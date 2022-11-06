@@ -8,6 +8,8 @@ import com.github.fishlikewater.proxyp2p.kit.MessageKit;
 import com.github.fishlikewater.proxyp2p.kit.MessageProbuf;
 import com.github.fishlikewater.proxyp2p.kit.ProbufData;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import lombok.RequiredArgsConstructor;
@@ -67,7 +69,9 @@ public class ClientUdpP2pDataHandler extends SimpleChannelInboundHandler<ProbufD
                 channel = ClientKit.getChannelMap().get(msgMessage.getId());
                 if (channel != null && channel.isActive()){
                     final byte[] bytes = msgMessage.getRequest().getRequestBody().toByteArray();
-                    channel.writeAndFlush(bytes).addListener(future -> {
+                    ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(bytes.length);
+                    buf.writeBytes(bytes);
+                    channel.writeAndFlush(buf).addListener(future -> {
                         if (future.isSuccess()){
                             log.info("send success");
                         }else {
@@ -87,8 +91,6 @@ public class ClientUdpP2pDataHandler extends SimpleChannelInboundHandler<ProbufD
                 bootstrap.connect().addListener((ChannelFutureListener) future -> {
                     if (future.isSuccess()) {
                         ClientKit.getChannelMap().put(requestId, future.channel());
-                        future.channel().pipeline().addLast(new ByteArrayCodec());
-                        future.channel().pipeline().addLast(new ChunkedWriteHandler());
                         future.channel().pipeline().addLast(new Dest2ClientHandler(requestId, msg.getSender()));
                         log.debug("连接成功");
                         MessageProbuf.Message message = MessageProbuf.Message.newBuilder()

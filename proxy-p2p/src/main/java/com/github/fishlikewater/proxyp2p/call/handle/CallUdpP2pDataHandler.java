@@ -1,6 +1,7 @@
 package com.github.fishlikewater.proxyp2p.call.handle;
 
 import com.github.fishlikewater.proxyp2p.call.CallKit;
+import com.github.fishlikewater.proxyp2p.call.handle.socks.Socks5CommandRequestHandler;
 import com.github.fishlikewater.proxyp2p.config.CallConfig;
 import com.github.fishlikewater.proxyp2p.kit.MessageKit;
 import com.github.fishlikewater.proxyp2p.kit.MessageProbuf;
@@ -74,6 +75,10 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<ProbufDat
                 }
                 channel = CallKit.getChannelMap().get(msgMessage.getId());
                 if (channel != null) {
+                    if (channel.pipeline().get(Socks5CommandRequestHandler.class) != null) {
+                        channel.pipeline().remove(Socks5CommandRequestHandler.class);
+                    }
+                    channel.pipeline().addLast(new Socks5CommandRequestHandler.Client2DestHandler(msgMessage.getId(), callConfig));
                     channel.writeAndFlush(commandResponse);
                 }else {
                     sendCloseInfo(msgMessage.getId(), msg.getSender(), ctx);

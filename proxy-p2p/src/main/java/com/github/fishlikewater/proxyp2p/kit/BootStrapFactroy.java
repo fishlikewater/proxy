@@ -50,9 +50,7 @@ public class BootStrapFactroy {
         }
         connectionBootstrap = new Bootstrap();
         connectionBootstrap.option(ChannelOption.SO_REUSEADDR, true);
-        connectionBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         connectionBootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-        connectionBootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2 * 60 * 1000);
         if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
             connectionBootstrap.channel(EpollSocketChannel.class);
         } else {
