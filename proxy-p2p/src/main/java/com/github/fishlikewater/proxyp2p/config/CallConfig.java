@@ -25,7 +25,7 @@ public class CallConfig {
 
     private int serverPort;
 
-    private long timeout = 10;
+    private long timeout = 30;
 
     private String name;
 

@@ -38,42 +38,57 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<ProbufDat
         final MessageProbuf.MessageType type = msgMessage.getType();
         System.out.println(type);
         System.out.println(msg);
-        if (type == MessageProbuf.MessageType.HEALTH) {
-            log.info("收到目标心跳消息");
-        }
-        if (type == MessageProbuf.MessageType.MAKE_HOLE_INIT) {
-            final MessageProbuf.Socks scoks = msgMessage.getScoks();
-            ctx.writeAndFlush(MessageKit.getMakeHoleMsg(scoks));
-        }
-        if (type == MessageProbuf.MessageType.MAKE_HOLE) {
-            CallKit.setP2pInetSocketAddress(msg.getSender());
-            CallHeartBeatHandler.setInetSocketAddress(msg.getSender());
-            ctx.writeAndFlush(MessageKit.getMakeHoleMsg(msg.getSender()));
-            log.info("打洞成功");
-        }
-        if (type == MessageProbuf.MessageType.CONNECTION) {
-            Socks5CommandResponse commandResponse;
-            if (msgMessage.getLength() == 1) {
-                commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
-            }else {
-                commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, Socks5AddressType.IPv4);
-            }
-            final Channel channel = CallKit.getChannelMap().get(msgMessage.getId());
-            if (channel != null) {
-                channel.writeAndFlush(commandResponse);
-            }else {
-                //sendCloseInfo(msgMessage.getId(), msg.getSender(), ctx);
-            }
-        }
-        if (type == MessageProbuf.MessageType.RESPONSE) {
-            final String id = msgMessage.getId();
-            final Channel channel = CallKit.getChannelMap().get(id);
-            if (channel != null && channel.isActive()){
-                final byte[] bytes = msgMessage.getResponse().getResponseBody().toByteArray();
-                ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(bytes.length);
-                buf.writeBytes(bytes);
-                channel.writeAndFlush(buf);
-            }
+        Channel channel;
+        switch (type){
+            case HEALTH:
+                log.info("收到目标心跳消息");
+                break;
+            case CLOSE:
+                channel = CallKit.getChannelMap().get(msgMessage.getId());
+                if (channel != null){
+                    CallKit.getChannelMap().remove(msgMessage.getId());
+                    channel.close();
+                }
+                break;
+            case MAKE_HOLE_INIT:
+                final MessageProbuf.Socks scoks = msgMessage.getScoks();
+                ctx.writeAndFlush(MessageKit.getMakeHoleMsg(scoks));
+                break;
+            case MAKE_HOLE:
+                CallKit.setP2pInetSocketAddress(msg.getSender());
+                CallHeartBeatHandler.setInetSocketAddress(msg.getSender());
+                ctx.writeAndFlush(MessageKit.getAckMsg(msg.getSender()));
+                log.info("打洞成功");
+                break;
+            case ACK:
+                CallKit.setP2pInetSocketAddress(msg.getSender());
+                CallHeartBeatHandler.setInetSocketAddress(msg.getSender());
+                log.info("confirm message");
+                break;
+            case CONNECTION:
+                Socks5CommandResponse commandResponse;
+                if (msgMessage.getLength() == 1) {
+                    commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
+                }else {
+                    commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, Socks5AddressType.IPv4);
+                }
+                channel = CallKit.getChannelMap().get(msgMessage.getId());
+                if (channel != null) {
+                    channel.writeAndFlush(commandResponse);
+                }else {
+                    sendCloseInfo(msgMessage.getId(), msg.getSender(), ctx);
+                }
+                break;
+            case RESPONSE:
+                final String id = msgMessage.getId();
+                channel = CallKit.getChannelMap().get(id);
+                if (channel != null && channel.isActive()){
+                    final byte[] bytes = msgMessage.getResponse().getResponseBody().toByteArray();
+                    ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(bytes.length);
+                    buf.writeBytes(bytes);
+                    channel.writeAndFlush(buf);
+                }
+
         }
     }
 

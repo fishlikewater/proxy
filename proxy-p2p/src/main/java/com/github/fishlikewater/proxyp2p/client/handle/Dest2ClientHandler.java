@@ -55,7 +55,7 @@ public class Dest2ClientHandler extends SimpleChannelInboundHandler<byte[]> {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        log.trace("目标服务器断开连接");
+        log.debug("目标服务器断开连接");
         final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
                 .setId(requestId)
                 .setType(MessageProbuf.MessageType.CLOSE)

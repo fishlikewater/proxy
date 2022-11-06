@@ -19,10 +19,19 @@ public class MessageKit {
             .setType(MessageProbuf.MessageType.MAKE_HOLE)
             .build();
 
+    private static final MessageProbuf.Message ackMessage = MessageProbuf.Message.newBuilder()
+            .setType(MessageProbuf.MessageType.ACK)
+            .build();
+
     public static final MessageProbuf.Message closeMsg = MessageProbuf.Message.newBuilder()
             .setType(MessageProbuf.MessageType.CLOSE)
             .build();
 
+
+    public static AddressedEnvelope<MessageProbuf.Message, InetSocketAddress> getAckMsg(InetSocketAddress inetSocketAddress){
+        return  new DefaultAddressedEnvelope<>(ackMessage, inetSocketAddress,
+                new InetSocketAddress(0));
+    }
 
     public static AddressedEnvelope<MessageProbuf.Message, InetSocketAddress> getMakeHoleMsg(MessageProbuf.Socks scoks){
         return  new DefaultAddressedEnvelope<>(message, new InetSocketAddress(scoks.getAddress(), scoks.getPort()),

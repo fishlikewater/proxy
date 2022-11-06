@@ -57,6 +57,10 @@ public final class MessageProbuf {
      * <code>CONNECTION = 7;</code>
      */
     CONNECTION(7),
+    /**
+     * <code>ACK = 8;</code>
+     */
+    ACK(8),
     UNRECOGNIZED(-1),
     ;
 
@@ -100,6 +104,10 @@ public final class MessageProbuf {
      * <code>CONNECTION = 7;</code>
      */
     public static final int CONNECTION_VALUE = 7;
+    /**
+     * <code>ACK = 8;</code>
+     */
+    public static final int ACK_VALUE = 8;
 
 
     public final int getNumber() {
@@ -128,6 +136,7 @@ public final class MessageProbuf {
         case 5: return HEALTH;
         case 6: return CLOSE;
         case 7: return CONNECTION;
+        case 8: return ACK;
         default: return null;
       }
     }
@@ -4188,12 +4197,12 @@ public final class MessageProbuf {
       "n\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\"\036\n\007Request\022\023\n\013requ" +
       "estBody\030\001 \001(\014\" \n\010Response\022\024\n\014responseBod" +
       "y\030\001 \001(\014\"&\n\005Socks\022\017\n\007address\030\001 \001(\t\022\014\n\004por" +
-      "t\030\002 \001(\005*}\n\013MessageType\022\022\n\016MAKE_HOLE_INIT" +
-      "\020\000\022\r\n\tMAKE_HOLE\020\001\022\t\n\005VALID\020\002\022\013\n\007REQUEST\020" +
-      "\003\022\014\n\010RESPONSE\020\004\022\n\n\006HEALTH\020\005\022\t\n\005CLOSE\020\006\022\016" +
-      "\n\nCONNECTION\020\007*(\n\010Protocol\022\010\n\004HTTP\020\000\022\007\n\003" +
-      "TCP\020\001\022\t\n\005SOCKS\020\003B\017B\rMessageProbufb\006proto" +
-      "3"
+      "t\030\002 \001(\005*\206\001\n\013MessageType\022\022\n\016MAKE_HOLE_INI" +
+      "T\020\000\022\r\n\tMAKE_HOLE\020\001\022\t\n\005VALID\020\002\022\013\n\007REQUEST" +
+      "\020\003\022\014\n\010RESPONSE\020\004\022\n\n\006HEALTH\020\005\022\t\n\005CLOSE\020\006\022" +
+      "\016\n\nCONNECTION\020\007\022\007\n\003ACK\020\010*(\n\010Protocol\022\010\n\004" +
+      "HTTP\020\000\022\007\n\003TCP\020\001\022\t\n\005SOCKS\020\003B\017B\rMessagePro" +
+      "bufb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

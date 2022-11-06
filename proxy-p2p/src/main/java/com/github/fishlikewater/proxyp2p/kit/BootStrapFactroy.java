@@ -21,6 +21,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 public class BootStrapFactroy {
 
     private static Bootstrap bootstrap = null;
+    private static Bootstrap connectionBootstrap = null;
     private static EventLoopGroup bossGroup = null;
 
     static {
@@ -44,18 +45,20 @@ public class BootStrapFactroy {
     }
 
     public static Bootstrap bootstrapCenection(){
-        if(bootstrap != null){
-            return bootstrap.clone();
+        if(connectionBootstrap != null){
+            return connectionBootstrap.clone();
         }
-        bootstrap = new Bootstrap();
-        bootstrap.option(ChannelOption.SO_REUSEADDR, true);
-        bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        connectionBootstrap = new Bootstrap();
+        connectionBootstrap.option(ChannelOption.SO_REUSEADDR, true);
+        connectionBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+        connectionBootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        connectionBootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2 * 60 * 1000);
         if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
-            bootstrap.channel(EpollSocketChannel.class);
+            connectionBootstrap.channel(EpollSocketChannel.class);
         } else {
-            bootstrap.channel(NioSocketChannel.class);
+            connectionBootstrap.channel(NioSocketChannel.class);
         }
-        bootstrap.group(bossGroup);
+        connectionBootstrap.group(bossGroup);
         return bootstrap;
     }
 
