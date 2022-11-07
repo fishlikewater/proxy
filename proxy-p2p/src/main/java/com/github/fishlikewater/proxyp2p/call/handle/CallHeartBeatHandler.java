@@ -1,18 +1,22 @@
 package com.github.fishlikewater.proxyp2p.call.handle;
 
 
+import cn.hutool.core.util.ObjectUtil;
+import com.github.fishlikewater.proxyp2p.call.CallKit;
 import com.github.fishlikewater.proxyp2p.config.CallConfig;
-import com.github.fishlikewater.proxyp2p.config.ClientConfig;
-import com.github.fishlikewater.proxyp2p.kit.MessageProbuf;
-import io.netty.channel.AddressedEnvelope;
+import com.github.fishlikewater.proxyp2p.kit.MessageData;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.DefaultAddressedEnvelope;
+import io.netty.channel.socket.DatagramPacket;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
+
+import static com.github.fishlikewater.proxyp2p.kit.MessageData.CmdEnum.HEALTH;
 
 /**
  * 用于检测channel的心跳handler
@@ -21,22 +25,18 @@ import java.net.InetSocketAddress;
 @Slf4j
 public class CallHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
-    private final CallConfig callConfig;
-
     @Setter
     public static InetSocketAddress inetSocketAddress;
 
-    public static MessageProbuf.Register register;
-
-    public static MessageProbuf.Message HEARTBEAT_SEQUENCE;
+    public static ByteBuf HEARTBEAT_SEQUENCE;
 
     public CallHeartBeatHandler(CallConfig callConfig){
-        this.callConfig = callConfig;
-        register = MessageProbuf.Register.newBuilder().setName(callConfig.getName()).build();
-        HEARTBEAT_SEQUENCE = MessageProbuf.Message.newBuilder()
-                .setRegister(register)
-                .setType(MessageProbuf.MessageType.HEALTH)
-                .build();
+        MessageData messageData = new MessageData()
+                .setRegisterName(callConfig.getName())
+                .setCmdEnum(HEALTH);
+        final byte[] bytesMsg = ObjectUtil.serialize(messageData);
+        HEARTBEAT_SEQUENCE = ByteBufAllocator.DEFAULT.buffer(bytesMsg.length);
+        HEARTBEAT_SEQUENCE.writeBytes(bytesMsg);
     }
 
     @Override
@@ -44,11 +44,8 @@ public class CallHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
         // 判断evt是否是IdleStateEvent（用于触发用户事件，包含 读空闲/写空闲/读写空闲 ）
         if (evt instanceof IdleStateEvent) {
-            final AddressedEnvelope<MessageProbuf.Message, InetSocketAddress> addressedEnvelope =
-                    new DefaultAddressedEnvelope<>(HEARTBEAT_SEQUENCE, inetSocketAddress,
-                            new InetSocketAddress(callConfig.getPort()));
-
-            ctx.writeAndFlush(addressedEnvelope)
+            final DatagramPacket datagramPacket = new DatagramPacket(HEARTBEAT_SEQUENCE, CallKit.p2pInetSocketAddress);
+            ctx.writeAndFlush(datagramPacket)
                     .addListener((future)->{
                         if(!future.isSuccess()){
                             log.warn("发送心跳包失败...");

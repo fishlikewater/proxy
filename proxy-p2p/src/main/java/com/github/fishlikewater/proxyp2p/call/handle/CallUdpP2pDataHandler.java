@@ -1,22 +1,17 @@
 package com.github.fishlikewater.proxyp2p.call.handle;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.github.fishlikewater.proxyp2p.call.CallKit;
 import com.github.fishlikewater.proxyp2p.call.handle.socks.Socks5CommandRequestHandler;
+import com.github.fishlikewater.proxyp2p.call.handle.socks.Socks5InitialAuthHandler;
 import com.github.fishlikewater.proxyp2p.config.CallConfig;
 import com.github.fishlikewater.proxyp2p.kit.MessageData;
 import com.github.fishlikewater.proxyp2p.kit.MessageKit;
 import com.github.fishlikewater.proxyp2p.kit.MessageProbuf;
-import com.github.fishlikewater.proxyp2p.kit.ProbufData;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.socket.DatagramPacket;
-import io.netty.handler.codec.socksx.v5.DefaultSocks5CommandResponse;
-import io.netty.handler.codec.socksx.v5.Socks5AddressType;
-import io.netty.handler.codec.socksx.v5.Socks5CommandResponse;
-import io.netty.handler.codec.socksx.v5.Socks5CommandStatus;
+import io.netty.handler.codec.socksx.v5.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,36 +65,37 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<DatagramP
                 log.info("打洞成功");
                 break;
             case ACK:
-                CallKit.setP2pInetSocketAddress(msg.getSender());
-                CallHeartBeatHandler.setInetSocketAddress(msg.getSender());
+                CallKit.setP2pInetSocketAddress(msg.sender());
+                CallHeartBeatHandler.setInetSocketAddress(msg.sender());
                 log.info("confirm message");
                 break;
             case CONNECTION:
                 Socks5CommandResponse commandResponse;
-                if (msgMessage.getLength() == 1) {
+                if (messageData.getState() == 1) {
                     commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
                 }else {
                     commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, Socks5AddressType.IPv4);
                 }
-                channel = CallKit.getChannelMap().get(msgMessage.getId());
+                channel = CallKit.getChannelMap().get(messageData.getId());
                 if (channel != null) {
                     if (channel.pipeline().get(Socks5CommandRequestHandler.class) != null) {
                         channel.pipeline().remove(Socks5CommandRequestHandler.class);
+                        channel.pipeline().remove(Socks5CommandRequestDecoder.class);
+                        channel.pipeline().remove(Socks5InitialAuthHandler.class);
+                        channel.pipeline().remove(Socks5InitialRequestDecoder.class);
                     }
-                    channel.pipeline().addLast(new Socks5CommandRequestHandler.Client2DestHandler(msgMessage.getId(), callConfig));
+                    channel.pipeline().addLast(new Socks5CommandRequestHandler.Client2DestHandler(messageData.getId(), callConfig));
                     channel.writeAndFlush(commandResponse);
                 }else {
-                    sendCloseInfo(msgMessage.getId(), msg.getSender(), ctx);
+                    sendCloseInfo(messageData.getId(), msg.sender(), ctx);
                 }
                 break;
             case RESPONSE:
-                final String id = msgMessage.getId();
+                final String id = messageData.getId();
                 channel = CallKit.getChannelMap().get(id);
                 if (channel != null && channel.isActive()){
-                    final byte[] bytes = msgMessage.getResponse().getResponseBody().toByteArray();
-                    ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(bytes.length);
-                    buf.writeBytes(bytes);
-                    channel.writeAndFlush(buf);
+                    final ByteBuf byteBuf = messageData.getByteBuf();
+                    channel.writeAndFlush(byteBuf);
                 }
 
         }

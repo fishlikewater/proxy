@@ -1,7 +1,9 @@
 package com.github.fishlikewater.proxyp2p.kit;
 
+import io.netty.buffer.ByteBuf;
 import lombok.Data;
 import lombok.Getter;
+import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 
@@ -14,15 +16,20 @@ import java.io.Serializable;
  * @since: 2022年11月07日 15:20
  **/
 @Data
+@Accessors(chain = true)
 public class MessageData implements Serializable {
 
     private CmdEnum cmdEnum;
 
     private String id;
 
-    private byte[] bytes;
+    private int state;
+
+    private ByteBuf byteBuf;
 
     private Dst dst;
+
+    private String registerName;
 
     @Data
     public static class Dst implements Serializable{
