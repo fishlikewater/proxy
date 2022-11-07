@@ -4,11 +4,8 @@ import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.NamedThreadFactory;
 import com.github.fishlikewater.proxyp2p.client.handle.ClientHeartBeatHandler;
 import com.github.fishlikewater.proxyp2p.client.handle.ClientUdpP2pDataHandler;
-import com.github.fishlikewater.proxyp2p.codec.MyDatagramPacketDecoder;
-import com.github.fishlikewater.proxyp2p.codec.MyProtobufDecoder;
 import com.github.fishlikewater.proxyp2p.config.ClientConfig;
 import com.github.fishlikewater.proxyp2p.kit.BootStrapFactroy;
-import com.github.fishlikewater.proxyp2p.kit.MessageProbuf;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.EpollDatagramChannel;
@@ -16,8 +13,6 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.handler.codec.DatagramPacketEncoder;
-import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,8 +52,6 @@ public class UdpCientBoot {
                     @Override
                     protected void initChannel(DatagramChannel ch) {
                         final ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addFirst("udpEncoder", new DatagramPacketEncoder<>(new ProtobufEncoder()));
-                        pipeline.addFirst("udpDecoder", new MyDatagramPacketDecoder(new MyProtobufDecoder(MessageProbuf.Message.getDefaultInstance())));
                         pipeline.addLast(new IdleStateHandler(0, 0, clientConfig.getTimeout(), TimeUnit.SECONDS))
                                 .addLast(new ClientHeartBeatHandler(clientConfig));
                         pipeline.addLast(new ClientUdpP2pDataHandler(clientConfig));
