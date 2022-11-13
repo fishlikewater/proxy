@@ -14,8 +14,8 @@ import java.io.IOException;
 
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
- * @date 2019年07月13日 8:18
- * @since 客户端与服务端建立连接
+ * @since: 2019年07月13日 8:18
+ *  客户端与服务端建立连接
  **/
 @Slf4j
 public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<MessageProbuf.Message> {
@@ -46,9 +46,6 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
             }
             if (protocol == MessageProbuf.Protocol.HTTP){
                 HandleKit.handleHttp(ctx, msg, type);
-            }
-            if (protocol == MessageProbuf.Protocol.TCP){
-                HandleKit.handleTcp(ctx, msg, type);
             }
             if (protocol == MessageProbuf.Protocol.SOCKS){
                 HandleKit.handleSocks(ctx, msg);
@@ -96,7 +93,14 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
             if (StrUtil.isNotBlank(path)) {
                 log.info(path + "断开连接");
                 log.info("close chanel and clean path {}", path);
-                ChannelGroupKit.remove(path);
+                if (path.contains(",")){
+                    final String[] split = path.split(",");
+                    for (String s : split) {
+                        ChannelGroupKit.remove(s);
+                    }
+                }else {
+                    ChannelGroupKit.remove(path);
+                }
             }
         }
         final Attribute<String> attribute = ctx.channel().attr(ChannelGroupKit.CALL_FLAG);

@@ -4,8 +4,6 @@ package com.github.fishlikewater.client.boot;
 import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.client.handle.ClientHeartBeatHandler;
 import com.github.fishlikewater.client.handle.ClientMessageHandler;
-import com.github.fishlikewater.client.handle.TcpClientHandler;
-import com.github.fishlikewater.codec.ByteArrayCodec;
 import com.github.fishlikewater.config.ProxyType;
 import com.github.fishlikewater.kit.MessageProbuf;
 import io.netty.channel.Channel;
@@ -16,7 +14,6 @@ import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 
 import java.util.concurrent.TimeUnit;
@@ -62,11 +59,6 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
                     .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
                     .addLast(new ClientHeartBeatHandler())
                     .addLast(new ClientMessageHandler(proxyConfig, client));
-        } /* tcp代理*/
-        else if (proxyType == ProxyType.tcp_client){
-            pipeline.addLast(new ByteArrayCodec());
-            pipeline.addLast(new ChunkedWriteHandler());
-            pipeline.addLast(new TcpClientHandler(proxyConfig.getProxyPath()));
         }
 
     }

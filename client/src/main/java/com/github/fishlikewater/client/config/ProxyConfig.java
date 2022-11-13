@@ -1,15 +1,16 @@
 package com.github.fishlikewater.client.config;
 
+import com.github.fishlikewater.client.boot.ProxyClient;
+import com.github.fishlikewater.config.ProxyType;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * @author zhangx
  * @version V1.0
- * @mail fishlikewater@126.com
- * @ClassName ProxyConfig
- * @Description
  * @since: 2019年03月05日 15:55
  **/
 @ConfigurationProperties("proxy")
@@ -33,11 +34,23 @@ public class ProxyConfig {
     private boolean logging;
 
     /** 内网穿透代理路劲*/
+
+    private List<HttpMapping> httpMappings;
+
     private String proxyPath;
 
-    private String httpAdress;
+    private ProxyType proxyType;
 
-    private int httpPort;
+    @Data
+    public static class HttpMapping{
+
+        private String address;
+
+        private int port;
+
+        private String name;
+
+    }
 
 }
 

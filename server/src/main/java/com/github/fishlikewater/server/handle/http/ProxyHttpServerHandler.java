@@ -11,6 +11,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
+import io.netty.util.Attribute;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -25,12 +26,6 @@ import java.util.Map;
 @Slf4j
 public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObject> {
 
-    public static void main(String[] args) {
-        String url = "";
-        final String[] split = url.split("/");
-        System.out.println(split.length);
-    }
-
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
         if (msg instanceof FullHttpRequest) {
@@ -42,18 +37,18 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
             if (StrUtil.isBlank(uri)) {
                 return;
             }
-            final String[] split = uri.split("/");
-            String triger = split[1];
-            Channel channel;
-            if (StrUtil.isBlank(triger)) {
-                channel = ChannelGroupKit.find("default");
-            } else {
-                channel = ChannelGroupKit.find(triger);
-                if (channel == null) {
-                    channel = ChannelGroupKit.find("default");
+            String path = headers.get("path");
+            if (StrUtil.isBlank(path)){
+                final String[] split = uri.split("/");
+                path = split[1];
+                if (StrUtil.isNotBlank(path)){
+                    uri = uri.replace("/" + path, "");
                 }
             }
-            uri = uri.replace("/" + triger, "");
+            Channel channel = null;
+            if (StrUtil.isNotBlank(path)) {
+                channel = ChannelGroupKit.find(path);
+            }
             if (channel == null) {
                 byte[] bytes = "没有穿透路由".getBytes(Charset.defaultCharset());
                 FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST);
@@ -78,10 +73,12 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
                     builder.setBody(ByteString.copyFrom(bytes));
                 }
                 String requestId = IdUtil.next();
+                ctx.channel().attr(ChannelGroupKit.CHANNELS_LOCAL).set(requestId);
                 channel.writeAndFlush(MessageProbuf.Message.newBuilder()
                         .setType(MessageProbuf.MessageType.REQUEST)
                         .setProtocol(MessageProbuf.Protocol.HTTP)
                         .setRequest(builder.build())
+                        .setExtend(path)
                         .setRequestId(requestId)).addListener((f) -> {
                     if (f.isSuccess()) {
                         CacheUtil.put(requestId, ctx.channel(), 300);
@@ -95,6 +92,15 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
             log.info("not found http or https request, will close this channel");
             ctx.close();
         }
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        final Attribute<String> attr = ctx.channel().attr(ChannelGroupKit.CHANNELS_LOCAL);
+        if (attr != null){
+            CacheUtil.remove(attr.get());
+        }
+        super.channelInactive(ctx);
     }
 
     @Override

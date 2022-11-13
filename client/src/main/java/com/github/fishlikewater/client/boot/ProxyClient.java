@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 
 import java.net.InetSocketAddress;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -107,7 +108,14 @@ public class ProxyClient{
     void afterConnectionSuccessful(Channel channel) {
         /* 发送首先发送验证信息*/
         MessageProbuf.Register.Builder builder = MessageProbuf.Register.newBuilder();
-        builder.setPath(proxyConfig.getProxyPath()).setToken(proxyConfig.getToken());
+        if (proxyConfig.getProxyType() == ProxyType.http){
+            final Set<String> keySet = ChannelKit.HTTP_MAPPING_MAP.keySet();
+            final String path = String.join(",", keySet);
+            builder.setPath(path);
+        }else {
+            builder.setPath(proxyConfig.getProxyPath());
+        }
+        builder.setToken(proxyConfig.getToken());
         final MessageProbuf.Message.Builder messageBuild = MessageProbuf.Message
                 .newBuilder()
                 .setRequestId(IdUtil.next())

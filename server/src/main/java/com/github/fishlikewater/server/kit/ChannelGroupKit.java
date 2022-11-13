@@ -6,6 +6,7 @@ import io.netty.util.AttributeKey;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -14,6 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 @Slf4j
 public class ChannelGroupKit {
+
+    public final static AttributeKey<String> CHANNELS_LOCAL = AttributeKey.newInstance("CHANNELS_LOCAL");
 
     //目标机路径属性
     public static final AttributeKey<String> CLIENT_PATH = AttributeKey.valueOf("client_path");

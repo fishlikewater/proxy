@@ -1,5 +1,6 @@
 package com.github.fishlikewater.client.handle;
 
+import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.kit.MessageProbuf;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
@@ -9,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
@@ -18,6 +20,10 @@ public class ChannelKit {
 
     public final static AttributeKey<String> LOCAL_INFO = AttributeKey.newInstance("LOCAL_INFO");
     public final static AttributeKey<Map<String, Channel>> CHANNELS_LOCAL = AttributeKey.newInstance("CHANNELS_LOCAL");
+
+    @Setter
+    @Getter
+    public static Map<String, ProxyConfig.HttpMapping> HTTP_MAPPING_MAP = new ConcurrentHashMap<>();
 
     @Setter
     @Getter

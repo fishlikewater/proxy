@@ -1,10 +1,8 @@
 package com.github.fishlikewater.client.handle;
 
 import com.github.fishlikewater.client.boot.BootStrapFactroy;
-import com.github.fishlikewater.client.boot.ClientHandlerInitializer;
 import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.codec.ByteArrayCodec;
-import com.github.fishlikewater.config.ProxyType;
 import com.github.fishlikewater.kit.MessageProbuf;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -20,7 +18,6 @@ import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.Promise;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -34,53 +31,18 @@ import java.util.Objects;
 @Slf4j
 public class HandleKit {
 
-    public static void handleTcp(ChannelHandlerContext ctx, MessageProbuf.Message msg,
-                                 MessageProbuf.MessageType type, ProxyConfig proxyConfig) {
-        final Map<String, String> headerMap = msg.getRequest().getHeaderMap();
-        final String flag = headerMap.get("address") + ":" +  headerMap.get("port");
-        if (type == MessageProbuf.MessageType.CLOSE) {
-            final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(flag);
-            if (channel != null && channel.isActive()) {
-                channel.close();
-                ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().remove(flag);
-            }
-        } else {
-            final byte[] bytes = msg.getRequest().getBody().toByteArray();
-            if (type == MessageProbuf.MessageType.REQUEST) {
-                //先判断是否建立连接
-                final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(flag);
-                if (channel != null && channel.isActive()) {
-                    channel.writeAndFlush(bytes);
-                } else {
-                    Bootstrap bootstrap = BootStrapFactroy.bootstrapConfig(ctx);
-                    bootstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.tcp_client, null));
-                    bootstrap.remoteAddress(headerMap.get("address"), Integer.parseInt(headerMap.get("port")));
-                    bootstrap.connect().addListener((ChannelFutureListener) future -> {
-                        if (future.isSuccess()) {
-                            ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().put(flag, future.channel());
-                            future.channel().attr(ChannelKit.LOCAL_INFO).set(msg.getRequestId());
-                            future.channel().writeAndFlush(bytes);
-                            log.info("连接成功");
-                        } else {
-                            log.warn("连接失败");
-                        }
-                    });
-
-                }
-            }
-        }
-    }
-
-    public static void handleHttp(ChannelHandlerContext ctx, MessageProbuf.Message msg, ProxyConfig proxyConfig) {
+    public static void handleHttp(ChannelHandlerContext ctx, MessageProbuf.Message msg) {
         switch (msg.getType()) {
             case REQUEST:
                 String requestid = msg.getRequestId();
                 MessageProbuf.Request request = msg.getRequest();
+                String name = msg.getExtend();
+                final ProxyConfig.HttpMapping httpMapping = ChannelKit.HTTP_MAPPING_MAP.get(name);
                 FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.valueOf(request.getHttpVersion()), HttpMethod.valueOf(request.getMethod()), request.getUrl());
                 request.getHeaderMap().forEach((key, value) -> req.headers().set(key, value));
-                req.headers().set("Host", (proxyConfig.getHttpAdress() + ":" + proxyConfig.getHttpPort()));
+                req.headers().set("Host", (httpMapping.getAddress() + ":" + httpMapping.getPort()));
                 req.content().writeBytes(request.getBody().toByteArray());
-                Promise<Channel> promise = createPromise(proxyConfig.getHttpAdress(), proxyConfig.getHttpPort(), ctx);
+                Promise<Channel> promise = createPromise(httpMapping.getAddress(), httpMapping.getPort(), ctx);
                 promise.addListener((FutureListener<Channel>) channelFuture -> {
                     if (channelFuture.isSuccess()) {
                         ChannelPipeline p = channelFuture.get().pipeline();
@@ -177,5 +139,4 @@ public class HandleKit {
                 });
         return promise;
     }
-
 }

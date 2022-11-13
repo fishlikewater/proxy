@@ -1,0 +1,5 @@
+### 内外穿透测试
+GET http://{{server}}/test1
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+path: test2

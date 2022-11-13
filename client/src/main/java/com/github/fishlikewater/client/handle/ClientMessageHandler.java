@@ -49,10 +49,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
         MessageProbuf.MessageType type = msg.getType();
         final MessageProbuf.Protocol protocol = msg.getProtocol();
         if (protocol == MessageProbuf.Protocol.HTTP) {
-            HandleKit.handleHttp(ctx, msg, proxyConfig);
-        }
-        if (protocol == MessageProbuf.Protocol.TCP) {
-            HandleKit.handleTcp(ctx, msg, type, proxyConfig);
+            HandleKit.handleHttp(ctx, msg);
         }
         if (protocol == MessageProbuf.Protocol.SOCKS){
             HandleKit.handleSocks(ctx, msg, type);

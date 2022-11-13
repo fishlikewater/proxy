@@ -12,8 +12,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Objects;
-
 /**
  * <p>
  *
@@ -70,21 +68,43 @@ public class HandleKit {
             ChannelGroupKit.sendVailFail(ctx.channel(), "请配置路由");
         } else {
             if (extend.equals("client")){
-                Channel channel = ChannelGroupKit.find(path);
-                if(channel != null){
-                    if(channel.isActive() && channel.isWritable()){
-                        ChannelGroupKit.sendVailFail(ctx.channel(), "路由已被其他链接使用");
-                        return;
-                    }else {
-                        ChannelGroupKit.remove(path);
-                        channel.close();
+                //处理http穿透 多服务注册
+                if (path.contains(",")){
+                    final String[] split = path.split(",");
+                    for (String p : split) {
+                        Channel channel = ChannelGroupKit.find(p);
+                        if(channel != null){
+                            if(channel.isActive() && channel.isWritable()){
+                                ChannelGroupKit.sendVailFail(ctx.channel(), "路由:"+p+"已被其他链接使用");
+                            }else {
+                                ChannelGroupKit.remove(p);
+                                channel.close();
+                            }
+                            return;
+                        }else {
+                            ChannelGroupKit.add(p, ctx.channel());
+                            ChannelGroupKit.sendVailSuccess(ctx.channel());
+                            log.info("register client path {} successful", p);
+                        }
                     }
-                }else {
                     ctx.channel().attr(ChannelGroupKit.CLIENT_PATH).set(path);
-                    ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).set("client");
-                    ChannelGroupKit.add(path, ctx.channel());
-                    ChannelGroupKit.sendVailSuccess(ctx.channel());
-                    log.info("register client path {} successful", path);
+                }else {
+                    Channel channel = ChannelGroupKit.find(path);
+                    if(channel != null){
+                        if(channel.isActive() && channel.isWritable()){
+                            ChannelGroupKit.sendVailFail(ctx.channel(), "路由已被其他链接使用");
+                            return;
+                        }else {
+                            ChannelGroupKit.remove(path);
+                            channel.close();
+                        }
+                    }else {
+                        ctx.channel().attr(ChannelGroupKit.CLIENT_PATH).set(path);
+                        ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).set("client");
+                        ChannelGroupKit.add(path, ctx.channel());
+                        ChannelGroupKit.sendVailSuccess(ctx.channel());
+                        log.info("register client path {} successful", path);
+                    }
                 }
             }
             if (extend.equals("call")){
@@ -100,30 +120,6 @@ public class HandleKit {
                 }else {
                     ChannelGroupKit.sendVailFail(ctx.channel(), "未匹配到目标机");
                 }
-            }
-        }
-    }
-
-    public static void handleTcp(ChannelHandlerContext ctx, MessageProbuf.Message msg, MessageProbuf.MessageType type) {
-        if (type == MessageProbuf.MessageType.REQUEST || type == MessageProbuf.MessageType.INIT ||  type == MessageProbuf.MessageType.CLOSE){
-            Channel channel = ChannelGroupKit.find(msg.getExtend());
-            if (Objects.isNull(channel)) {
-                log.warn("没有指定path的客户端注册");
-                return;
-            }
-            channel.writeAndFlush(msg);
-        }
-        if (type == MessageProbuf.MessageType.RESPONSE){
-            Channel callChannel = ChannelGroupKit.findCall(msg.getRequestId());
-            if (Objects.isNull(callChannel)) {
-                log.info("调用方已离线");
-                MessageProbuf.Message respFailVailMsg = MessageProbuf.Message.newBuilder()
-                        .setType(MessageProbuf.MessageType.RESPONSE)
-                        .setProtocol(MessageProbuf.Protocol.TCP)
-                        .setExtend("调用方已离线").build();
-                ctx.writeAndFlush(respFailVailMsg);
-            }else {
-                callChannel.writeAndFlush(msg);
             }
         }
     }
