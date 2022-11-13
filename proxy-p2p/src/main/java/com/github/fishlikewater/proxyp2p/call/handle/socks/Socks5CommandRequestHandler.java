@@ -7,17 +7,19 @@ import com.github.fishlikewater.proxyp2p.call.CallKit;
 import com.github.fishlikewater.proxyp2p.config.CallConfig;
 import com.github.fishlikewater.proxyp2p.kit.MessageData;
 import com.github.fishlikewater.proxyp2p.kit.MessageKit;
-import com.github.fishlikewater.proxyp2p.kit.MessageProbuf;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.handler.codec.socksx.v5.DefaultSocks5CommandRequest;
 import io.netty.handler.codec.socksx.v5.Socks5CommandType;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
+
+import static com.github.fishlikewater.proxyp2p.kit.MessageData.CmdEnum.CLOSE;
 
 @Slf4j
 public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<DefaultSocks5CommandRequest> {
@@ -81,12 +83,9 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 
         private final String requestId;
 
-        private final CallConfig callConfig;
-
-		public Client2DestHandler(String requestId, CallConfig callConfig) {
+        public Client2DestHandler(String requestId) {
 			this.requestId = requestId;
-			this.callConfig = callConfig;
-		}
+        }
 
 		@Override
 		public void channelRead0(ChannelHandlerContext ctx, Object msg) {
@@ -104,14 +103,12 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                 CallKit.getChannelMap().remove(requestId);
             }
 			log.debug("客户端断开连接");
-            final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
+            final MessageData messageData = new MessageData()
                     .setId(requestId)
-                    .setType(MessageProbuf.MessageType.CLOSE)
-                    .build();
-            final AddressedEnvelope<MessageProbuf.Message, InetSocketAddress> addressedEnvelope =
-                    new DefaultAddressedEnvelope<>(message, CallKit.p2pInetSocketAddress,
-                            new InetSocketAddress(callConfig.getPort()));
-           CallKit.channel.writeAndFlush(addressedEnvelope);
+                    .setCmdEnum(CLOSE);
+            final ByteBuf byteBuf = MessageKit.getByteBuf(messageData);
+            final DatagramPacket datagramPacket = new DatagramPacket(byteBuf, CallKit.p2pInetSocketAddress);
+           CallKit.channel.writeAndFlush(datagramPacket);
 		}
 
 		@Override

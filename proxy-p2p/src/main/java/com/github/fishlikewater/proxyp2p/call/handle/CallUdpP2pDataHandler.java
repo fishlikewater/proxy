@@ -7,15 +7,19 @@ import com.github.fishlikewater.proxyp2p.call.handle.socks.Socks5InitialAuthHand
 import com.github.fishlikewater.proxyp2p.config.CallConfig;
 import com.github.fishlikewater.proxyp2p.kit.MessageData;
 import com.github.fishlikewater.proxyp2p.kit.MessageKit;
-import com.github.fishlikewater.proxyp2p.kit.MessageProbuf;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.handler.codec.socksx.v5.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
+
+import static com.github.fishlikewater.proxyp2p.kit.MessageData.CmdEnum.CLOSE;
+import static com.github.fishlikewater.proxyp2p.kit.MessageData.CmdEnum.MAKE_HOLE_INIT;
 
 /**
  * <p>
@@ -41,7 +45,7 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<DatagramP
         final MessageData.CmdEnum type = messageData.getCmdEnum();
         final String requestId = messageData.getId();
         System.out.println(type);
-        System.out.println(msg);
+        System.out.println(messageData);
         Channel channel;
         switch (type){
             case HEALTH:
@@ -56,6 +60,8 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<DatagramP
                 break;
             case MAKE_HOLE_INIT:
                 final MessageData.Dst dst = messageData.getDst();
+                CallKit.setP2pInetSocketAddress(new InetSocketAddress(dst.getDstAddress(), dst.getDstPort()));
+                CallHeartBeatHandler.setInetSocketAddress(new InetSocketAddress(dst.getDstAddress(), dst.getDstPort()));
                 ctx.writeAndFlush(MessageKit.getMakeHoleMsg(dst));
                 break;
             case MAKE_HOLE:
@@ -84,7 +90,7 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<DatagramP
                         channel.pipeline().remove(Socks5InitialAuthHandler.class);
                         channel.pipeline().remove(Socks5InitialRequestDecoder.class);
                     }
-                    channel.pipeline().addLast(new Socks5CommandRequestHandler.Client2DestHandler(messageData.getId(), callConfig));
+                    channel.pipeline().addLast(new Socks5CommandRequestHandler.Client2DestHandler(messageData.getId()));
                     channel.writeAndFlush(commandResponse);
                 }else {
                     sendCloseInfo(messageData.getId(), msg.sender(), ctx);
@@ -103,16 +109,12 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<DatagramP
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        final MessageProbuf.Register register = MessageProbuf.Register.newBuilder().setName(callConfig.getName()).build();
-        final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
-                .setRegister(register)
-                .setType(MessageProbuf.MessageType.MAKE_HOLE_INIT)
-                .build();
-
-        final AddressedEnvelope<MessageProbuf.Message, InetSocketAddress> addressedEnvelope =
-                new DefaultAddressedEnvelope<>(message, new InetSocketAddress(callConfig.getServerAddress(), callConfig.getServerPort()),
-                        new InetSocketAddress(callConfig.getPort()));
-        ctx.writeAndFlush(addressedEnvelope);
+        final MessageData messageData = new MessageData()
+                .setCmdEnum(MAKE_HOLE_INIT)
+                .setRegisterName(callConfig.getName());
+        final ByteBuf byteBuf = MessageKit.getByteBuf(messageData);
+        final DatagramPacket datagramPacket = new DatagramPacket(byteBuf, new InetSocketAddress(callConfig.getServerAddress(), callConfig.getServerPort()));
+        ctx.writeAndFlush(datagramPacket);
         super.channelActive(ctx);
     }
 
@@ -123,12 +125,11 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<DatagramP
     }
 
     private void sendCloseInfo(String requestId, InetSocketAddress inetSocketAddress, ChannelHandlerContext ctx){
-        final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
+        final MessageData messageData = new MessageData()
                 .setId(requestId)
-                .setType(MessageProbuf.MessageType.CLOSE)
-                .build();
-        final AddressedEnvelope<MessageProbuf.Message, InetSocketAddress> addressedEnvelope =
-                new DefaultAddressedEnvelope<>(message, inetSocketAddress, new InetSocketAddress(callConfig.getPort()));
-        ctx.writeAndFlush(addressedEnvelope);
+                .setCmdEnum(CLOSE);
+        final ByteBuf byteBuf = MessageKit.getByteBuf(messageData);
+        final DatagramPacket datagramPacket = new DatagramPacket(byteBuf, inetSocketAddress);
+        ctx.writeAndFlush(datagramPacket);
     }
 }

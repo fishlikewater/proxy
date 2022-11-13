@@ -50,7 +50,7 @@ public class UdpServerBoot {
                     @Override
                     protected void initChannel(DatagramChannel ch) {
                         final ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast(new UdpP2pDataHandler(serverConfig));
+                        pipeline.addLast(new UdpP2pDataHandler());
                     }
                 });
         b.bind(serverConfig.getAddress(), serverConfig.getPort()).sync();

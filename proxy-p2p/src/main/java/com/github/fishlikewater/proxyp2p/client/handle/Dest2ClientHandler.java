@@ -1,15 +1,19 @@
 package com.github.fishlikewater.proxyp2p.client.handle;
+
 import com.github.fishlikewater.proxyp2p.client.ClientKit;
-import com.github.fishlikewater.proxyp2p.kit.MessageProbuf;
-import com.google.protobuf.ByteString;
+import com.github.fishlikewater.proxyp2p.kit.MessageData;
+import com.github.fishlikewater.proxyp2p.kit.MessageKit;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.DefaultAddressedEnvelope;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.socket.DatagramPacket;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+
+import static com.github.fishlikewater.proxyp2p.kit.MessageData.CmdEnum.CLOSE;
+import static com.github.fishlikewater.proxyp2p.kit.MessageData.CmdEnum.RESPONSE;
 
 /**
  * <p>
@@ -42,32 +46,27 @@ public class Dest2ClientHandler extends SimpleChannelInboundHandler<Object> {
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object destMsg) {
         log.info("return data");
-        final MessageProbuf.Response.Builder builder = MessageProbuf.Response.newBuilder();
+
         final ByteBuf buf = (ByteBuf) destMsg;
-        byte[] data = new byte[buf.readableBytes()];
-        buf.readBytes(data);
-        builder.setResponseBody(ByteString.copyFrom(data));
-        final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
+        final MessageData messageData = new MessageData()
                 .setId(requestId)
-                .setResponse(builder.build())
-                .setType(MessageProbuf.MessageType.RESPONSE)
-                .build();
-        final DefaultAddressedEnvelope<MessageProbuf.Message, InetSocketAddress> msg = new DefaultAddressedEnvelope<>(message, inetSocketAddress,
-                new InetSocketAddress(0));
-        ClientKit.channel.writeAndFlush(msg);
+                .setCmdEnum(RESPONSE)
+                .setByteBuf(buf);
+        final ByteBuf byteBuf = MessageKit.getByteBuf(messageData);
+        final DatagramPacket datagramPacket = new DatagramPacket(byteBuf, inetSocketAddress);
+        ClientKit.channel.writeAndFlush(datagramPacket);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         log.debug("目标服务器断开连接");
-        final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
+        final MessageData messageData = new MessageData()
                 .setId(requestId)
-                .setType(MessageProbuf.MessageType.CLOSE)
-                .build();
-        final DefaultAddressedEnvelope<MessageProbuf.Message, InetSocketAddress> msg = new DefaultAddressedEnvelope<>(message, inetSocketAddress,
-                new InetSocketAddress(0));
+                .setCmdEnum(CLOSE);
+        final ByteBuf byteBuf = MessageKit.getByteBuf(messageData);
+        final DatagramPacket datagramPacket = new DatagramPacket(byteBuf, inetSocketAddress);
         ClientKit.getChannelMap().remove(requestId);
-        ClientKit.channel.writeAndFlush(msg);
+        ClientKit.channel.writeAndFlush(datagramPacket);
         ctx.close();
 
     }

@@ -4,6 +4,7 @@ package com.github.fishlikewater.proxyp2p.call.handle;
 import cn.hutool.core.util.ObjectUtil;
 import com.github.fishlikewater.proxyp2p.call.CallKit;
 import com.github.fishlikewater.proxyp2p.config.CallConfig;
+import com.github.fishlikewater.proxyp2p.config.ClientConfig;
 import com.github.fishlikewater.proxyp2p.kit.MessageData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -28,15 +29,10 @@ public class CallHeartBeatHandler extends ChannelInboundHandlerAdapter {
     @Setter
     public static InetSocketAddress inetSocketAddress;
 
-    public static ByteBuf HEARTBEAT_SEQUENCE;
+    private final CallConfig callConfig;
 
     public CallHeartBeatHandler(CallConfig callConfig){
-        MessageData messageData = new MessageData()
-                .setRegisterName(callConfig.getName())
-                .setCmdEnum(HEALTH);
-        final byte[] bytesMsg = ObjectUtil.serialize(messageData);
-        HEARTBEAT_SEQUENCE = ByteBufAllocator.DEFAULT.buffer(bytesMsg.length);
-        HEARTBEAT_SEQUENCE.writeBytes(bytesMsg);
+        this.callConfig = callConfig;
     }
 
     @Override
@@ -44,7 +40,13 @@ public class CallHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
         // 判断evt是否是IdleStateEvent（用于触发用户事件，包含 读空闲/写空闲/读写空闲 ）
         if (evt instanceof IdleStateEvent) {
-            final DatagramPacket datagramPacket = new DatagramPacket(HEARTBEAT_SEQUENCE, CallKit.p2pInetSocketAddress);
+            MessageData messageData = new MessageData()
+                    .setRegisterName(callConfig.getName())
+                    .setCmdEnum(HEALTH);
+            final byte[] bytesMsg = ObjectUtil.serialize(messageData);
+            ByteBuf HEARTBEAT_SEQUENCE = ByteBufAllocator.DEFAULT.buffer(bytesMsg.length);
+            HEARTBEAT_SEQUENCE.writeBytes(bytesMsg);
+            final DatagramPacket datagramPacket = new DatagramPacket(HEARTBEAT_SEQUENCE, inetSocketAddress);
             ctx.writeAndFlush(datagramPacket)
                     .addListener((future)->{
                         if(!future.isSuccess()){

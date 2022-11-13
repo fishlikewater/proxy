@@ -5,7 +5,6 @@ import com.github.fishlikewater.kit.NamedThreadFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.WriteBufferWaterMark;
@@ -22,7 +21,7 @@ public class BootStrapFactroy {
 
     private static Bootstrap bootstrap = null;
     private static Bootstrap connectionBootstrap = null;
-    private static EventLoopGroup bossGroup = null;
+    private static final EventLoopGroup bossGroup;
 
     static {
         if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll

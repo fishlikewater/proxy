@@ -72,7 +72,6 @@ public class UdpCallBoot {
     public void stop() {
         log.info("⬢ call shutdown ...");
         try {
-            CallKit.channel.writeAndFlush(MessageKit.getCloseMsg(CallKit.p2pInetSocketAddress));
             if (this.bossGroup != null) {
                 this.bossGroup.shutdownGracefully().sync();
             }
