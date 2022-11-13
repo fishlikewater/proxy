@@ -25,7 +25,7 @@ public class ChannelGroupKit {
     //请求机唯一属性
     public static final AttributeKey<String> CALL_FLAG = AttributeKey.valueOf("call_flag");
     //客户端类型属性
-    public static final AttributeKey<String> CLIENT_TYPE = AttributeKey.valueOf("client_path");
+    public static final AttributeKey<String> CLIENT_TYPE = AttributeKey.valueOf("client_type");
 
     @Getter
     private static final ConcurrentHashMap<String, Channel> clientChannelMap = new ConcurrentHashMap<>();
