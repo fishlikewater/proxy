@@ -13,6 +13,7 @@ import io.netty.handler.codec.socksx.v5.Socks5InitialRequestDecoder;
 import io.netty.handler.codec.socksx.v5.Socks5PasswordAuthRequestDecoder;
 import io.netty.handler.codec.socksx.v5.Socks5ServerEncoder;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.handler.traffic.TrafficCounter;
 import lombok.extern.slf4j.Slf4j;
@@ -69,6 +70,7 @@ public class ProxyClientInitializer extends ChannelInitializer<Channel> {
                 p.addFirst(new Socks5PasswordAuthRequestDecoder()); //4
             }
             p.addFirst(new Socks5InitialAuthHandler(proxyConfig.isAuth())); //3
+            p.addFirst(new ChunkedWriteHandler());
             p.addFirst(Socks5ServerEncoder.DEFAULT); //2
             p.addFirst(new Socks5InitialRequestDecoder());  //1
             /* Socks connection handler */

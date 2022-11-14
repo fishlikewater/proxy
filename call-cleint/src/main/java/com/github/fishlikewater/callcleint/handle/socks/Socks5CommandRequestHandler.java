@@ -8,7 +8,9 @@ import com.google.protobuf.ByteString;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.handler.codec.socksx.v5.DefaultSocks5CommandRequest;
+import io.netty.handler.codec.socksx.v5.Socks5CommandRequestDecoder;
 import io.netty.handler.codec.socksx.v5.Socks5CommandType;
+import io.netty.handler.codec.socksx.v5.Socks5InitialRequestDecoder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -51,6 +53,9 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                     if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
                         ctx.pipeline().remove(Socks5CommandRequestHandler.class);
                     }
+                    ctx.pipeline().remove(Socks5InitialAuthHandler.class);
+                    ctx.pipeline().remove(Socks5InitialRequestDecoder.class);
+                    ctx.pipeline().remove(Socks5CommandRequestDecoder.class);
                     ctx.pipeline().addLast(new Client2DestHandler(channelFuture, requestId));
                 }
             });

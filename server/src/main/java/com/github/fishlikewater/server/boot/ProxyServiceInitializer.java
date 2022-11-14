@@ -24,6 +24,7 @@ import io.netty.handler.codec.socksx.v5.Socks5InitialRequestDecoder;
 import io.netty.handler.codec.socksx.v5.Socks5PasswordAuthRequestDecoder;
 import io.netty.handler.codec.socksx.v5.Socks5ServerEncoder;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.handler.traffic.TrafficCounter;
@@ -96,17 +97,18 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
         }
         /* http代理服务器*/
         if (proxyType == ProxyType.http) {
-            p.addFirst("aggregator", new HttpObjectAggregator(1024*1024*100));
-            p.addFirst("httpcode", new HttpServerCodec());
+            p.addLast("httpcode", new HttpServerCodec());
+            p.addLast(new ChunkedWriteHandler());
+            p.addLast("aggregator", new HttpObjectAggregator(1024*1024*100));
             p.addLast("httpservice", new HttpServiceHandler(proxyConfig.isAuth()));
         }
         /* http转发服务器(内网穿透)*/
         else if (proxyType == ProxyType.proxy_server_http) {
-            p.addFirst("aggregator", new HttpObjectAggregator(1024*1024*100));
-            p.addFirst("httpcode", new HttpServerCodec());
+            p.addLast("httpcode", new HttpServerCodec());
+            p.addLast(new ChunkedWriteHandler());
+            p.addLast("aggregator", new HttpObjectAggregator(1024*1024*100));
             p.addLast("proxyHttpServerHandler", new ProxyHttpServerHandler());
         }
-        /* http协议转发(内网穿透)*/
         else if (proxyType == ProxyType.proxy_server) {
             p.addFirst(new ProtobufEncoder());
             p.addFirst(new ProtobufVarint32LengthFieldPrepender());
@@ -114,9 +116,7 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
             p.addFirst(new ProtobufVarint32FrameDecoder());
             p.addLast("proxyProtobufServerHandler", new ProxyProtobufServerHandler(new DefaultConnectionValidate(), proxyConfig));
         }
-        /* sockes5代理服务器*/
         else if (proxyType == ProxyType.socks){
-            /* socks connectionddecode */
             p.addFirst(new Socks5CommandRequestDecoder()); //7
             if (proxyConfig.isAuth()) {
                 /* 添加验证机制*/
