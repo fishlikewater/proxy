@@ -4,7 +4,6 @@ import com.github.fishlikewater.config.ProxyType;
 import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.NamedThreadFactory;
 import com.github.fishlikewater.server.config.ProxyConfig;
-import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -13,12 +12,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
-import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.DisposableBean;
 
 /**
  * @author zhangx
@@ -67,8 +63,8 @@ public class ProxyServer{
         }
         bootstrap.childHandler(new ProxyServiceInitializer(proxyConfig, proxyType));
         try {
-            Channel ch = bootstrap.bind(proxyConfig.getAddress(), proxyType==ProxyType.proxy_server_http?proxyConfig.getHttpPort():proxyConfig.getPort()).sync().channel();
-            log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyType==ProxyType.proxy_server_http?proxyConfig.getHttpPort():proxyConfig.getPort(), proxyConfig.getAddress(), proxyType);
+            Channel ch = bootstrap.bind(proxyConfig.getAddress(), proxyType==ProxyType.http_server?proxyConfig.getHttpPort():proxyConfig.getPort()).sync().channel();
+            log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyType==ProxyType.http_server?proxyConfig.getHttpPort():proxyConfig.getPort(), proxyConfig.getAddress(), proxyType);
             ch.closeFuture().addListener(t -> log.info("⬢  {}服务开始关闭", proxyType));
         } catch (InterruptedException e) {
             log.error("⬢ start server fail", e);
@@ -93,20 +89,4 @@ public class ProxyServer{
         }
     }
 
-    /**
-     * 数据交换连接客户端
-     */
-    private Bootstrap getBootstrap() {
-        Bootstrap bootstrap = new Bootstrap();
-        if (EpollKit.epollIsAvailable()) {
-            bootstrap.channel(EpollSocketChannel.class);
-        } else {
-            bootstrap.channel(NioSocketChannel.class);
-        }
-        bootstrap.group(bossGroup)
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000);
-
-        return bootstrap;
-
-    }
 }

@@ -1,6 +1,6 @@
 package com.github.fishlikewater.client.handle;
-import com.github.fishlikewater.kit.MessageProbuf;
-import com.google.protobuf.ByteString;
+
+import com.github.fishlikewater.codec.MessageProtocol;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -19,13 +19,11 @@ import java.io.IOException;
 public class Dest2ClientHandler extends SimpleChannelInboundHandler<byte[]> {
 
     private final ChannelHandlerContext clientChannelContext;
-    private final String requestId;
-    private final String callId;
+    private final Long requestId;
 
-    public Dest2ClientHandler(ChannelHandlerContext clientChannelContext, String requestId, String callId) {
+    public Dest2ClientHandler(ChannelHandlerContext clientChannelContext, Long requestId) {
         this.clientChannelContext = clientChannelContext;
         this.requestId = requestId;
-        this.callId = callId;
     }
 
     @Override
@@ -39,28 +37,25 @@ public class Dest2ClientHandler extends SimpleChannelInboundHandler<byte[]> {
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, byte[] destMsg) {
-        final MessageProbuf.Response.Builder builder = MessageProbuf.Response.newBuilder();
-        builder.setBody(ByteString.copyFrom(destMsg));
-        final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
-                .setRequestId(requestId)
-                .setClientId(callId)
-                .setResponse(builder.build())
-                .setProtocol(MessageProbuf.Protocol.SOCKS)
-                .setType(MessageProbuf.MessageType.RESPONSE)
-                .build();
-        clientChannelContext.writeAndFlush(message);
+        final MessageProtocol messageProtocol = new MessageProtocol();
+        messageProtocol
+                .setId(requestId)
+                .setCmd(MessageProtocol.CmdEnum.RESPONSE)
+                .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                .setBytes(destMsg);
+        clientChannelContext.writeAndFlush(messageProtocol);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         log.trace("目标服务器断开连接");
         ctx.close();
-        final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
-                .setRequestId(requestId)
-                .setProtocol(MessageProbuf.Protocol.SOCKS)
-                .setType(MessageProbuf.MessageType.CLOSE)
-                .build();
-        clientChannelContext.writeAndFlush(message);
+        final MessageProtocol closeMsg = new MessageProtocol();
+        closeMsg
+                .setId(requestId)
+                .setCmd(MessageProtocol.CmdEnum.CLOSE)
+                .setProtocol(MessageProtocol.ProtocolEnum.SOCKS);
+        clientChannelContext.writeAndFlush(closeMsg);
         clientChannelContext.channel().attr(ChannelKit.CHANNELS_LOCAL).get().remove(requestId);
 
     }

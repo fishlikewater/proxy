@@ -27,7 +27,7 @@ public class ProxyConfig {
     /** 服务器端口*/
     private int port;
 
-    private int socksProt;
+    private int socksPort;
 
     private String socksAddress;
 

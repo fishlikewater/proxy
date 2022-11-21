@@ -4,10 +4,10 @@ package com.github.fishlikewater.callcleint.boot;
 import com.github.fishlikewater.callcleint.config.ProxyConfig;
 import com.github.fishlikewater.callcleint.handle.ChannelKit;
 import com.github.fishlikewater.callcleint.handle.ClientHandlerInitializer;
+import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.config.ProxyType;
 import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.IdUtil;
-import com.github.fishlikewater.kit.MessageProbuf;
 import com.github.fishlikewater.kit.NamedThreadFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -21,14 +21,11 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.ConcurrentHashMap;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @version V1.0
- * @mail fishlikewater@126.com
- * @ClassName ProxyClient
- * @Description
- * @date 2018年12月25日 14:21
+ * @date: 2018年12月25日 14:21
  **/
 @Slf4j
 @Accessors(chain = true)
@@ -96,25 +93,18 @@ public class ProxyClient{
     }
 
     /**
-     * @Description :
-     * @param: channel
-     * @Date : 2022/7/18 14:43
-     * @Author : fishlikewater@126.com
-     * @Return : void
+     * 注册
      */
     void afterConnectionSuccessful(Channel channel) {
         /* 发送首先发送验证信息*/
-        final String requestId = IdUtil.next();//调用方标识
-        MessageProbuf.Register.Builder builder = MessageProbuf.Register.newBuilder();
-        builder.setPath(proxyConfig.getProxyPath()).setToken(proxyConfig.getToken());
-        final MessageProbuf.Message.Builder messageBuild = MessageProbuf.Message
-                .newBuilder()
-                .setRequestId(requestId)
-                .setRegister(builder.build())
-                .setExtend("call")
-                .setType(MessageProbuf.MessageType.VALID);
-        channel.writeAndFlush(messageBuild.build()).addListener(f -> log.info("发送验证信息成功"));
-        channel.attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>());
+        final long requestId = IdUtil.id();//调用方标识
+        final MessageProtocol messageProtocol = new MessageProtocol();
+        messageProtocol
+                .setId(requestId)
+                .setCmd(MessageProtocol.CmdEnum.AUTH)
+                .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                .setBytes(proxyConfig.getToken().getBytes(StandardCharsets.UTF_8));
+        channel.writeAndFlush(messageProtocol).addListener(f -> log.info("发送验证信息成功"));
     }
 
 

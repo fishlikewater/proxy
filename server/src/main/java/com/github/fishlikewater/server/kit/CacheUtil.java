@@ -12,29 +12,29 @@ import java.util.concurrent.TimeUnit;
  **/
 public class CacheUtil {
 
-    private  static Cache<String, Channel> cache =  CaffeineCacheBuilder.createCaffeineCacheBuilder()
+    private  static Cache<Long, Channel> cache =  CaffeineCacheBuilder.createCaffeineCacheBuilder()
             .limit(100)
             .expireAfterWrite(300, TimeUnit.SECONDS)
             .buildCache();
 
-    public static void init(Cache<String, Channel> cache){
+    public static void init(Cache<Long, Channel> cache){
         CacheUtil.cache = cache;
     }
 
-    public static void put(String requestId, Channel channel, long ex){
+    public static void put(Long requestId, Channel channel, long ex){
         cache.put(requestId, channel, ex, TimeUnit.SECONDS);
     }
 
-    public static void remove(String requestId){
+    public static void remove(Long requestId){
         cache.remove(requestId);
     }
 
-    public static Channel get(String requestId){
+    public static Channel get(Long requestId){
         return cache.get(requestId);
     }
 
 
-    public static Cache<String, Channel> getCache(){
+    public static Cache<Long, Channel> getCache(){
         return cache;
     }
 

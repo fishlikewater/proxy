@@ -19,9 +19,9 @@ import java.util.Map;
 @Slf4j
 public class ToServerHandler extends SimpleChannelInboundHandler<Object> {
 
-    private final String requestId;
+    private final Long requestId;
 
-    public ToServerHandler(String requestId) {
+    public ToServerHandler(Long requestId) {
         this.requestId = requestId;
     }
 

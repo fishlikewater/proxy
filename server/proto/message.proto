@@ -6,7 +6,7 @@ option java_outer_classname = "MessageProbuf";
 message Message {
     int32 length = 1;
     MessageType type = 2;
-    string requestId = 3;
+    int64 requestId = 3;
     Request request = 4;
     Response response = 5;
     Register register = 6;

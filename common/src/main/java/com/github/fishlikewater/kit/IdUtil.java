@@ -18,4 +18,9 @@ public class IdUtil {
         return String.valueOf(idWorker.nextId());
     }
 
+    public static long id(){
+
+        return idWorker.nextId();
+    }
+
 }

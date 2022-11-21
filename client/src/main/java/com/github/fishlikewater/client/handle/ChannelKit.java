@@ -18,8 +18,8 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 public class ChannelKit {
 
-    public final static AttributeKey<String> LOCAL_INFO = AttributeKey.newInstance("LOCAL_INFO");
-    public final static AttributeKey<Map<String, Channel>> CHANNELS_LOCAL = AttributeKey.newInstance("CHANNELS_LOCAL");
+    public final static AttributeKey<Long> LOCAL_INFO = AttributeKey.newInstance("LOCAL_INFO");
+    public final static AttributeKey<Map<Long, Channel>> CHANNELS_LOCAL = AttributeKey.newInstance("CHANNELS_LOCAL");
 
     @Setter
     @Getter

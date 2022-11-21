@@ -3,6 +3,7 @@ package com.github.fishlikewater.client.boot;
 
 import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.client.handle.ChannelKit;
+import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.config.ProxyType;
 import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.IdUtil;
@@ -18,19 +19,15 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.DisposableBean;
 
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 /**
  * @version V1.0
- * @mail fishlikewater@126.com
- * @ClassName ProxyClient
- * @Description
- * @date 2018年12月25日 14:21
+ * @date: 2018年12月25日 14:21
  **/
 @Slf4j
 @Accessors(chain = true)
@@ -64,20 +61,23 @@ public class ProxyClient{
      * 连接配置初始化
      */
     void bootstrapConfig() {
-        if (clientstrap == null) clientstrap = new Bootstrap();
-        clientstrap.option(ChannelOption.SO_REUSEADDR, true);
-        clientstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2 * 60 * 1000);
-        clientstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
-        clientstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-        clientstrap.option(ChannelOption.TCP_NODELAY, true);
-        if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
-            bossGroup = new EpollEventLoopGroup(0, new NamedThreadFactory("client-epoll-boss@"));
-            clientstrap.group(bossGroup).channel(EpollSocketChannel.class);
-        } else {
-            bossGroup = new NioEventLoopGroup(0, new NamedThreadFactory("client-nio-boss@"));
-            clientstrap.group(bossGroup).channel(NioSocketChannel.class);
+        if (clientstrap == null)
+        {
+            clientstrap = new Bootstrap();
+            clientstrap.option(ChannelOption.SO_REUSEADDR, true);
+            clientstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2 * 60 * 1000);
+            clientstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
+            clientstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+            clientstrap.option(ChannelOption.TCP_NODELAY, true);
+            if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
+                bossGroup = new EpollEventLoopGroup(0, new NamedThreadFactory("client-epoll-boss@"));
+                clientstrap.group(bossGroup).channel(EpollSocketChannel.class);
+            } else {
+                bossGroup = new NioEventLoopGroup(0, new NamedThreadFactory("client-nio-boss@"));
+                clientstrap.group(bossGroup).channel(NioSocketChannel.class);
+            }
+            clientstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.proxy_client, this));
         }
-        clientstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.proxy_client, this));
     }
 
     /**
@@ -99,31 +99,44 @@ public class ProxyClient{
     }
 
     /**
-     * @Description :
+     * @description:
      * @param: channel
-     * @Date : 2022/7/18 14:43
-     * @Author : fishlikewater@126.com
-     * @Return : void
+     * @date: 2022/7/18 14:43
+     * @Return: void
      */
     void afterConnectionSuccessful(Channel channel) {
-        /* 发送首先发送验证信息*/
-        MessageProbuf.Register.Builder builder = MessageProbuf.Register.newBuilder();
-        if (proxyConfig.getProxyType() == ProxyType.http){
-            final Set<String> keySet = ChannelKit.HTTP_MAPPING_MAP.keySet();
-            final String path = String.join(",", keySet);
-            builder.setPath(path);
-        }else {
-            builder.setPath(proxyConfig.getProxyPath());
+
+        if (proxyConfig.getProxyType() == ProxyType.proxy_client)
+        {
+            final long requestId = IdUtil.id();
+            final MessageProtocol messageProtocol = new MessageProtocol();
+            messageProtocol
+                    .setId(requestId)
+                    .setCmd(MessageProtocol.CmdEnum.AUTH)
+                    .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                    .setBytes(proxyConfig.getToken().getBytes(StandardCharsets.UTF_8));
+            channel.writeAndFlush(messageProtocol).addListener(f -> log.info("发送验证信息成功"));
+        }else
+        {
+            MessageProbuf.Register.Builder builder = MessageProbuf.Register.newBuilder();
+            if (proxyConfig.getProxyType() == ProxyType.http){
+                final Set<String> keySet = ChannelKit.HTTP_MAPPING_MAP.keySet();
+                final String path = String.join(",", keySet);
+                builder.setPath(path);
+            }else {
+                builder.setPath(proxyConfig.getProxyPath());
+            }
+            builder.setToken(proxyConfig.getToken());
+            final MessageProbuf.Message.Builder messageBuild = MessageProbuf.Message
+                    .newBuilder()
+                    .setRequestId(IdUtil.id())
+                    .setRegister(builder.build())
+                    .setExtend("client")
+                    .setType(MessageProbuf.MessageType.VALID);
+            channel.writeAndFlush(messageBuild.build()).addListener(f -> log.info("发送验证信息成功"));
+            channel.attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>());
         }
-        builder.setToken(proxyConfig.getToken());
-        final MessageProbuf.Message.Builder messageBuild = MessageProbuf.Message
-                .newBuilder()
-                .setRequestId(IdUtil.next())
-                .setRegister(builder.build())
-                .setExtend("client")
-                .setType(MessageProbuf.MessageType.VALID);
-        channel.writeAndFlush(messageBuild.build()).addListener(f -> log.info("发送验证信息成功"));
-        channel.attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>());
+
     }
 
 

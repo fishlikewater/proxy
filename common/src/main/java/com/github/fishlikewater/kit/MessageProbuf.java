@@ -272,14 +272,9 @@ public final class MessageProbuf {
     MessageType getType();
 
     /**
-     * <code>string requestId = 3;</code>
+     * <code>int64 requestId = 3;</code>
      */
-    String getRequestId();
-    /**
-     * <code>string requestId = 3;</code>
-     */
-    com.google.protobuf.ByteString
-        getRequestIdBytes();
+    long getRequestId();
 
     /**
      * <code>.Request request = 4;</code>
@@ -376,7 +371,6 @@ public final class MessageProbuf {
     }
     private Message() {
       type_ = 0;
-      requestId_ = "";
       extend_ = "";
       protocol_ = 0;
       clientId_ = "";
@@ -423,10 +417,9 @@ public final class MessageProbuf {
               type_ = rawValue;
               break;
             }
-            case 26: {
-              String s = input.readStringRequireUtf8();
+            case 24: {
 
-              requestId_ = s;
+              requestId_ = input.readInt64();
               break;
             }
             case 34: {
@@ -524,7 +517,7 @@ public final class MessageProbuf {
     }
 
     @Override
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return MessageProbuf.internal_static_Message_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -558,37 +551,12 @@ public final class MessageProbuf {
     }
 
     public static final int REQUESTID_FIELD_NUMBER = 3;
-    private volatile Object requestId_;
+    private long requestId_;
     /**
-     * <code>string requestId = 3;</code>
+     * <code>int64 requestId = 3;</code>
      */
-    public String getRequestId() {
-      Object ref = requestId_;
-      if (ref instanceof String) {
-        return (String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        requestId_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string requestId = 3;</code>
-     */
-    public com.google.protobuf.ByteString
-        getRequestIdBytes() {
-      Object ref = requestId_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
-        requestId_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public long getRequestId() {
+      return requestId_;
     }
 
     public static final int REQUEST_FIELD_NUMBER = 4;
@@ -780,8 +748,8 @@ public final class MessageProbuf {
       if (type_ != MessageType.INIT.getNumber()) {
         output.writeEnum(2, type_);
       }
-      if (!getRequestIdBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, requestId_);
+      if (requestId_ != 0L) {
+        output.writeInt64(3, requestId_);
       }
       if (request_ != null) {
         output.writeMessage(4, getRequest());
@@ -821,8 +789,9 @@ public final class MessageProbuf {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, type_);
       }
-      if (!getRequestIdBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, requestId_);
+      if (requestId_ != 0L) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(3, requestId_);
       }
       if (request_ != null) {
         size += com.google.protobuf.CodedOutputStream
@@ -868,8 +837,8 @@ public final class MessageProbuf {
       if (getLength()
           != other.getLength()) return false;
       if (type_ != other.type_) return false;
-      if (!getRequestId()
-          .equals(other.getRequestId())) return false;
+      if (getRequestId()
+          != other.getRequestId()) return false;
       if (hasRequest() != other.hasRequest()) return false;
       if (hasRequest()) {
         if (!getRequest()
@@ -911,7 +880,8 @@ public final class MessageProbuf {
       hash = (37 * hash) + TYPE_FIELD_NUMBER;
       hash = (53 * hash) + type_;
       hash = (37 * hash) + REQUESTID_FIELD_NUMBER;
-      hash = (53 * hash) + getRequestId().hashCode();
+      hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+          getRequestId());
       if (hasRequest()) {
         hash = (37 * hash) + REQUEST_FIELD_NUMBER;
         hash = (53 * hash) + getRequest().hashCode();
@@ -1025,7 +995,7 @@ public final class MessageProbuf {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1042,7 +1012,7 @@ public final class MessageProbuf {
       }
 
       @Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return MessageProbuf.internal_static_Message_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1055,7 +1025,7 @@ public final class MessageProbuf {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1071,7 +1041,7 @@ public final class MessageProbuf {
 
         type_ = 0;
 
-        requestId_ = "";
+        requestId_ = 0L;
 
         if (requestBuilder_ == null) {
           request_ = null;
@@ -1209,9 +1179,8 @@ public final class MessageProbuf {
         if (other.type_ != 0) {
           setTypeValue(other.getTypeValue());
         }
-        if (!other.getRequestId().isEmpty()) {
-          requestId_ = other.requestId_;
-          onChanged();
+        if (other.getRequestId() != 0L) {
+          setRequestId(other.getRequestId());
         }
         if (other.hasRequest()) {
           mergeRequest(other.getRequest());
@@ -1336,71 +1305,28 @@ public final class MessageProbuf {
         return this;
       }
 
-      private Object requestId_ = "";
+      private long requestId_ ;
       /**
-       * <code>string requestId = 3;</code>
+       * <code>int64 requestId = 3;</code>
        */
-      public String getRequestId() {
-        Object ref = requestId_;
-        if (!(ref instanceof String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
-          requestId_ = s;
-          return s;
-        } else {
-          return (String) ref;
-        }
+      public long getRequestId() {
+        return requestId_;
       }
       /**
-       * <code>string requestId = 3;</code>
+       * <code>int64 requestId = 3;</code>
        */
-      public com.google.protobuf.ByteString
-          getRequestIdBytes() {
-        Object ref = requestId_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
-          requestId_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string requestId = 3;</code>
-       */
-      public Builder setRequestId(
-          String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setRequestId(long value) {
+        
         requestId_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string requestId = 3;</code>
+       * <code>int64 requestId = 3;</code>
        */
       public Builder clearRequestId() {
         
-        requestId_ = getDefaultInstance().getRequestId();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string requestId = 3;</code>
-       */
-      public Builder setRequestIdBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        requestId_ = value;
+        requestId_ = 0L;
         onChanged();
         return this;
       }
@@ -2216,7 +2142,7 @@ public final class MessageProbuf {
     }
 
     @Override
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return MessageProbuf.internal_static_Register_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -2451,7 +2377,7 @@ public final class MessageProbuf {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -2468,7 +2394,7 @@ public final class MessageProbuf {
       }
 
       @Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return MessageProbuf.internal_static_Register_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -2481,7 +2407,7 @@ public final class MessageProbuf {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2996,7 +2922,7 @@ public final class MessageProbuf {
       }
     }
     @Override
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return MessageProbuf.internal_static_Request_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -3393,7 +3319,7 @@ public final class MessageProbuf {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -3432,7 +3358,7 @@ public final class MessageProbuf {
         }
       }
       @Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return MessageProbuf.internal_static_Request_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -3445,7 +3371,7 @@ public final class MessageProbuf {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -4160,7 +4086,7 @@ public final class MessageProbuf {
       }
     }
     @Override
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return MessageProbuf.internal_static_Response_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -4445,7 +4371,7 @@ public final class MessageProbuf {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -4484,7 +4410,7 @@ public final class MessageProbuf {
         }
       }
       @Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return MessageProbuf.internal_static_Response_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -4497,7 +4423,7 @@ public final class MessageProbuf {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -4962,7 +4888,7 @@ public final class MessageProbuf {
     }
 
     @Override
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return MessageProbuf.internal_static_Socks_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -5173,7 +5099,7 @@ public final class MessageProbuf {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -5190,7 +5116,7 @@ public final class MessageProbuf {
       }
 
       @Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return MessageProbuf.internal_static_Socks_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -5203,7 +5129,7 @@ public final class MessageProbuf {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -5524,7 +5450,7 @@ public final class MessageProbuf {
     String[] descriptorData = {
       "\n\rmessage.proto\"\363\001\n\007Message\022\016\n\006length\030\001 " +
       "\001(\005\022\032\n\004type\030\002 \001(\0162\014.MessageType\022\021\n\treque" +
-      "stId\030\003 \001(\t\022\031\n\007request\030\004 \001(\0132\010.Request\022\033\n" +
+      "stId\030\003 \001(\003\022\031\n\007request\030\004 \001(\0132\010.Request\022\033\n" +
       "\010response\030\005 \001(\0132\t.Response\022\033\n\010register\030\006" +
       " \001(\0132\t.Register\022\016\n\006extend\030\007 \001(\t\022\033\n\010proto" +
       "col\030\010 \001(\0162\t.Protocol\022\025\n\005scoks\030\t \001(\0132\006.So" +

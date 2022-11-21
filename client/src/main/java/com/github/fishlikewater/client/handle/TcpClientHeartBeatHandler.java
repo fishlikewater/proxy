@@ -1,8 +1,9 @@
-package com.github.fishlikewater.callcleint.handle;
+package com.github.fishlikewater.client.handle;
 
 
 import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.kit.IdUtil;
+import com.github.fishlikewater.kit.MessageProbuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -13,8 +14,7 @@ import lombok.extern.slf4j.Slf4j;
  * 继承ChannelInboundHandlerAdapter，从而不需要实现channelRead0方法
  */
 @Slf4j
-public class ClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
-
+public class TcpClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
     public static final MessageProtocol HEARTBEAT_SEQUENCE = new MessageProtocol()
             .setId(IdUtil.id())

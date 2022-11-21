@@ -1,4 +1,4 @@
-package com.github.fishlikewater.server.handle;
+package com.github.fishlikewater.server.kit;
 
 import cn.hutool.core.util.StrUtil;
 

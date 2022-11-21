@@ -7,7 +7,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @Description:
+ * @description:
  * @date: 2022年07月28日 15:42
  * @author: fishlikewater@126.com
  * @version: V1.0.0
@@ -23,8 +23,8 @@ public class TcpClientHandler extends SimpleChannelInboundHandler<byte[]> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, byte[] msg) throws Exception {
-        final String requestId = ctx.channel().attr(ChannelKit.LOCAL_INFO).get();
+    protected void channelRead0(ChannelHandlerContext ctx, byte[] msg) {
+        final Long requestId = ctx.channel().attr(ChannelKit.LOCAL_INFO).get();
         MessageProbuf.Request.Builder builder = MessageProbuf.Request.newBuilder();
         builder.setBody(ByteString.copyFrom(msg));
         final MessageProbuf.Message message = MessageProbuf.Message.newBuilder()

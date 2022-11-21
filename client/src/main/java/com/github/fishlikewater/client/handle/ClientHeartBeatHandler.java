@@ -9,7 +9,7 @@ import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @Description 用于检测channel的心跳handler
+ * @description: 用于检测channel的心跳handler
  * 继承ChannelInboundHandlerAdapter，从而不需要实现channelRead0方法
  */
 @Slf4j
@@ -17,7 +17,7 @@ public class ClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
     public static final MessageProbuf.Message HEARTBEAT_SEQUENCE = MessageProbuf.Message.newBuilder()
             .setLength(10)
-            .setRequestId(IdUtil.next())
+            .setRequestId(IdUtil.id())
             .setExtend("ping")
             .setType(MessageProbuf.MessageType.HEALTH)
             .build();

@@ -2,20 +2,16 @@ package com.github.fishlikewater.callcleint.handle;
 
 
 import com.github.fishlikewater.callcleint.boot.ProxyClient;
-import com.github.fishlikewater.kit.MessageProbuf;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
+import com.github.fishlikewater.codec.MessageProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoop;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.socksx.v5.DefaultSocks5CommandResponse;
-import io.netty.handler.codec.socksx.v5.Socks5AddressType;
-import io.netty.handler.codec.socksx.v5.Socks5CommandResponse;
-import io.netty.handler.codec.socksx.v5.Socks5CommandStatus;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -24,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * @since: 2018年12月26日 10:52
  **/
 @Slf4j
-public class ClientMessageHandler extends SimpleChannelInboundHandler<MessageProbuf.Message> {
+public class ClientMessageHandler extends SimpleChannelInboundHandler<MessageProtocol> {
 
     private final ProxyClient client;
 
@@ -37,6 +33,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
     }
+
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         log.error("断开连接");
@@ -46,45 +43,49 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, MessageProbuf.Message msg) {
-        MessageProbuf.MessageType type = msg.getType();
-        final String requestId = msg.getRequestId();
-        if (type == MessageProbuf.MessageType.VALID){
-            log.info(msg.getExtend());
-            return;
-        }
-        if (type == MessageProbuf.MessageType.HEALTH){
-            log.debug(msg.getExtend());
-            return;
-        }
-        if (type == MessageProbuf.MessageType.CLOSE) {
-            final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(requestId);
-            if (channel != null && channel.isActive()) {
-                channel.close();
-                ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().remove(requestId);
-            }
-        } else if (type == MessageProbuf.MessageType.INIT){
-            final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(requestId);
-            if (channel != null && channel.isActive()) {
-                if (msg.getExtend().equals("success")){
-                    Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
-                    channel.writeAndFlush(commandResponse);
+    protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) throws Exception {
+        MessageProtocol.CmdEnum type = msg.getCmd();
+        final Long requestId = msg.getId();
+        Channel channel;
+        switch (type) {
+            case AUTH:
+                if (msg.getState() == 1)//验证成功
+                {
+                    log.info("验证成功, 开始注册....");
+                    final MessageProtocol messageProtocol = new MessageProtocol();
+                    messageProtocol
+                            .setId(requestId)
+                            .setCmd(MessageProtocol.CmdEnum.REGISTER)
+                            .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                            .setBytes(client.getProxyConfig().getProxyPath().getBytes(StandardCharsets.UTF_8));
+                    ctx.writeAndFlush(messageProtocol).addListener(f -> log.info("发送注册信息成功"));
+                    ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>());
                 }
-                if (msg.getExtend().equals("fail")){
-                    Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, Socks5AddressType.IPv4);
-                    channel.writeAndFlush(commandResponse);
+                break;
+            case REGISTER:
+                final byte[] bytes = msg.getBytes();
+                final int state = msg.getState();
+                final String registerInfo = new String(bytes, StandardCharsets.UTF_8);
+                if (state == 1) {
+                    log.info("开始建立数据传输通道...");
+                    //注册成功, 去建立数据传输通道
+                    HandleKit.createDataChannel(ctx, client.getProxyConfig(), registerInfo);
+                } else {
+                    log.info(registerInfo);
                 }
-            }
-        }else {
-            final MessageProbuf.Response response = msg.getResponse();
-            final byte[] bytes = response.getBody().toByteArray();
-            final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(requestId);
-            if (channel != null && channel.isActive()) {
-                ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(bytes.length);
-                buf.writeBytes(bytes);
-                channel.writeAndFlush(buf);
-            }
+                break;
+            case HEALTH:
+                log.debug("get health info");
+                break;
+            case CLOSE:
+                channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(requestId);
+                if (channel != null && channel.isActive()) {
+                    channel.close();
+                    ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().remove(requestId);
+                }
+                break;
         }
+
     }
 
 

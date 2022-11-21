@@ -23,12 +23,12 @@ public class SocksServerBoot extends Server{
     }
 
     public void start() {
-        final ServerBootstrap serverBootstrap = BootStrapFactroy.getServerBootstrap();
+        final ServerBootstrap serverBootstrap = BootStrapFactory.getServerBootstrap();
         config(serverBootstrap);
         serverBootstrap.childHandler(new ProxyClientInitializer(getProxyConfig()));
         try {
-            Channel ch = serverBootstrap.bind(getProxyConfig().getSocksAddress(), getProxyConfig().getSocksProt()).sync().channel();
-            log.info("⬢ start server this port:{} and adress:{} proxy type:{}", getProxyConfig().getSocksProt(), getProxyConfig().getSocksAddress(), getProxyConfig().getProxyType());
+            Channel ch = serverBootstrap.bind(getProxyConfig().getSocksAddress(), getProxyConfig().getSocksPort()).sync().channel();
+            log.info("⬢ start server this port:{} and address:{} proxy type:{}", getProxyConfig().getSocksPort(), getProxyConfig().getSocksAddress(), getProxyConfig().getProxyType());
             ch.closeFuture().addListener(t -> log.info("⬢  {}服务开始关闭", getProxyConfig().getProxyType()));
         } catch (InterruptedException e) {
             log.error("⬢ start server fail", e);

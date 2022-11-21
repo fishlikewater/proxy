@@ -1,8 +1,9 @@
-package com.github.fishlikewater.server.handle;
+package com.github.fishlikewater.server.handle.protobuf;
 
 import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.kit.MessageProbuf;
 import com.github.fishlikewater.server.config.ProxyConfig;
+import com.github.fishlikewater.server.kit.ConnectionValidate;
 import com.github.fishlikewater.server.kit.ChannelGroupKit;
 import com.github.fishlikewater.server.kit.HandleKit;
 import io.netty.channel.ChannelHandlerContext;
@@ -16,6 +17,7 @@ import java.io.IOException;
  * @author <p><a>fishlikewater@126.com</a></p>
  * @since: 2019年07月13日 8:18
  *  客户端与服务端建立连接
+ *  处理google protobuf数据类型
  **/
 @Slf4j
 public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<MessageProbuf.Message> {
@@ -47,10 +49,6 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
             if (protocol == MessageProbuf.Protocol.HTTP){
                 HandleKit.handleHttp(ctx, msg, type);
             }
-            if (protocol == MessageProbuf.Protocol.SOCKS){
-                HandleKit.handleSocks(ctx, msg);
-            }
-
         }
     }
 
@@ -101,15 +99,6 @@ public class ProxyProtobufServerHandler extends SimpleChannelInboundHandler<Mess
                 }else {
                     ChannelGroupKit.remove(path);
                 }
-            }
-        }
-        final Attribute<String> attribute = ctx.channel().attr(ChannelGroupKit.CALL_FLAG);
-        if (attribute != null){
-            final String requestId = attribute.get();
-            if (StrUtil.isNotBlank(requestId)) {
-                log.info(requestId + "断开连接");
-                log.info("close chanel and clean requestId {}", requestId);
-                ChannelGroupKit.removeCall(requestId);
             }
         }
         super.handlerRemoved(ctx);

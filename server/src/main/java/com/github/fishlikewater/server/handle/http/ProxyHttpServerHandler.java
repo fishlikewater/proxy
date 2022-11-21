@@ -72,7 +72,7 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
                     content.readBytes(bytes);
                     builder.setBody(ByteString.copyFrom(bytes));
                 }
-                String requestId = IdUtil.next();
+                Long requestId = IdUtil.id();
                 ctx.channel().attr(ChannelGroupKit.CHANNELS_LOCAL).set(requestId);
                 channel.writeAndFlush(MessageProbuf.Message.newBuilder()
                         .setType(MessageProbuf.MessageType.REQUEST)
@@ -96,7 +96,7 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        final Attribute<String> attr = ctx.channel().attr(ChannelGroupKit.CHANNELS_LOCAL);
+        final Attribute<Long> attr = ctx.channel().attr(ChannelGroupKit.CHANNELS_LOCAL);
         if (attr != null){
             CacheUtil.remove(attr.get());
         }

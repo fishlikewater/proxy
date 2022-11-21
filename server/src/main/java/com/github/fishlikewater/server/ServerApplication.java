@@ -5,8 +5,8 @@ import com.alibaba.fastjson.JSON;
 import com.github.fishlikewater.config.ProxyType;
 import com.github.fishlikewater.server.boot.ProxyServer;
 import com.github.fishlikewater.server.config.ProxyConfig;
-import com.github.fishlikewater.server.kit.PassWordCheck;
 import com.github.fishlikewater.server.handle.socks.Socks5Contans;
+import com.github.fishlikewater.server.kit.PassWordCheck;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.CommandLineRunner;
@@ -34,22 +34,20 @@ public class ServerApplication implements CommandLineRunner, DisposableBean {
     public void run(String... args) throws Exception {
         ProxyType[] type = proxyConfig.getType();
         for (ProxyType proxyType : type) {
-            if (proxyType == ProxyType.http){
+            if (proxyType == ProxyType.http) {
                 PassWordCheck.setUsername(proxyConfig.getUsername());
                 PassWordCheck.setPassword(proxyConfig.getPassword());
             }
-            if (proxyType == ProxyType.socks){
-                final Map<String, String> map = JSON.parseObject(new FileInputStream(FileUtil.file("account.json")),  Map.class);
+            if (proxyType == ProxyType.socks) {
+                final Map<String, String> map = JSON.parseObject(new FileInputStream(FileUtil.file("account.json")), Map.class);
                 Socks5Contans.setAccountMap(map);
                 //final Map<String, String> fowMap = JSONObject.parseObject(new FileInputStream(FileUtil.file("flow.json")),  Map.class);
                 //Socks5Contans.setAccountFlow(fowMap);
             }
-            if (proxyType == ProxyType.proxy_server || proxyType == ProxyType.socks
-                    || proxyType == ProxyType.proxy_server_http || proxyType == ProxyType.http) {
-                final ProxyServer proxyServer = new ProxyServer(proxyConfig, proxyType);
-                proxyServer.start();
-                servers.add(proxyServer);
-            }
+
+            final ProxyServer proxyServer = new ProxyServer(proxyConfig, proxyType);
+            proxyServer.start();
+            servers.add(proxyServer);
         }
     }
 

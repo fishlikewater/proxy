@@ -28,7 +28,7 @@ public class ProxyConfig {
     private String token;
 
     /** 心跳检测间隔*/
-    private long timeout;
+    private long timeout = 30L;
 
     /** 是否使用netty日志处理器*/
     private boolean logging;

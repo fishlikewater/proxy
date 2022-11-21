@@ -1,6 +1,5 @@
 package com.github.fishlikewater.callcleint.boot;
 
-import com.github.fishlikewater.callcleint.handle.NoneClientInitializer;
 import com.github.fishlikewater.kit.EpollKit;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
@@ -15,7 +14,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  * @author <p><a>fishlikewater@126.com</a></p>
  * @since 2019年07月15日 15:50
  **/
-public class BootStrapFactroy {
+public class BootStrapFactory {
 
     private static Bootstrap bootstrap = null;
 
@@ -25,14 +24,16 @@ public class BootStrapFactroy {
         }
         bootstrap = new Bootstrap();
         bootstrap.option(ChannelOption.SO_REUSEADDR, true);
+        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2 * 60 * 1000);
+        bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        bootstrap.option(ChannelOption.TCP_NODELAY, true);
         if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
             bootstrap.channel(EpollSocketChannel.class);
         } else {
             bootstrap.channel(NioSocketChannel.class);
         }
         bootstrap.group(ctx.channel().eventLoop().parent());
-        bootstrap.handler(new NoneClientInitializer());
         return bootstrap;
     }
 
