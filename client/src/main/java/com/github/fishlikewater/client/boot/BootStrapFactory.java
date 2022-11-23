@@ -14,7 +14,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  * @author <p><a>fishlikewater@126.com</a></p>
  * @since 2019年07月15日 15:50
  **/
-public class BootStrapFactroy {
+public class BootStrapFactory {
 
     private static Bootstrap bootstrap = null;
 
@@ -25,6 +25,7 @@ public class BootStrapFactroy {
         bootstrap = new Bootstrap();
         bootstrap.option(ChannelOption.SO_REUSEADDR, true);
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        bootstrap.option(ChannelOption.TCP_NODELAY, true);
         if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
             bootstrap.channel(EpollSocketChannel.class);
         } else {

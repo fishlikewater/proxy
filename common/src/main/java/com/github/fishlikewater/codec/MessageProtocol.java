@@ -51,7 +51,8 @@ public class MessageProtocol {
         CLOSE(5), //关闭
         CONNECTION(6),//请求与目标地址建立连接
         ACK(7), //连接建立是否成功应答
-        DATA_CHANNEL(8);//建立数据通道
+        DATA_CHANNEL(8),//建立数据通道
+        DATA_CHANNEL_ACK(9);//建立数据通道回应
         @Getter
         private final int code;
 

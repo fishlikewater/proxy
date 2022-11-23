@@ -37,11 +37,11 @@ public class CallCleintApplication implements CommandLineRunner, DisposableBean 
 
     @Override
     public void destroy() {
-        if (proxyClient != null){
-            proxyClient.stop();
-        }
         if (socksServerBoot != null){
             socksServerBoot.stop();
+        }
+        if (proxyClient != null){
+            proxyClient.stop();
         }
     }
 }

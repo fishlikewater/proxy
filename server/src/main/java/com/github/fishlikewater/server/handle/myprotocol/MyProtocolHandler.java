@@ -79,7 +79,6 @@ public class MyProtocolHandler extends SimpleChannelInboundHandler<MessageProtoc
                     Channel channel = ChannelGroupKit.find(registerName);
                     if (channel != null) {
                         ctx.channel().attr(ChannelGroupKit.CALL_REMOTE_CLIENT).set(channel);
-                        channel.attr(ChannelGroupKit.CALL_REQUEST_CLIENT).set(ctx.channel());
                         ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).set("call");
                         final MessageProtocol successMsg = new MessageProtocol();
                         successMsg
@@ -108,14 +107,12 @@ public class MyProtocolHandler extends SimpleChannelInboundHandler<MessageProtoc
                 break;
             default:
                 final String type = ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).get();
-                if (type.equals("client"))
-                {
+                if (type.equals("client")) {
                     final Channel callChannel = ctx.channel().attr(ChannelGroupKit.CALL_REQUEST_CLIENT).get();
-                    if (callChannel != null && callChannel.isActive() && callChannel.isWritable()){
+                    if (callChannel != null && callChannel.isActive() && callChannel.isWritable()) {
                         callChannel.writeAndFlush(msg);
                     }
-                }else
-                {
+                } else {
                     final Channel channel = ctx.channel().attr(ChannelGroupKit.CALL_REMOTE_CLIENT).get();
                     if (channel != null && channel.isActive() && channel.isWritable()) {
                         channel.writeAndFlush(msg);
@@ -158,26 +155,21 @@ public class MyProtocolHandler extends SimpleChannelInboundHandler<MessageProtoc
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         final String type = ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).get();
-        if (type.equals("client"))
-        {
+        if (type != null && type.equals("client")) {
             log.info("受控制机断开连接");
             Attribute<String> attr = ctx.channel().attr(ChannelGroupKit.CLIENT_PATH);
-            if(attr != null)
-            {
+            if (attr != null) {
                 String path = attr.get();
-                if (StrUtil.isNotBlank(path))
-                {
+                if (StrUtil.isNotBlank(path)) {
                     log.info(path + "断开连接");
                     log.info("close chanel and clean path {}", path);
                     ChannelGroupKit.remove(path);
                 }
             }
-        }else
-        {
+        }
+        if (type != null && type.equals("call")) {
             log.info("呼叫机断开连接");
         }
-
-
         super.handlerRemoved(ctx);
     }
 

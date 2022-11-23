@@ -131,7 +131,7 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
 
         } else if (proxyType == ProxyType.proxy_server) {
             p
-                    .addLast(new LengthFieldBasedFrameDecoder(64 * 1024, 0, 4))
+                    .addLast(new LengthFieldBasedFrameDecoder(5*1024 * 1024, 0, 4))
                     .addLast(new MyByteToMessageCodec())
                     .addLast(new AuthHandler(new DefaultConnectionValidate(), proxyConfig))
                     .addLast(new MyProtocolHandler());

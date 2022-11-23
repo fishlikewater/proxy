@@ -65,7 +65,7 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
         if (proxyType ==  ProxyType.proxy_client){
             assert proxyConfig != null;
             pipeline
-                    .addLast(new LengthFieldBasedFrameDecoder(64 * 1024, 0, 4))
+                    .addLast(new LengthFieldBasedFrameDecoder(5*1024 * 1024, 0, 4))
                     .addLast(new MyByteToMessageCodec())
                     .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
                     .addLast(new TcpClientHeartBeatHandler())

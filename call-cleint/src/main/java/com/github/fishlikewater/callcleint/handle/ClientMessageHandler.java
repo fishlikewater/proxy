@@ -3,7 +3,6 @@ package com.github.fishlikewater.callcleint.handle;
 
 import com.github.fishlikewater.callcleint.boot.ProxyClient;
 import com.github.fishlikewater.codec.MessageProtocol;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoop;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -37,6 +36,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         log.error("断开连接");
+        ChannelKit.getDataChannel().close();
         final EventLoop loop = ctx.channel().eventLoop();
         loop.schedule(client::start, 30, TimeUnit.SECONDS);
         super.channelInactive(ctx);
@@ -45,8 +45,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) throws Exception {
         MessageProtocol.CmdEnum type = msg.getCmd();
-        final Long requestId = msg.getId();
-        Channel channel;
+        final long requestId = msg.getId();
         switch (type) {
             case AUTH:
                 if (msg.getState() == 1)//验证成功
@@ -76,13 +75,6 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 break;
             case HEALTH:
                 log.debug("get health info");
-                break;
-            case CLOSE:
-                channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(requestId);
-                if (channel != null && channel.isActive()) {
-                    channel.close();
-                    ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().remove(requestId);
-                }
                 break;
         }
 

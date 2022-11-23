@@ -48,8 +48,8 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                     .setId(requestId)
                     .setDst(dst)
                     .setProtocol(MessageProtocol.ProtocolEnum.SOCKS);
-            ChannelKit.getChannel().attr(ChannelKit.CHANNELS_LOCAL).get().put(requestId, ctx.channel());
-            ChannelKit.getChannel().writeAndFlush(message).addListener((ChannelFutureListener) channelFuture -> {
+            ChannelKit.getDataChannel().attr(ChannelKit.CHANNELS_LOCAL).get().put(requestId, ctx.channel());
+            ChannelKit.getDataChannel().writeAndFlush(message).addListener((ChannelFutureListener) channelFuture -> {
                 if (channelFuture.isSuccess()) {
                     if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
                         ctx.pipeline().remove(Socks5CommandRequestHandler.class);

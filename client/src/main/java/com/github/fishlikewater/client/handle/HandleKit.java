@@ -1,7 +1,7 @@
-package com.github.fishlikewater.callcleint.handle;
+package com.github.fishlikewater.client.handle;
 
-import com.github.fishlikewater.callcleint.boot.BootStrapFactory;
-import com.github.fishlikewater.callcleint.config.ProxyConfig;
+import com.github.fishlikewater.client.boot.BootStrapFactory;
+import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.codec.MyByteToMessageCodec;
 import com.github.fishlikewater.kit.IdUtil;
@@ -35,8 +35,6 @@ public class HandleKit {
                 pipeline
                         .addLast(new LengthFieldBasedFrameDecoder(5 * 1024 * 1024, 0, 4))
                         .addLast(new MyByteToMessageCodec())
-                        .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
-                        .addLast(new ClientHeartBeatHandler())
                         .addLast(new ClientDataHandler());
             }
         });
@@ -46,7 +44,7 @@ public class HandleKit {
         final MessageProtocol messageProtocol = new MessageProtocol();
         messageProtocol
                 .setId(IdUtil.id())
-                .setState((byte) 0)
+                .setState((byte) 1)
                 .setCmd(MessageProtocol.CmdEnum.DATA_CHANNEL)
                 .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
                 .setBytes(mainChannelId.getBytes(StandardCharsets.UTF_8));

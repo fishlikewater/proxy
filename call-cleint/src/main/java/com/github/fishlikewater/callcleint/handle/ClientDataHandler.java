@@ -14,6 +14,8 @@ import io.netty.handler.codec.socksx.v5.Socks5CommandStatus;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author zhangx
@@ -31,7 +33,8 @@ public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtoc
     }
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        log.error("断开连接");
+        log.error("数据通道连接断开");
+        ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().clear();
         super.channelInactive(ctx);
     }
 
@@ -41,12 +44,10 @@ public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtoc
         final Long requestId = msg.getId();
         Channel channel;
         switch (type) {
-            case DATA_CHANNEL:
-                if (msg.getState() == 1)//数据通道建立成功,移除不必要的编码解码器
-                {
-
-                }
-
+            case DATA_CHANNEL_ACK:
+                log.info(new String(msg.getBytes(), StandardCharsets.UTF_8));
+                ChannelKit.setDataChannel(ctx.channel());
+                ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>());
                 break;
             case HEALTH:
                 log.debug("get health info");
@@ -74,6 +75,14 @@ public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtoc
                     buf.writeBytes(msg.getBytes());
                     channel.writeAndFlush(buf);
                 }
+                break;
+            case CLOSE:
+                channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(requestId);
+                if (channel != null && channel.isActive()) {
+                    channel.close();
+                    ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().remove(requestId);
+                }
+                break;
         }
 
     }

@@ -1,7 +1,7 @@
 package com.github.fishlikewater.client.handle;
 
 
-import com.github.fishlikewater.client.boot.BootStrapFactroy;
+import com.github.fishlikewater.client.boot.BootStrapFactory;
 import com.github.fishlikewater.client.boot.ProxyClient;
 import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.kit.MessageProbuf;
@@ -100,7 +100,7 @@ public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<Message
 
     //根据host和端口，创建一个连接web的连接
     private static Promise<Channel> createPromise(String host, int port, ChannelHandlerContext ctx) {
-        Bootstrap bootstrap = BootStrapFactroy.bootstrapConfig(ctx);
+        Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
         bootstrap.handler(new TempClientServiceInitializer());
         final Promise<Channel> promise = ctx.executor().newPromise();
         bootstrap.remoteAddress(host, port);

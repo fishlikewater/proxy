@@ -24,6 +24,8 @@ public class ChannelGroupKit {
     //目标机路径属性
     public static final AttributeKey<String> CLIENT_PATH = AttributeKey.valueOf("client_path");
 
+    public static final AttributeKey<Channel> DATA_CHANNEL = AttributeKey.valueOf("data_channel");
+
     //请求机绑定目标机属性
     public static final AttributeKey<Channel> CALL_REMOTE_CLIENT = AttributeKey.valueOf("call_remote_client");
 

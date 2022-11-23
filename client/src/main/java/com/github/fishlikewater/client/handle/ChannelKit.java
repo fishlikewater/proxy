@@ -3,9 +3,13 @@ package com.github.fishlikewater.client.handle;
 import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.kit.MessageProbuf;
 import io.netty.channel.Channel;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.AttributeKey;
+import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 public class ChannelKit {
 
-    public final static AttributeKey<Long> LOCAL_INFO = AttributeKey.newInstance("LOCAL_INFO");
+    public final static ChannelGroup channelGroup =  new DefaultChannelGroup((GlobalEventExecutor.INSTANCE));
+
+
     public final static AttributeKey<Map<Long, Channel>> CHANNELS_LOCAL = AttributeKey.newInstance("CHANNELS_LOCAL");
 
     @Setter
