@@ -51,7 +51,8 @@ public class ClientUdpP2pDataHandler extends SimpleChannelInboundHandler<Datagra
         switch (type){
             case MAKE_HOLE_INIT:
                 dst = messageData.getDst();
-                ctx.writeAndFlush(MessageKit.getMakeHoleMsg(dst));
+                final DatagramPacket makeHoleMsg = MessageKit.getMakeHoleMsg(dst, new InetSocketAddress(clientConfig.getPort()));
+                ctx.writeAndFlush(makeHoleMsg);
                 break;
             case MAKE_HOLE:
                 ClientKit.setP2pInetSocketAddress(msg.sender());
@@ -126,7 +127,9 @@ public class ClientUdpP2pDataHandler extends SimpleChannelInboundHandler<Datagra
                 .setCmdEnum(VALID)
                 .setRegisterName(clientConfig.getName());
         final ByteBuf byteBuf = MessageKit.getByteBuf(messageData);
-        final DatagramPacket datagramPacket = new DatagramPacket(byteBuf, new InetSocketAddress(clientConfig.getServerAddress(), clientConfig.getServerPort()));
+        final DatagramPacket datagramPacket = new DatagramPacket(byteBuf,
+                new InetSocketAddress(clientConfig.getServerAddress(), clientConfig.getServerPort()),
+                new InetSocketAddress(clientConfig.getPort()));
         ctx.writeAndFlush(datagramPacket);
         super.channelActive(ctx);
     }

@@ -20,28 +20,24 @@ import static com.github.fishlikewater.proxyp2p.kit.MessageData.CmdEnum.MAKE_HOL
  **/
 public class MessageKit {
 
-    private static final MessageData message = new MessageData()
-            .setCmdEnum(MAKE_HOLE);
-
-    private static final MessageData ackMessage =new MessageData()
-            .setCmdEnum(ACK);
-
-
     public static DatagramPacket getAckMsg(InetSocketAddress inetSocketAddress){
+        MessageData ackMessage =new MessageData().setCmdEnum(ACK);
         final byte[] bytesMsg = ObjectUtil.serialize(ackMessage);
         ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(bytesMsg.length);
         buf.writeBytes(bytesMsg);
         return new DatagramPacket(buf, inetSocketAddress);
     }
 
-    public static DatagramPacket getMakeHoleMsg(MessageData.Dst dst){
+    public static DatagramPacket getMakeHoleMsg(MessageData.Dst dst, InetSocketAddress sender){
+        MessageData message = new MessageData().setCmdEnum(MAKE_HOLE);
         final byte[] bytesMsg = ObjectUtil.serialize(message);
         ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(bytesMsg.length);
         buf.writeBytes(bytesMsg);
-        return new DatagramPacket(buf, new InetSocketAddress(dst.getDstAddress(), dst.getDstPort()));
+        return new DatagramPacket(buf, new InetSocketAddress(dst.getDstAddress(), dst.getDstPort()), sender);
     }
 
     public static DatagramPacket getMakeHoleMsg(InetSocketAddress inetSocketAddress){
+        MessageData message = new MessageData().setCmdEnum(MAKE_HOLE);
         final byte[] bytesMsg = ObjectUtil.serialize(message);
         ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(bytesMsg.length);
         buf.writeBytes(bytesMsg);

@@ -3,7 +3,7 @@ package com.github.fishlikewater.server.handle.socks;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.watch.SimpleWatcher;
 import cn.hutool.core.io.watch.WatchMonitor;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -27,7 +27,7 @@ import java.util.Map;
 public class FileListenerConfig implements CommandLineRunner {
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         final File file = FileUtil.file("account.json");
         WatchMonitor.createAll(file, new SimpleWatcher(){
             @Override

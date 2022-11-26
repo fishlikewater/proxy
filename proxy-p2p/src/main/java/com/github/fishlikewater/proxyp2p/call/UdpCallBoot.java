@@ -59,7 +59,7 @@ public class UdpCallBoot {
                     }
                 });
         CallHeartBeatHandler.setInetSocketAddress(new InetSocketAddress(callConfig.getServerAddress(), callConfig.getServerPort()));
-        final ChannelFuture channelFuture = b.bind(0).addListener(future -> {}).sync();
+        final ChannelFuture channelFuture = b.bind(callConfig.getAddress(), callConfig.getPort()).addListener(future -> {}).sync();
         if (channelFuture.isSuccess()){
             CallKit.setChannel(channelFuture.channel());
         }

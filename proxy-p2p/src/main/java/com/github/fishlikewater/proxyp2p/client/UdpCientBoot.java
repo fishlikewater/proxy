@@ -58,7 +58,7 @@ public class UdpCientBoot {
                     }
                 });
         ClientHeartBeatHandler.setInetSocketAddress(new InetSocketAddress(clientConfig.getServerAddress(), clientConfig.getServerPort()));
-        final ChannelFuture channelFuture = b.bind(clientConfig.getPort()).addListener(future -> {
+        final ChannelFuture channelFuture = b.bind(clientConfig.getAddress(), clientConfig.getPort()).addListener(future -> {
         }).sync();
         if (channelFuture.isSuccess()){
             ClientKit.setChannel(channelFuture.channel());

@@ -62,7 +62,7 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<DatagramP
                 final MessageData.Dst dst = messageData.getDst();
                 CallKit.setP2pInetSocketAddress(new InetSocketAddress(dst.getDstAddress(), dst.getDstPort()));
                 CallHeartBeatHandler.setInetSocketAddress(new InetSocketAddress(dst.getDstAddress(), dst.getDstPort()));
-                ctx.writeAndFlush(MessageKit.getMakeHoleMsg(dst));
+                ctx.writeAndFlush(MessageKit.getMakeHoleMsg(dst, new InetSocketAddress(callConfig.getPort())));
                 break;
             case MAKE_HOLE:
                 CallKit.setP2pInetSocketAddress(msg.sender());
@@ -113,7 +113,9 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<DatagramP
                 .setCmdEnum(MAKE_HOLE_INIT)
                 .setRegisterName(callConfig.getName());
         final ByteBuf byteBuf = MessageKit.getByteBuf(messageData);
-        final DatagramPacket datagramPacket = new DatagramPacket(byteBuf, new InetSocketAddress(callConfig.getServerAddress(), callConfig.getServerPort()));
+        final DatagramPacket datagramPacket = new DatagramPacket(byteBuf,
+                new InetSocketAddress(callConfig.getServerAddress(), callConfig.getServerPort()),
+                new InetSocketAddress(callConfig.getPort()));
         ctx.writeAndFlush(datagramPacket);
         super.channelActive(ctx);
     }
