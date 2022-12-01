@@ -8,6 +8,7 @@ import com.github.fishlikewater.proxyp2p.config.CallConfig;
 import com.github.fishlikewater.proxyp2p.kit.MessageData;
 import com.github.fishlikewater.proxyp2p.kit.MessageKit;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -100,8 +101,10 @@ public class CallUdpP2pDataHandler extends SimpleChannelInboundHandler<DatagramP
                 final String id = messageData.getId();
                 channel = CallKit.getChannelMap().get(id);
                 if (channel != null && channel.isActive()){
-                    final ByteBuf byteBuf = messageData.getByteBuf();
-                    channel.writeAndFlush(byteBuf);
+                    final byte[] bytes = messageData.getBytes();
+                    final ByteBuf buffer = ByteBufAllocator.DEFAULT.buffer();
+                    buffer.writeBytes(bytes);
+                    channel.writeAndFlush(buffer);
                 }
 
         }

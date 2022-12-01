@@ -36,18 +36,12 @@ public class MessageKit {
         return new DatagramPacket(buf, new InetSocketAddress(dst.getDstAddress(), dst.getDstPort()), sender);
     }
 
-    public static DatagramPacket getMakeHoleMsg(InetSocketAddress inetSocketAddress){
-        MessageData message = new MessageData().setCmdEnum(MAKE_HOLE);
-        final byte[] bytesMsg = ObjectUtil.serialize(message);
-        ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(bytesMsg.length);
-        buf.writeBytes(bytesMsg);
-        return new DatagramPacket(buf, inetSocketAddress);
-    }
-
 
     public static ByteBuf getByteBuf(ByteBuf byteBuf, MessageData.CmdEnum cmd, String requestId){
         final MessageData messageData = new MessageData();
-        messageData.setByteBuf(byteBuf);
+        final byte[] bytes = new byte[byteBuf.readableBytes()];
+        byteBuf.readBytes(bytes);
+        messageData.setBytes(bytes);
         messageData.setId(requestId);
         messageData.setCmdEnum(cmd);
         final byte[] bytesMsg = ObjectUtil.serialize(messageData);

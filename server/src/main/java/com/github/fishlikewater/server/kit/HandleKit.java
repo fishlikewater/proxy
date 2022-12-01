@@ -80,11 +80,12 @@ public class HandleKit {
                         return;
                     } else {
                         ChannelGroupKit.add(p, ctx.channel());
-                        ChannelGroupKit.sendVailSuccess(ctx.channel());
                         log.info("register client path {} successful", p);
                     }
                 }
+                ChannelGroupKit.sendVailSuccess(ctx.channel());
                 ctx.channel().attr(ChannelGroupKit.CLIENT_PATH).set(path);
+                ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).set("client");
             } else {
                 Channel channel = ChannelGroupKit.find(path);
                 if (channel != null) {

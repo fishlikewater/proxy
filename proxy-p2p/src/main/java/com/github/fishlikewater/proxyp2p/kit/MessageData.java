@@ -1,6 +1,5 @@
 package com.github.fishlikewater.proxyp2p.kit;
 
-import io.netty.buffer.ByteBuf;
 import lombok.Data;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -25,7 +24,7 @@ public class MessageData implements Serializable {
 
     private int state;
 
-    private ByteBuf byteBuf;
+    private byte[] bytes;
 
     private Dst dst;
 

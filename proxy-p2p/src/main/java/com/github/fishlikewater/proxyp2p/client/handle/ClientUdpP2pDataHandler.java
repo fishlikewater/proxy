@@ -77,8 +77,8 @@ public class ClientUdpP2pDataHandler extends SimpleChannelInboundHandler<Datagra
             case REQUEST:
                 channel = ClientKit.getChannelMap().get(messageData.getId());
                 if (channel != null && channel.isActive()){
-                    ByteBuf byteBuf = messageData.getByteBuf();
-                    channel.writeAndFlush(byteBuf).addListener(future -> {
+                    byte[] bytes = messageData.getBytes();
+                    channel.writeAndFlush(bytes).addListener(future -> {
                         if (future.isSuccess()){
                             log.info("send success");
                         }else {

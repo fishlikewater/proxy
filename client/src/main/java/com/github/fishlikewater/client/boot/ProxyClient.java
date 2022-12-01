@@ -76,7 +76,7 @@ public class ProxyClient{
                 bossGroup = new NioEventLoopGroup(0, new NamedThreadFactory("client-nio-boss@"));
                 clientstrap.group(bossGroup).channel(NioSocketChannel.class);
             }
-            clientstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.proxy_client, this));
+            clientstrap.handler(new ClientHandlerInitializer(proxyConfig, proxyConfig.getProxyType(), this));
         }
     }
 
@@ -86,7 +86,7 @@ public class ProxyClient{
     public void start() {
 
         clientstrap.remoteAddress(new InetSocketAddress(proxyConfig.getAddress(), proxyConfig.getPort()));
-        log.info("start {} this port:{} and adress:{}", ProxyType.proxy_client, proxyConfig.getPort(), proxyConfig.getAddress());
+        log.info("start {} this port:{} and adress:{}", proxyConfig.getProxyType(), proxyConfig.getPort(), proxyConfig.getAddress());
         try {
             ChannelFuture future = clientstrap.connect().addListener(connectionListener).sync();
             this.channel = future.channel();
@@ -94,7 +94,7 @@ public class ProxyClient{
             ChannelKit.setChannel(this.channel);
 
         } catch (Exception e) {
-            log.error("start {} server fail", ProxyType.proxy_client);
+            log.error("start {} server fail", proxyConfig.getProxyType());
         }
     }
 
@@ -144,16 +144,16 @@ public class ProxyClient{
      * 关闭服务
      */
     public void stop() {
-        log.info("⬢ {} shutdown ...", ProxyType.proxy_client);
+        log.info("⬢ {} shutdown ...", proxyConfig.getProxyType());
         try {
             if (this.bossGroup != null) {
                 this.bossGroup.shutdownGracefully().addListener(f -> {
 
                 });
             }
-            log.info("⬢ {} shutdown successful", ProxyType.proxy_client);
+            log.info("⬢ {} shutdown successful", proxyConfig.getProxyType());
         } catch (Exception e) {
-            log.error("⬢ {} shutdown error", ProxyType.proxy_client);
+            log.error("⬢ {} shutdown error", proxyConfig.getProxyType());
         }
     }
 
