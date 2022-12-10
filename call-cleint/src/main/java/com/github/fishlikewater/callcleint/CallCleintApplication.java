@@ -4,12 +4,15 @@ import cn.hutool.core.bean.BeanUtil;
 import com.github.fishlikewater.callcleint.boot.ProxyClient;
 import com.github.fishlikewater.callcleint.boot.SocksServerBoot;
 import com.github.fishlikewater.callcleint.config.ProxyConfig;
+import com.github.fishlikewater.callcleint.handle.ChannelKit;
 import com.github.fishlikewater.config.ProxyType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import java.util.List;
 
 @SpringBootApplication
 @RequiredArgsConstructor
@@ -26,6 +29,11 @@ public class CallCleintApplication implements CommandLineRunner, DisposableBean 
 
     @Override
     public void run(String... args) {
+
+        final List<ProxyConfig.ProxyMapping> proxyMappings = proxyConfig.getProxyMappings();
+        for (ProxyConfig.ProxyMapping proxyMapping : proxyMappings) {
+            ChannelKit.getPROXY_MAPPING_MAP().put(proxyMapping.getDomain(), proxyMapping.getIp());
+        }
         proxyConfig.setProxyType(ProxyType.proxy_client);
         proxyClient = new ProxyClient(proxyConfig);
         proxyClient.run();

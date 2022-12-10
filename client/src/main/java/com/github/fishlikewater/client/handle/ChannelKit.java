@@ -6,7 +6,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.AttributeKey;
-import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.GlobalEventExecutor;
@@ -22,10 +21,13 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 public class ChannelKit {
 
+    //public final static ArrayBlockingQueue<Long> ARRAY_BLOCKING_QUEUE = new ArrayBlockingQueue<>(100);
+
     public final static ChannelGroup channelGroup =  new DefaultChannelGroup((GlobalEventExecutor.INSTANCE));
 
-
     public final static AttributeKey<Map<Long, Channel>> CHANNELS_LOCAL = AttributeKey.newInstance("CHANNELS_LOCAL");
+
+    //public final static AttributeKey<Map<String, Channel>> CONNECTION_POOL = AttributeKey.newInstance("CONNECTION_POOL");
 
     @Setter
     @Getter

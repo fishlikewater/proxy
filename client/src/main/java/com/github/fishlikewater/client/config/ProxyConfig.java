@@ -48,6 +48,8 @@ public class ProxyConfig {
 
         private int port;
 
+        private boolean longConnection;
+
         private String name;
 
     }

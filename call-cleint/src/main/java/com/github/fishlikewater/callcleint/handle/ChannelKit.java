@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
@@ -15,6 +16,10 @@ public class ChannelKit {
 
     public final static AttributeKey<Long> LOCAL_INFO = AttributeKey.newInstance("LOCAL_INFO");
     public final static AttributeKey<Map<Long, Channel>> CHANNELS_LOCAL = AttributeKey.newInstance("CHANNELS_LOCAL");
+
+    @Setter
+    @Getter
+    public static Map<String, String> PROXY_MAPPING_MAP = new ConcurrentHashMap<>();
 
     @Setter
     @Getter

@@ -6,6 +6,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -17,14 +18,10 @@ import java.util.Map;
  * @since 2019年07月13日 13:57
  **/
 @Slf4j
+@RequiredArgsConstructor
 public class ToServerHandler extends SimpleChannelInboundHandler<Object> {
 
-    private final Long requestId;
-
-    public ToServerHandler(Long requestId) {
-        this.requestId = requestId;
-    }
-
+    private final Long requested;
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) {
@@ -52,7 +49,7 @@ public class ToServerHandler extends SimpleChannelInboundHandler<Object> {
             builder.putAllHeader(header);
             ChannelKit.sendMessage(MessageProbuf.Message.newBuilder()
                     .setProtocol(MessageProbuf.Protocol.HTTP)
-                    .setRequestId(requestId)
+                    .setRequestId(requested)
                     .setResponse(builder.build())
                     .setType(MessageProbuf.MessageType.RESPONSE).build(), t -> {
 

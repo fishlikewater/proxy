@@ -31,9 +31,11 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 @Slf4j
 @Accessors(chain = true)
-public class ProxyClient{
+public class ProxyClient {
 
     private final ConnectionListener connectionListener = new ConnectionListener(this);
+    @Getter
+    private final ProxyConfig proxyConfig;
     /**
      * 处理连接
      */
@@ -41,8 +43,6 @@ public class ProxyClient{
     private Bootstrap clientstrap;
     @Getter
     private Channel channel;
-    @Getter
-    private final ProxyConfig proxyConfig;
 
     public ProxyClient(ProxyConfig proxyConfig) {
         this.proxyConfig = proxyConfig;
@@ -61,8 +61,7 @@ public class ProxyClient{
      * 连接配置初始化
      */
     void bootstrapConfig() {
-        if (clientstrap == null)
-        {
+        if (clientstrap == null) {
             clientstrap = new Bootstrap();
             clientstrap.option(ChannelOption.SO_REUSEADDR, true);
             clientstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2 * 60 * 1000);
@@ -106,8 +105,7 @@ public class ProxyClient{
      */
     void afterConnectionSuccessful(Channel channel) {
 
-        if (proxyConfig.getProxyType() == ProxyType.proxy_client)
-        {
+        if (proxyConfig.getProxyType() == ProxyType.proxy_client) {
             final long requestId = IdUtil.id();
             final MessageProtocol messageProtocol = new MessageProtocol();
             messageProtocol
@@ -116,14 +114,13 @@ public class ProxyClient{
                     .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
                     .setBytes(proxyConfig.getToken().getBytes(StandardCharsets.UTF_8));
             channel.writeAndFlush(messageProtocol).addListener(f -> log.info("发送验证信息成功"));
-        }else
-        {
+        } else {
             MessageProbuf.Register.Builder builder = MessageProbuf.Register.newBuilder();
-            if (proxyConfig.getProxyType() == ProxyType.http){
+            if (proxyConfig.getProxyType() == ProxyType.http) {
                 final Set<String> keySet = ChannelKit.HTTP_MAPPING_MAP.keySet();
                 final String path = String.join(",", keySet);
                 builder.setPath(path);
-            }else {
+            } else {
                 builder.setPath(proxyConfig.getProxyPath());
             }
             builder.setToken(proxyConfig.getToken());

@@ -5,7 +5,6 @@ import com.github.fishlikewater.client.boot.BootStrapFactory;
 import com.github.fishlikewater.client.boot.ProxyClient;
 import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.kit.MessageProbuf;
-import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -60,7 +59,8 @@ public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<Message
                 request.getHeaderMap().forEach((key, value) -> req.headers().set(key, value));
                 req.headers().set("Host", (httpMapping.getAddress() + ":" + httpMapping.getPort()));
                 req.content().writeBytes(request.getBody().toByteArray());
-                Promise<Channel> promise = createPromise(httpMapping.getAddress(), httpMapping.getPort(), ctx);
+
+                Promise<Channel> promise = BootStrapFactory.createPromise(httpMapping.getAddress(), httpMapping.getPort(), ctx);
                 promise.addListener((FutureListener<Channel>) channelFuture -> {
                     if (channelFuture.isSuccess()) {
                         ChannelPipeline p = channelFuture.get().pipeline();
@@ -68,6 +68,7 @@ public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<Message
                         channelFuture.get().writeAndFlush(req);
                     }
                 });
+
                 break;
             case VALID:
                 String extend = msg.getExtend();
@@ -75,6 +76,8 @@ public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<Message
                     log.warn(extend);
                 } else {
                     log.info("验证成功");
+                    //添加连接池支持
+                    //connectionPool(ctx);
                 }
                 break;
             case HEALTH:
@@ -96,24 +99,6 @@ public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<Message
         } else {
             super.exceptionCaught(ctx, cause);
         }
-    }
-
-    //根据host和端口，创建一个连接web的连接
-    private static Promise<Channel> createPromise(String host, int port, ChannelHandlerContext ctx) {
-        Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
-        bootstrap.handler(new TempClientServiceInitializer());
-        final Promise<Channel> promise = ctx.executor().newPromise();
-        bootstrap.remoteAddress(host, port);
-        bootstrap.connect()
-                .addListener((ChannelFutureListener) channelFuture -> {
-                    if (channelFuture.isSuccess()) {
-                        promise.setSuccess(channelFuture.channel());
-                    } else {
-                        log.debug("connection fail address {}, port {}", host, port);
-                        channelFuture.cancel(true);
-                    }
-                });
-        return promise;
     }
 
 

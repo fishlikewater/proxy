@@ -5,6 +5,8 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * @author zhangx
  * @version V1.0
@@ -51,6 +53,20 @@ public class ProxyConfig {
 
     /** 是否开启验证*/
     private boolean auth;
+
+    private boolean mapping;
+
+    private List<ProxyMapping> proxyMappings;
+
+
+    @Data
+    public static class ProxyMapping{
+
+        private String domain;
+
+        private String ip;
+
+    }
 
 }
 

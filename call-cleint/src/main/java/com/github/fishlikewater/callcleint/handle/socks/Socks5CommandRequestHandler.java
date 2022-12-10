@@ -1,6 +1,7 @@
 package com.github.fishlikewater.callcleint.handle.socks;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.callcleint.handle.ChannelKit;
 import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.kit.IdUtil;
@@ -11,12 +12,16 @@ import io.netty.handler.codec.socksx.v5.DefaultSocks5CommandRequest;
 import io.netty.handler.codec.socksx.v5.Socks5CommandRequestDecoder;
 import io.netty.handler.codec.socksx.v5.Socks5CommandType;
 import io.netty.handler.codec.socksx.v5.Socks5InitialRequestDecoder;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
 @Slf4j
+@RequiredArgsConstructor
 public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<DefaultSocks5CommandRequest> {
+
+    private final boolean isMapping;
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -40,7 +45,16 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
             final Long requestId = IdUtil.id();
             ctx.channel().attr(ChannelKit.LOCAL_INFO).set(requestId);
             final MessageProtocol.Dst dst = new MessageProtocol.Dst();
-            dst.setDstAddress(msg.dstAddr());
+            if (isMapping){
+                final String address = ChannelKit.getPROXY_MAPPING_MAP().get(msg.dstAddr());
+                if (StrUtil.isNotBlank(address)){
+                    dst.setDstAddress(address);
+                }else {
+                    dst.setDstAddress(msg.dstAddr());
+                }
+            }else {
+                dst.setDstAddress(msg.dstAddr());
+            }
             dst.setDstPort(msg.dstPort());
             final MessageProtocol message = new MessageProtocol();
             message
