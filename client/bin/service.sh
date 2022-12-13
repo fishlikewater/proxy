@@ -1,6 +1,6 @@
 #!/bin/bash
 #项目jar名称
-APP_NAME=server
+APP_NAME=client
 
 #JDK指定
 #JAVA_HOME=/app/java/jdk8

@@ -68,6 +68,7 @@ public class ProxyClient {
             clientstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
             clientstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
             clientstrap.option(ChannelOption.TCP_NODELAY, true);
+            clientstrap.option(ChannelOption.SO_KEEPALIVE, true);
             if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
                 bossGroup = new EpollEventLoopGroup(0, new NamedThreadFactory("client-epoll-boss@"));
                 clientstrap.group(bossGroup).channel(EpollSocketChannel.class);
