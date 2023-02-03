@@ -41,9 +41,6 @@ public class ProxyHttpServerHandler extends SimpleChannelInboundHandler<HttpObje
             if (StrUtil.isBlank(path)){
                 final String[] split = uri.split("/");
                 path = split[1];
-                if (StrUtil.isNotBlank(path)){
-                    uri = uri.replace("/" + path, "");
-                }
             }
             Channel channel = null;
             if (StrUtil.isNotBlank(path)) {

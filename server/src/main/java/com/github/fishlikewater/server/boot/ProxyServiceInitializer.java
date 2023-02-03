@@ -126,7 +126,7 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
             p.addFirst(Socks5ServerEncoder.DEFAULT); //2
             p.addFirst(new Socks5InitialRequestDecoder());  //1
             /* Socks connection handler */
-            p.addLast(new Socks5CommandRequestHandler());
+            p.addLast(new Socks5CommandRequestHandler(proxyConfig));
             //p.addFirst(new StatisticsHandler(true, true));
 
         } else if (proxyType == ProxyType.proxy_server) {

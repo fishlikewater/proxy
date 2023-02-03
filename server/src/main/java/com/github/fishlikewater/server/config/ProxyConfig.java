@@ -5,6 +5,8 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 /**
  * @author zhangx
  * @version V1.0
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 public class ProxyConfig {
+
+    private int next = 0;
 
     /** 验证用户名*/
     private String username;
@@ -51,6 +55,8 @@ public class ProxyConfig {
     /** 客户端 http 映射端口*/
     private int localPort = 8081;
 
+    private int[] localPorts;
+
     /** 客户端 http 映射地址*/
     private String localAddress = "127.0.0.1";
 
@@ -83,6 +89,18 @@ public class ProxyConfig {
     public ProxyConfig setIsOpenGlobalTrafficLimit(boolean openGlobalTrafficLimit) {
         isOpenGlobalTrafficLimit = openGlobalTrafficLimit;
         return this;
+    }
+
+    public int getOneLocalPort(){
+        if (Objects.isNull(localPorts)){
+            return 0;
+        }
+        if (next >= localPorts.length){
+            next = 0;
+        }
+        int port = localPorts[next];
+        next++;
+        return port;
     }
 }
 

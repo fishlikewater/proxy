@@ -1,19 +1,24 @@
 package com.github.fishlikewater.server.handle.socks;
 
+import com.github.fishlikewater.server.config.ProxyConfig;
 import com.github.fishlikewater.server.kit.BootStrapFactroy;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.handler.codec.socksx.v5.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
 @Slf4j
+@RequiredArgsConstructor
 public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<DefaultSocks5CommandRequest> {
 
     private Bootstrap bootstrap;
 
     private ChannelFuture future;
+
+    private final ProxyConfig proxyConfig;
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -34,11 +39,15 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                 future.channel().writeAndFlush(msg);
             }
             bootstrap = BootStrapFactroy.bootstrapConfig(ctx);
+            final int oneLocalPort = proxyConfig.getOneLocalPort();
+            log.debug("本次使用本地端口:{}", oneLocalPort);
+            bootstrap.localAddress(oneLocalPort);
             future = bootstrap.connect(msg.dstAddr(), msg.dstPort());
             future.addListener(new ChannelFutureListener() {
+                @Override
                 public void operationComplete(final ChannelFuture future) throws Exception {
                     if (future.isSuccess()) {
-                        log.trace("成功连接目标服务器");
+                        log.debug("成功连接目标服务器");
                         if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
                             ctx.pipeline().remove(Socks5CommandRequestHandler.class);
                         }

@@ -52,7 +52,7 @@ public class ProxyServer{
         bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
         bootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
-        if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
+        if (EpollKit.epollIsAvailable()) {
             bossGroup = new EpollEventLoopGroup(0, new NamedThreadFactory("epoll-boss@"));
             workerGroup = new EpollEventLoopGroup(0, new NamedThreadFactory("epoll-worker@"));
             bootstrap.group(bossGroup, workerGroup).channel(EpollServerSocketChannel.class);

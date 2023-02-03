@@ -69,7 +69,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.github.fishlikewater.server" level="INFO" />
+    <logger name="com.github.fishlikewater.server" level="DEBUG" />
 
 
     <!-- ===================================================================== -->

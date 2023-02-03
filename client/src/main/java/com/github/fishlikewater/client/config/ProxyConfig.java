@@ -50,6 +50,8 @@ public class ProxyConfig {
 
         private boolean longConnection;
 
+        private boolean delNameWithPath;
+
         private String name;
 
     }

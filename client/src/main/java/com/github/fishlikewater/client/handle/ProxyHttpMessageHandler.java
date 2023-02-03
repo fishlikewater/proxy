@@ -54,7 +54,11 @@ public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<Message
                 Long requested = msg.getRequestId();
                 MessageProbuf.Request request = msg.getRequest();
                 String name = msg.getExtend();
+
                 final ProxyConfig.HttpMapping httpMapping = ChannelKit.HTTP_MAPPING_MAP.get(name);
+                if (httpMapping.isDelNameWithPath()){
+                    request = MessageProbuf.Request.newBuilder(request).setUrl(request.getUrl().replace("/" + httpMapping.getName(), "")).build();
+                }
                 FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.valueOf(request.getHttpVersion()), HttpMethod.valueOf(request.getMethod()), request.getUrl());
                 request.getHeaderMap().forEach((key, value) -> req.headers().set(key, value));
                 req.headers().set("Host", (httpMapping.getAddress() + ":" + httpMapping.getPort()));
@@ -85,6 +89,9 @@ public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<Message
                 break;
             case CLOSE:
                 ctx.channel().close();
+            default:
+                log.info("noknow message");
+                break;
         }
 
     }
