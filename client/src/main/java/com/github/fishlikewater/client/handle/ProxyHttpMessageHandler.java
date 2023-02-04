@@ -57,7 +57,7 @@ public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<Message
 
                 final ProxyConfig.HttpMapping httpMapping = ChannelKit.HTTP_MAPPING_MAP.get(name);
                 if (httpMapping.isDelNameWithPath()){
-                    request = MessageProbuf.Request.newBuilder(request).setUrl(request.getUrl().replace("/" + httpMapping.getName(), "")).build();
+                    request = request.toBuilder().setUrl(request.getUrl().replace("/" + httpMapping.getName(), "")).build();
                 }
                 FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.valueOf(request.getHttpVersion()), HttpMethod.valueOf(request.getMethod()), request.getUrl());
                 request.getHeaderMap().forEach((key, value) -> req.headers().set(key, value));
