@@ -6,20 +6,13 @@ import com.github.fishlikewater.client.handle.ClientHeartBeatHandler;
 import com.github.fishlikewater.client.handle.ProxyHttpMessageHandler;
 import com.github.fishlikewater.client.handle.ProxyTcpMessageHandler;
 import com.github.fishlikewater.client.handle.TcpClientHeartBeatHandler;
+import com.github.fishlikewater.codec.HttpProtocolCodec;
 import com.github.fishlikewater.codec.MyByteToMessageCodec;
 import com.github.fishlikewater.config.ProxyType;
-import com.github.fishlikewater.kit.MessageProbuf;
-import com.github.fishlikewater.kit.ProtocolKit;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import io.netty.handler.codec.protobuf.ProtobufDecoder;
-import io.netty.handler.codec.protobuf.ProtobufEncoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 
@@ -54,10 +47,8 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
         if (proxyType == ProxyType.http) {
             assert proxyConfig != null;
             pipeline
-                    .addLast(new ProtobufVarint32FrameDecoder())
-                    .addLast(new ProtobufDecoder(MessageProbuf.Message.getDefaultInstance()))
-                    .addLast(new ProtobufVarint32LengthFieldPrepender())
-                    .addLast(new ProtobufEncoder())
+                    .addLast(new LengthFieldBasedFrameDecoder(5*1024 * 1024, 0, 4))
+                    .addLast(new HttpProtocolCodec())
                     .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
                     .addLast(new ClientHeartBeatHandler())
                     .addLast(new ProxyHttpMessageHandler(client));

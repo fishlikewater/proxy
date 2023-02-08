@@ -42,7 +42,8 @@ public class AuthHandler extends SimpleChannelInboundHandler<MessageProtocol> {
         if (msg.getCmd() == MessageProtocol.CmdEnum.DATA_CHANNEL) {
             //处理 建立数据通道的请求
             //1、先验证主连接
-            if (msg.getState() == 0){ //请求机
+            //请求机
+            if (msg.getState() == 0){
                 final String mainChannelId = new String(msg.getBytes(), StandardCharsets.UTF_8);
                 final Channel channel = ChannelGroupKit.find(mainChannelId);
                 if (Objects.nonNull(channel) && channel.isActive()) {

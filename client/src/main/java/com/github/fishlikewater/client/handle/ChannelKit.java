@@ -1,7 +1,7 @@
 package com.github.fishlikewater.client.handle;
 
 import com.github.fishlikewater.client.config.ProxyConfig;
-import com.github.fishlikewater.kit.MessageProbuf;
+import com.github.fishlikewater.codec.HttpProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -38,7 +38,7 @@ public class ChannelKit {
     public static Channel channel = null;
 
 
-    public static void sendMessage(MessageProbuf.Message message, GenericFutureListener<? extends Future<? super Void>> listener){
+    public static void sendMessage(HttpProtocol message, GenericFutureListener<? extends Future<? super Void>> listener){
         if(channel != null && channel.isActive()){
             channel.writeAndFlush(message).addListener(listener);
         }

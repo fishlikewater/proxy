@@ -83,6 +83,8 @@ public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtoc
                         ctx.channel().writeAndFlush(failMsg);
                     }
                 });
+                break;
+            default:
         }
     }
 

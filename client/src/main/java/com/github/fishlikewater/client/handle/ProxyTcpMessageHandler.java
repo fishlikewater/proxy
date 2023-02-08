@@ -49,7 +49,8 @@ public class ProxyTcpMessageHandler extends SimpleChannelInboundHandler<MessageP
         final MessageProtocol.CmdEnum cmd = msg.getCmd();
         switch (cmd) {
             case AUTH:
-                if (msg.getState() == 1)//验证成功
+                //验证成功
+                if (msg.getState() == 1)
                 {
                     log.info("验证成功, 开始注册....");
                     final MessageProtocol messageProtocol = new MessageProtocol();
@@ -73,6 +74,7 @@ public class ProxyTcpMessageHandler extends SimpleChannelInboundHandler<MessageP
             case HEALTH:
                 log.debug("get health info");
                 break;
+            default:
         }
     }
 

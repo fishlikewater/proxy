@@ -1,6 +1,7 @@
 package com.github.fishlikewater.codec;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -17,19 +18,44 @@ import java.io.Serializable;
  **/
 @Data
 @Accessors(chain = true)
+@EqualsAndHashCode
 public class MessageProtocol {
 
-    private long id; //每次传输消息的id
+    /**
+     *
+     * 每次传输消息的id
+     **/
+    private long id;
 
-    private CmdEnum cmd; //消息类型
+    /**
+     *
+     * 消息类型
+     **/
+    private CmdEnum cmd;
 
-    private ProtocolEnum protocol; //消息类容的协议
+    /**
+     *
+     * 消息类容的协议
+     **/
+    private ProtocolEnum protocol;
 
-    private Dst dst; //需要连接的目标机器
+    /**
+     *
+     * 需要连接的目标机器
+     **/
+    private Dst dst;
 
-    private byte state = 0; //状态码  判断目标机器连接是否成功
+    /**
+     *
+     * 状态码  判断目标机器连接是否成功
+     **/
+    private byte state = 0;
 
-    private byte[] bytes; //消息类容 不做处理 直接传输
+    /**
+     *
+     * 消息类容 不做处理 直接传输
+     **/
+    private byte[] bytes;
 
 
 
@@ -43,16 +69,27 @@ public class MessageProtocol {
 
 
     public enum  CmdEnum implements Serializable {
-        AUTH(0),//验证
-        REGISTER(1), //客户端注册
-        REQUEST(2), //请求
-        RESPONSE(3),//响应
-        HEALTH(4), //心跳
-        CLOSE(5), //关闭
-        CONNECTION(6),//请求与目标地址建立连接
-        ACK(7), //连接建立是否成功应答
-        DATA_CHANNEL(8),//建立数据通道
-        DATA_CHANNEL_ACK(9);//建立数据通道回应
+
+        //验证
+        AUTH(0),
+        //客户端注册
+        REGISTER(1),
+        //请求
+        REQUEST(2),
+        //响应
+        RESPONSE(3),
+        //心跳
+        HEALTH(4),
+        //关闭
+        CLOSE(5),
+        //请求与目标地址建立连接
+        CONNECTION(6),
+        //连接建立是否成功应答
+        ACK(7),
+        //建立数据通道
+        DATA_CHANNEL(8),
+        //建立数据通道回应
+        DATA_CHANNEL_ACK(9);
         @Getter
         private final int code;
 
@@ -72,8 +109,10 @@ public class MessageProtocol {
 
 
     public enum  ProtocolEnum implements Serializable {
-        HTTP(1), //http消息  内网穿透
-        SOCKS(2); //类vpn模式代理
+        //http消息  内网穿透
+        HTTP(1),
+        //类vpn模式代理
+        SOCKS(2);
         @Getter
         private final int code;
 

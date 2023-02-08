@@ -1,7 +1,6 @@
 package com.github.fishlikewater.client.handle;
 
-import com.github.fishlikewater.kit.MessageProbuf;
-import com.google.protobuf.ByteString;
+import com.github.fishlikewater.codec.HttpProtocol;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -10,8 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
@@ -25,33 +22,29 @@ public class ToServerHandler extends SimpleChannelInboundHandler<Object> {
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) {
-        //System.out.println("交换数据");
         if (msg instanceof FullHttpResponse) {
             FullHttpResponse resp = (FullHttpResponse) msg;
-            MessageProbuf.Response.Builder builder = MessageProbuf.Response.newBuilder();
             int code = resp.status().code();
-            Map<String, String> header = new HashMap<>();
-            resp.headers().entries().forEach(t -> header.put(t.getKey(), t.getValue()));
+            final HttpProtocol httpProtocol = new HttpProtocol();
             //允许跨域访问
-            header.put("Access-Control-Allow-Origin", "*");
-            header.put("Access-Control-Allow-Methods", "*");
-            header.put("Access-Control-Allow-Headers", "*");
-            header.put("ACCESS-CONTROL-ALLOW-CREDENTIALS", "true");
+            resp.headers().add("Access-Control-Allow-Origin", "*");
+            resp.headers().add("Access-Control-Allow-Methods", "*");
+            resp.headers().add("Access-Control-Allow-Headers", "*");
+            resp.headers().add("ACCESS-CONTROL-ALLOW-CREDENTIALS", "true");
             ByteBuf content = resp.content();
+            httpProtocol.setBytes(resp.content().array());
             if (content.hasArray()) {
-                builder.setBody(ByteString.copyFrom(content.array()));
+                httpProtocol.setBytes(resp.content().array());
             } else {
                 byte[] bytes = new byte[content.readableBytes()];
                 content.readBytes(bytes);
-                builder.setBody(ByteString.copyFrom(bytes));
+                httpProtocol.setBytes(bytes);
             }
-            builder.setCode(code);
-            builder.putAllHeader(header);
-            ChannelKit.sendMessage(MessageProbuf.Message.newBuilder()
-                    .setProtocol(MessageProbuf.Protocol.HTTP)
-                    .setRequestId(requested)
-                    .setResponse(builder.build())
-                    .setType(MessageProbuf.MessageType.RESPONSE).build(), t -> {
+            httpProtocol.setHeads(resp.headers());
+            httpProtocol.setCode(code);
+            httpProtocol.setId(requested);
+            httpProtocol.setCmd(HttpProtocol.CmdEnum.RESPONSE);
+            ChannelKit.sendMessage(httpProtocol, t -> {
 
             });
         }

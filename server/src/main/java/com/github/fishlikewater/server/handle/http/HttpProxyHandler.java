@@ -19,21 +19,19 @@ import java.net.InetSocketAddress;
  * @version V1.0
  **/
 @Slf4j
-public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> {
+public class HttpProxyHandler extends SimpleChannelInboundHandler<HttpObject> {
 
     private final boolean isAuth;
 
-    public HttpServiceHandler(boolean isAuth){
+    public HttpProxyHandler(boolean isAuth){
         this.isAuth = isAuth;
     }
 
-    //channelActive方法中将ctx保留为全局变量
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
     }
 
-    //Complete方法中刷新数据
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
         super.channelReadComplete(ctx);
@@ -46,17 +44,21 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
             //转成 HttpRequest
             FullHttpRequest req = (FullHttpRequest) msg;
             boolean isContinue = !isAuth || PassWordCheck.basicLogin(req);
-            if (isContinue) { //检测密码
-                HttpMethod method = req.method();    //获取请求方式，http的有get post ...， https的是 CONNECT
-                String headerHost = req.headers().get("Host");    //获取请求头中的Host字段
+            if (isContinue) {
+                //获取请求方式，http的有get post ...， https的是 CONNECT
+                HttpMethod method = req.method();
+                //获取请求头中的Host字段
+                String headerHost = req.headers().get("Host");
                 String host;
-                int port = 80;                                    //端口默认80
+                //端口默认80
+                int port = 80;
                 if(headerHost == null){
                     log.warn("not host this request {}", req);
                     ctx.close();
                     return;
                 }
-                String[] split = headerHost.split(":");            //可能有请求是 host:port的情况，
+                //可能有请求是 host:port的情况，
+                String[] split = headerHost.split(":");
                 host = split[0];
                 if (split.length > 1) {
                     port = Integer.parseInt(split[1]);
@@ -81,7 +83,8 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
          * 处理http
          */
         private void handlerHttp(String host, int port, FullHttpRequest req, ChannelHandlerContext ctx){
-            Promise<Channel> promise = createPromise(new InetSocketAddress(host, port), ctx);    //根据host和port创建连接到服务器的连接
+            //根据host和port创建连接到服务器的连接
+            Promise<Channel> promise = createPromise(new InetSocketAddress(host, port), ctx);
             //如果是http连接，首先将接受的请求转换成原始字节数据
             log.debug("处理http 请求");
             ReferenceCountUtil.retain(req);
@@ -91,7 +94,7 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
                     log.debug("连接http web 成功，开始发送数据");
                     ChannelPipeline p = ctx.pipeline();
                     p.remove("httpcode");
-                    p.remove("httpservice");
+                    p.remove("httpProxy");
                     p.addLast(new NoneHandler(channelFuture.get()));
                     //添加handler
                     ChannelPipeline pipeline = channelFuture.get().pipeline();
@@ -109,7 +112,8 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
          * 处理https
          */
         private void handlerHttps(String host, int port, ChannelHandlerContext ctx){
-            Promise<Channel> promise = createPromise(new InetSocketAddress(host, port), ctx);    //根据host和port创建连接到服务器的连接
+            //根据host和port创建连接到服务器的连接
+            Promise<Channel> promise = createPromise(new InetSocketAddress(host, port), ctx);
             //如果是https的连接
             promise.addListener((FutureListener<Channel>) webchannelFuture -> {
 
@@ -142,12 +146,17 @@ public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> 
         }
 
 
-        //根据host和端口，创建一个连接web的连接
+        /**
+         *  根据host和端口，创建一个连接web的连接
+         * @author fishlikewater@126.com
+         * @param address 地址
+         * @param ctx 通道
+         * @since 2023/2/8 10:25
+         */
         private Promise<Channel> createPromise(InetSocketAddress address, ChannelHandlerContext ctx) {
             Bootstrap bootstrap = BootStrapFactroy.bootstrapConfig(ctx);
             final Promise<Channel> promise = ctx.executor().newPromise();
             bootstrap.remoteAddress(address);
-            //bootstrap.localAddress("192.168.5.217", 60051);
             bootstrap.connect()
                     .addListener((ChannelFutureListener) channelFuture -> {
                         if (channelFuture.isSuccess()) {

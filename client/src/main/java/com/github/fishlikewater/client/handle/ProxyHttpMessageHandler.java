@@ -4,6 +4,7 @@ package com.github.fishlikewater.client.handle;
 import com.github.fishlikewater.client.boot.BootStrapFactory;
 import com.github.fishlikewater.client.boot.ProxyClient;
 import com.github.fishlikewater.client.config.ProxyConfig;
+import com.github.fishlikewater.codec.HttpProtocol;
 import com.github.fishlikewater.kit.MessageProbuf;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
@@ -15,6 +16,7 @@ import io.netty.util.concurrent.Promise;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -23,9 +25,8 @@ import java.util.concurrent.TimeUnit;
  * @since: 2018年12月26日 10:52
  **/
 @Slf4j
-public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<MessageProbuf.Message> {
+public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<HttpProtocol> {
 
-    //保留全局ctx
     private final ProxyClient client;
 
     public ProxyHttpMessageHandler(ProxyClient client) {
@@ -41,28 +42,27 @@ public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<Message
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        //ctx.close();
         final EventLoop loop = ctx.channel().eventLoop();
         loop.schedule(client::start, 30, TimeUnit.SECONDS);
         super.channelInactive(ctx);
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, MessageProbuf.Message msg) {
-        switch (msg.getType()) {
+    protected void channelRead0(ChannelHandlerContext ctx, HttpProtocol msg) {
+        switch (msg.getCmd()) {
             case REQUEST:
-                Long requested = msg.getRequestId();
-                MessageProbuf.Request request = msg.getRequest();
-                String name = msg.getExtend();
-
+                Long requested = msg.getId();
+                final byte[] bytes = msg.getBytes();
+                String name = msg.getDstServer();
+                String url = msg.getUrl();
                 final ProxyConfig.HttpMapping httpMapping = ChannelKit.HTTP_MAPPING_MAP.get(name);
                 if (httpMapping.isDelNameWithPath()){
-                    request = request.toBuilder().setUrl(request.getUrl().replace("/" + httpMapping.getName(), "")).build();
+                    url = url.replace("/" + httpMapping.getName(), "");
                 }
-                FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.valueOf(request.getHttpVersion()), HttpMethod.valueOf(request.getMethod()), request.getUrl());
-                request.getHeaderMap().forEach((key, value) -> req.headers().set(key, value));
+                FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.valueOf(msg.getVersion()), HttpMethod.valueOf(msg.getMethod()), url);
+                req.headers().add(msg.getHeads());
                 req.headers().set("Host", (httpMapping.getAddress() + ":" + httpMapping.getPort()));
-                req.content().writeBytes(request.getBody().toByteArray());
+                req.content().writeBytes(msg.getBytes());
 
                 Promise<Channel> promise = BootStrapFactory.createPromise(httpMapping.getAddress(), httpMapping.getPort(), ctx);
                 promise.addListener((FutureListener<Channel>) channelFuture -> {
@@ -74,15 +74,9 @@ public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<Message
                 });
 
                 break;
-            case VALID:
-                String extend = msg.getExtend();
-                if (!"SUCCESS".equals(extend)) {
-                    log.warn(extend);
-                } else {
-                    log.info("验证成功");
-                    //添加连接池支持
-                    //connectionPool(ctx);
-                }
+            case AUTH:
+                String authMsg = new String(msg.getBytes(), StandardCharsets.UTF_8);
+                log.info(authMsg);
                 break;
             case HEALTH:
                 log.info("get receipt health packet from server");

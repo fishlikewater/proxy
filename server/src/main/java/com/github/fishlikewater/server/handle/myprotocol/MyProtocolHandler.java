@@ -26,7 +26,7 @@ public class MyProtocolHandler extends SimpleChannelInboundHandler<MessageProtoc
     protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) {
         final MessageProtocol.CmdEnum cmd = msg.getCmd();
         switch (cmd) {
-            case REGISTER: //处理注册
+            case REGISTER:
                 final byte[] bytes = msg.getBytes();
                 final String registerName = new String(bytes, StandardCharsets.UTF_8);
                 final byte registerType = msg.getState();
@@ -107,7 +107,7 @@ public class MyProtocolHandler extends SimpleChannelInboundHandler<MessageProtoc
                 break;
             default:
                 final String type = ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).get();
-                if (type.equals("client")) {
+                if ("client".equals(type)) {
                     final Channel callChannel = ctx.channel().attr(ChannelGroupKit.CALL_REQUEST_CLIENT).get();
                     if (callChannel != null && callChannel.isActive() && callChannel.isWritable()) {
                         callChannel.writeAndFlush(msg);
