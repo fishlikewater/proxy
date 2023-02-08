@@ -5,7 +5,7 @@ import com.github.fishlikewater.client.boot.BootStrapFactory;
 import com.github.fishlikewater.client.boot.ProxyClient;
 import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.codec.HttpProtocol;
-import com.github.fishlikewater.kit.MessageProbuf;
+import com.github.fishlikewater.kit.IdUtil;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,7 +53,6 @@ public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<HttpPro
         switch (msg.getCmd()) {
             case REQUEST:
                 Long requested = msg.getId();
-                final byte[] bytes = msg.getBytes();
                 String name = msg.getDstServer();
                 String url = msg.getUrl();
                 final ProxyConfig.HttpMapping httpMapping = ChannelKit.HTTP_MAPPING_MAP.get(name);
@@ -76,7 +76,23 @@ public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<HttpPro
                 break;
             case AUTH:
                 String authMsg = new String(msg.getBytes(), StandardCharsets.UTF_8);
-                log.info(authMsg);
+                final int code = msg.getCode();
+                if (code == 1){
+                    log.info(authMsg);
+                    final HttpProtocol httpProtocol = new HttpProtocol();
+                    httpProtocol.setId(IdUtil.id());
+                    httpProtocol.setCmd(HttpProtocol.CmdEnum.REGISTER);
+                    final Set<String> keySet = ChannelKit.HTTP_MAPPING_MAP.keySet();
+                    final String path = String.join(",", keySet);
+                    httpProtocol.setRegisterName(path);
+                    ChannelKit.getChannel().writeAndFlush(httpProtocol).addListener(f -> log.info("发送注册信息成功"));
+                }else {
+                    log.warn(authMsg);
+                }
+                break;
+            case REGISTER:
+                String registerMsg = new String(msg.getBytes(), StandardCharsets.UTF_8);
+                log.info(registerMsg);
                 break;
             case HEALTH:
                 log.info("get receipt health packet from server");

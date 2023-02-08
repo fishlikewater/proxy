@@ -3,11 +3,11 @@ package com.github.fishlikewater.client.boot;
 
 import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.client.handle.ChannelKit;
+import com.github.fishlikewater.codec.HttpProtocol;
 import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.config.ProxyType;
 import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.IdUtil;
-import com.github.fishlikewater.kit.MessageProbuf;
 import com.github.fishlikewater.kit.NamedThreadFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -116,22 +115,11 @@ public class ProxyClient {
                     .setBytes(proxyConfig.getToken().getBytes(StandardCharsets.UTF_8));
             channel.writeAndFlush(messageProtocol).addListener(f -> log.info("发送验证信息成功"));
         } else {
-            MessageProbuf.Register.Builder builder = MessageProbuf.Register.newBuilder();
-            if (proxyConfig.getProxyType() == ProxyType.http) {
-                final Set<String> keySet = ChannelKit.HTTP_MAPPING_MAP.keySet();
-                final String path = String.join(",", keySet);
-                builder.setPath(path);
-            } else {
-                builder.setPath(proxyConfig.getProxyPath());
-            }
-            builder.setToken(proxyConfig.getToken());
-            final MessageProbuf.Message.Builder messageBuild = MessageProbuf.Message
-                    .newBuilder()
-                    .setRequestId(IdUtil.id())
-                    .setRegister(builder.build())
-                    .setExtend("client")
-                    .setType(MessageProbuf.MessageType.VALID);
-            channel.writeAndFlush(messageBuild.build()).addListener(f -> log.info("发送验证信息成功"));
+            final HttpProtocol httpProtocol = new HttpProtocol();
+            httpProtocol.setId(IdUtil.id());
+            httpProtocol.setCmd(HttpProtocol.CmdEnum.AUTH);
+            httpProtocol.setBytes(proxyConfig.getToken().getBytes(StandardCharsets.UTF_8));
+            channel.writeAndFlush(httpProtocol).addListener(f -> log.info("发送验证信息成功"));
             channel.attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>());
         }
 

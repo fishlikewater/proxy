@@ -36,6 +36,7 @@ public class HttpAuthHandler extends SimpleChannelInboundHandler<HttpProtocol> {
                 successMsg
                         .setCmd(HttpProtocol.CmdEnum.AUTH)
                         .setId(msg.getId())
+                        .setCode(1)
                         .setBytes("验证成功".getBytes(StandardCharsets.UTF_8));
                 ctx.writeAndFlush(successMsg);
             } else {
@@ -43,6 +44,7 @@ public class HttpAuthHandler extends SimpleChannelInboundHandler<HttpProtocol> {
                 failMsg
                         .setCmd(HttpProtocol.CmdEnum.AUTH)
                         .setId(msg.getId())
+                        .setCode(0)
                         .setBytes("验证失败".getBytes(StandardCharsets.UTF_8));
                 ctx.writeAndFlush(failMsg);
             }
@@ -51,6 +53,7 @@ public class HttpAuthHandler extends SimpleChannelInboundHandler<HttpProtocol> {
             failMsg
                     .setCmd(HttpProtocol.CmdEnum.AUTH)
                     .setId(msg.getId())
+                    .setCode(0)
                     .setBytes("请先验证token".getBytes(StandardCharsets.UTF_8));
             ctx.writeAndFlush(failMsg);
         }

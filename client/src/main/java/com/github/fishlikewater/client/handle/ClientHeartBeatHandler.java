@@ -1,12 +1,14 @@
 package com.github.fishlikewater.client.handle;
 
 
+import com.github.fishlikewater.codec.HttpProtocol;
 import com.github.fishlikewater.kit.IdUtil;
-import com.github.fishlikewater.kit.MessageProbuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * @description: 用于检测channel的心跳handler
@@ -15,12 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
-    public static final MessageProbuf.Message HEARTBEAT_SEQUENCE = MessageProbuf.Message.newBuilder()
-            .setLength(10)
-            .setRequestId(IdUtil.id())
-            .setExtend("ping")
-            .setType(MessageProbuf.MessageType.HEALTH)
-            .build();
+    public static final HttpProtocol HEARTBEAT_SEQUENCE = new HttpProtocol()
+            .setId(IdUtil.id())
+            .setBytes("ping".getBytes(StandardCharsets.UTF_8))
+            .setCmd(HttpProtocol.CmdEnum.HEALTH);
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {

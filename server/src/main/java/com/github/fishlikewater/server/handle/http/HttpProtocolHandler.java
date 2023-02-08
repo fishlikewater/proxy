@@ -62,7 +62,7 @@ public class HttpProtocolHandler extends SimpleChannelInboundHandler<HttpProtoco
                 Long requested = msg.getId();
                 Channel channel = CacheUtil.get(requested);
                 if (channel != null && channel.isActive()) {
-                    FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST);
+                    FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.valueOf(msg.getVersion()), HttpResponseStatus.valueOf(msg.getCode()));
                     final byte[] bytes = msg.getBytes();
                     resp.content().writeBytes(bytes);
                     channel.writeAndFlush(resp).addListener(t -> {

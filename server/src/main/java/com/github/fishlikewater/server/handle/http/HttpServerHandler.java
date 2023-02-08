@@ -67,7 +67,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<HttpObject> {
                 httpProtocol.setHeads(req.headers());
                 httpProtocol.setUrl(uri);
                 httpProtocol.setMethod(req.method().name());
-                httpProtocol.setVersion(req.protocolVersion().protocolName());
+                httpProtocol.setVersion(req.protocolVersion().text());
                 ctx.channel().attr(ChannelGroupKit.CHANNELS_LOCAL).set(requestId);
                 channel.writeAndFlush(httpProtocol).addListener((f) -> {
                     if (f.isSuccess()) {
@@ -77,35 +77,6 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<HttpObject> {
                     }
 
                 });
-                /*MessageProbuf.Request.Builder builder = MessageProbuf.Request.newBuilder();
-                builder.setHttpVersion(req.protocolVersion().text());
-                builder.setUrl(uri);
-                builder.setMethod(req.method().name());
-                Map<String, String> header = new HashMap<>();
-                headers.entries().forEach(t -> header.put(t.getKey(), t.getValue()));
-                builder.putAllHeader(header);
-                ByteBuf content = req.content();
-                if (content.hasArray()) {
-                    builder.setBody(ByteString.copyFrom(content.array()));
-                } else {
-                    byte[] bytes = new byte[content.readableBytes()];
-                    content.readBytes(bytes);
-                    builder.setBody(ByteString.copyFrom(bytes));
-                }
-                Long requestId = IdUtil.id();
-                ctx.channel().attr(ChannelGroupKit.CHANNELS_LOCAL).set(requestId);
-                channel.writeAndFlush(MessageProbuf.Message.newBuilder()
-                        .setType(MessageProbuf.MessageType.REQUEST)
-                        .setProtocol(MessageProbuf.Protocol.HTTP)
-                        .setRequest(builder.build())
-                        .setExtend(path)
-                        .setRequestId(requestId)).addListener((f) -> {
-                    if (f.isSuccess()) {
-                        CacheUtil.put(requestId, ctx.channel(), 300);
-                    } else {
-                        log.info("转送失败");
-                    }
-                });*/
             }
         } else {
             log.info("not found http or https request, will close this channel");
