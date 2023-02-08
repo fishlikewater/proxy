@@ -30,14 +30,14 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<HttpObject> {
             FullHttpRequest req = (FullHttpRequest) msg;
             HttpHeaders headers = req.headers();
             String uri = req.uri();
-            /* 获取连接目标路由*/
-            if (StrUtil.isBlank(uri)) {
-                return;
-            }
             String path = headers.get("path");
             if (StrUtil.isBlank(path)) {
-                final String[] split = uri.split("/");
-                path = split[1];
+                if (StrUtil.isBlank(uri)) {
+                    path = "default";
+                }else {
+                    final String[] split = uri.split("/");
+                    path = split[1];
+                }
             }
             Channel channel;
             if (StrUtil.isNotBlank(path)) {
