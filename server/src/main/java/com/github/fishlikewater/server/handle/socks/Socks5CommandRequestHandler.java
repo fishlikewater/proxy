@@ -39,29 +39,27 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                 future.channel().writeAndFlush(msg);
             }
             bootstrap = BootStrapFactroy.bootstrapConfig(ctx);
-            final int oneLocalPort = proxyConfig.getOneLocalPort();
-            log.debug("本次使用本地端口:{}", oneLocalPort);
-            bootstrap.localAddress(oneLocalPort);
+            if (proxyConfig.isUseLocalPorts()){
+                final int oneLocalPort = proxyConfig.getOneLocalPort();
+                log.debug("本次使用本地端口:{}", oneLocalPort);
+                bootstrap.localAddress(oneLocalPort);
+            }
             future = bootstrap.connect(msg.dstAddr(), msg.dstPort());
-            future.addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(final ChannelFuture future) throws Exception {
-                    if (future.isSuccess()) {
-                        log.debug("成功连接目标服务器");
-                        if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
-                            ctx.pipeline().remove(Socks5CommandRequestHandler.class);
-                        }
-                        ctx.pipeline().addLast(new Client2DestHandler(future));
-                        future.channel().pipeline().addLast(new Dest2ClientHandler(ctx));
-                        Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
-                        ctx.writeAndFlush(commandResponse);
-                    } else {
-                        log.debug("连接目标服务器失败");
-                        Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, Socks5AddressType.IPv4);
-                        ctx.writeAndFlush(commandResponse);
+            future.addListener((ChannelFutureListener) future -> {
+                if (future.isSuccess()) {
+                    log.debug("成功连接目标服务器");
+                    if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
+                        ctx.pipeline().remove(Socks5CommandRequestHandler.class);
                     }
+                    ctx.pipeline().addLast(new Client2DestHandler(future));
+                    future.channel().pipeline().addLast(new Dest2ClientHandler(ctx));
+                    Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
+                    ctx.writeAndFlush(commandResponse);
+                } else {
+                    log.debug("连接目标服务器失败");
+                    Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, Socks5AddressType.IPv4);
+                    ctx.writeAndFlush(commandResponse);
                 }
-
             });
         } else {
             ctx.fireChannelRead(msg);

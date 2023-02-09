@@ -57,6 +57,8 @@ public class ProxyConfig {
 
     private int[] localPorts;
 
+    private boolean useLocalPorts;
+
     /** 客户端 http 映射地址*/
     private String localAddress = "127.0.0.1";
 
