@@ -3,8 +3,8 @@ package com.github.fishlikewater.client.boot;
 
 import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.client.handle.ClientHeartBeatHandler;
-import com.github.fishlikewater.client.handle.ProxyHttpMessageHandler;
-import com.github.fishlikewater.client.handle.ProxyTcpMessageHandler;
+import com.github.fishlikewater.client.handle.HttpMessageHandler;
+import com.github.fishlikewater.client.handle.TcpMessageHandler;
 import com.github.fishlikewater.client.handle.TcpClientHeartBeatHandler;
 import com.github.fishlikewater.codec.HttpProtocolCodec;
 import com.github.fishlikewater.codec.MyByteToMessageCodec;
@@ -51,7 +51,7 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
                     .addLast(new HttpProtocolCodec())
                     .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
                     .addLast(new ClientHeartBeatHandler())
-                    .addLast(new ProxyHttpMessageHandler(client));
+                    .addLast(new HttpMessageHandler(client));
         }
         if (proxyType ==  ProxyType.proxy_client){
             assert proxyConfig != null;
@@ -60,7 +60,7 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
                     .addLast(new MyByteToMessageCodec())
                     .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
                     .addLast(new TcpClientHeartBeatHandler())
-                    .addLast(new ProxyTcpMessageHandler(client));
+                    .addLast(new TcpMessageHandler(client));
         }
 
     }

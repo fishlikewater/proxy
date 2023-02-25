@@ -20,11 +20,11 @@ import java.util.concurrent.TimeUnit;
  * @since: 2022年11月19日 13:03
  **/
 @Slf4j
-public class ProxyTcpMessageHandler extends SimpleChannelInboundHandler<MessageProtocol> {
+public class TcpMessageHandler extends SimpleChannelInboundHandler<MessageProtocol> {
 
     private final ProxyClient client;
 
-    public ProxyTcpMessageHandler(ProxyClient client) {
+    public TcpMessageHandler(ProxyClient client) {
         this.client = client;
     }
 

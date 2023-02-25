@@ -31,6 +31,7 @@
         <hutool.version>5.8.8</hutool.version>
         <jetcache.version>2.7.1</jetcache.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <kryo.version>5.4.0</kryo.version>
     </properties>
 
     <dependencies>

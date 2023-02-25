@@ -85,7 +85,7 @@ public class ProxyClient {
     public void start() {
 
         clientstrap.remoteAddress(new InetSocketAddress(proxyConfig.getAddress(), proxyConfig.getPort()));
-        log.info("start {} this port:{} and adress:{}", proxyConfig.getProxyType(), proxyConfig.getPort(), proxyConfig.getAddress());
+        log.info("start {} this port:{} and address:{}", proxyConfig.getProxyType(), proxyConfig.getPort(), proxyConfig.getAddress());
         try {
             ChannelFuture future = clientstrap.connect().addListener(connectionListener).sync();
             this.channel = future.channel();

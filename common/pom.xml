@@ -36,6 +36,11 @@
           <version>${lombok-version}</version>
           <optional>true</optional>
       </dependency>
+      <dependency>
+          <groupId>com.esotericsoftware</groupId>
+          <artifactId>kryo</artifactId>
+          <version>${kryo.version}</version>
+      </dependency>
   </dependencies>
 
   <build>

@@ -26,11 +26,11 @@ import java.util.concurrent.TimeUnit;
  * @since: 2018年12月26日 10:52
  **/
 @Slf4j
-public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<HttpProtocol> {
+public class HttpMessageHandler extends SimpleChannelInboundHandler<HttpProtocol> {
 
     private final ProxyClient client;
 
-    public ProxyHttpMessageHandler(ProxyClient client) {
+    public HttpMessageHandler(ProxyClient client) {
         this.client = client;
     }
 
@@ -60,7 +60,7 @@ public class ProxyHttpMessageHandler extends SimpleChannelInboundHandler<HttpPro
                     url = url.replace("/" + httpMapping.getName(), "");
                 }
                 FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.valueOf(msg.getVersion()), HttpMethod.valueOf(msg.getMethod()), url);
-                req.headers().add(msg.getHeads());
+                msg.getHeads().forEach((k,v)-> req.headers().add(k, v));
                 req.headers().set("Host", (httpMapping.getAddress() + ":" + httpMapping.getPort()));
                 req.content().writeBytes(msg.getBytes());
 

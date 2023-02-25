@@ -5,7 +5,10 @@ import com.github.fishlikewater.codec.MyByteToMessageCodec;
 import com.github.fishlikewater.config.ProxyType;
 import com.github.fishlikewater.server.config.ProxyConfig;
 import com.github.fishlikewater.server.handle.ServerHeartBeatHandler;
-import com.github.fishlikewater.server.handle.http.*;
+import com.github.fishlikewater.server.handle.http.HttpAuthHandler;
+import com.github.fishlikewater.server.handle.http.HttpHeartBeatHandler;
+import com.github.fishlikewater.server.handle.http.HttpProtocolHandler;
+import com.github.fishlikewater.server.handle.http.HttpServerHandler;
 import com.github.fishlikewater.server.handle.myprotocol.AuthHandler;
 import com.github.fishlikewater.server.handle.myprotocol.MyProtocolHandler;
 import com.github.fishlikewater.server.handle.socks.Socks5CommandRequestHandler;
@@ -78,26 +81,13 @@ public class ProxyServiceInitializer extends ChannelInitializer<Channel> {
             p.addLast("globallimit", trafficHandler);
         }
         p.addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS));
-        /* http服务端 无心跳直接关闭*/
-        if (proxyType == ProxyType.http_server || proxyType == ProxyType.http) {
-            p.addLast(new HttpHeartBeatHandler());
-        } else {
-            /* 其他模式 发送心跳包到客户端确认*/
-            p.addLast(new ServerHeartBeatHandler());
-        }
+        p.addLast(new ServerHeartBeatHandler());
         /* 是否打开日志*/
         if (proxyConfig.isLogging()) {
             p.addLast(new LoggingHandler());
         }
-        /* http代理服务器*/
-        if (proxyType == ProxyType.http) {
-            p.addLast("httpcode", new HttpServerCodec());
-            p.addLast(new ChunkedWriteHandler());
-            p.addLast("aggregator", new HttpObjectAggregator(1024 * 1024 * 100));
-            p.addLast("httpProxy", new HttpProxyHandler(proxyConfig.isAuth()));
-        }
         /* http转发服务器(内网穿透)*/
-        else if (proxyType == ProxyType.http_server) {
+        if (proxyType == ProxyType.http_server) {
             p.addLast("httpcode", new HttpServerCodec());
             p.addLast(new ChunkedWriteHandler());
             p.addLast("aggregator", new HttpObjectAggregator(1024 * 1024 * 100));

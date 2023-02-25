@@ -1,12 +1,12 @@
 package com.github.fishlikewater.codec;
 
-import io.netty.handler.codec.http.HttpHeaders;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * <p>
@@ -56,7 +56,7 @@ public class HttpProtocol implements Serializable{
      *
      * 请求头
      */
-    private HttpHeaders heads;
+    private Map<String, String> heads;
 
     /**
      *

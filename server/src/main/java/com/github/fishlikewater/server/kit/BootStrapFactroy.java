@@ -1,7 +1,6 @@
 package com.github.fishlikewater.server.kit;
 
 import com.github.fishlikewater.kit.EpollKit;
-import com.github.fishlikewater.server.boot.NoneClientInitializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
@@ -33,7 +32,6 @@ public class BootStrapFactroy {
             bootstrap.channel(NioSocketChannel.class);
         }
         bootstrap.group(ctx.channel().eventLoop().parent());
-        bootstrap.handler(new NoneClientInitializer());
         return bootstrap;
     }
 }

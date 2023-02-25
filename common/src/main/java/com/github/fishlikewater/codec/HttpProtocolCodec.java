@@ -1,12 +1,10 @@
 package com.github.fishlikewater.codec;
 
-import cn.hutool.core.util.ObjectUtil;
+import com.github.fishlikewater.kit.KryoUtil;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,7 +27,7 @@ public class HttpProtocolCodec extends ByteToMessageCodec<HttpProtocol> {
     public void encode(HttpProtocol msg, ByteBuf out){
         //占位
         out.writeInt(0);
-        final byte[] bytes = ObjectUtil.serialize(msg);
+        final byte[] bytes = KryoUtil.writeObjectToByteArray(msg);
         out.writeBytes(bytes);
         final int length = out.readableBytes();
         out.setInt(0, length-4);
@@ -51,17 +49,10 @@ public class HttpProtocolCodec extends ByteToMessageCodec<HttpProtocol> {
         if (readableBytes > 0){
             final byte[] bytes = new byte[readableBytes];
             in.readBytes(bytes);
-            return ObjectUtil.deserialize(bytes);
+            return KryoUtil.readObjectFromByteArray(bytes, HttpProtocol.class);
         }
         return null;
     }
 
 
-    public static void main(String[] args) {
-        final ByteBuf buffer = ByteBufAllocator.DEFAULT.buffer();
-        final ByteBuf byteBuf = buffer.writeBytes("put".getBytes(StandardCharsets.UTF_8), buffer.writerIndex(), 4);
-        final ByteBuf byteBuf1 = byteBuf.readBytes(4);
-        final String s = byteBuf1.toString(StandardCharsets.UTF_8);
-        System.out.println(s);
-    }
 }

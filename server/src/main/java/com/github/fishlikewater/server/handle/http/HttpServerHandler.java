@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -51,20 +53,22 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<HttpObject> {
                 channel = ChannelGroupKit.find("default");
             }
             if (channel == null) {
-                byte[] bytes = "没有穿透路由".getBytes(Charset.defaultCharset());
+                byte[] bytes = "No route".getBytes(Charset.defaultCharset());
                 FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST);
                 resp.content().writeBytes(bytes);
                 resp.headers().set("Content-Type", "text/html;charset=UTF-8");
                 resp.headers().setInt("Content-Length", resp.content().readableBytes());
                 ctx.writeAndFlush(resp);
             } else {
+                final Map<String, String> heads = new HashMap<>(8);
                 final HttpProtocol httpProtocol = new HttpProtocol();
                 Long requestId = IdUtil.id();
                 httpProtocol.setDstServer(path);
                 httpProtocol.setCmd(HttpProtocol.CmdEnum.REQUEST);
                 httpProtocol.setId(requestId);
                 httpProtocol.setBytes(req.content().array());
-                httpProtocol.setHeads(req.headers());
+                req.headers().forEach(entry-> heads.put(entry.getKey(), entry.getValue()));
+                httpProtocol.setHeads(heads);
                 httpProtocol.setUrl(uri);
                 httpProtocol.setMethod(req.method().name());
                 httpProtocol.setVersion(req.protocolVersion().text());
