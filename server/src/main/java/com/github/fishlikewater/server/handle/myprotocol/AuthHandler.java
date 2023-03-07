@@ -122,6 +122,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<MessageProtocol> {
                 pipeline.remove(MyProtocolHandler.class);
                 pipeline.remove(IdleStateHandler.class);
                 pipeline.remove(ServerHeartBeatHandler.class);
+                pipeline.remove(RegisterHandler.class);
                 if (pipeline.get(AuthHandler.class) != null){
                     pipeline.remove(AuthHandler.class);
                 }

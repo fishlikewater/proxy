@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
  * @since: 2019年02月26日 21:45
  **/
 @Slf4j
-public class ProxyServer{
+public class Server {
     /**
      * 处理连接
      */
@@ -36,7 +36,7 @@ public class ProxyServer{
 
     private final ProxyType proxyType;
 
-    public ProxyServer(ProxyConfig proxyConfig, ProxyType proxyType) {
+    public Server(ProxyConfig proxyConfig, ProxyType proxyType) {
         this.proxyConfig = proxyConfig;
         this.proxyType = proxyType;
     }
@@ -61,7 +61,7 @@ public class ProxyServer{
             workerGroup = new NioEventLoopGroup(0, new NamedThreadFactory("nio-worker@"));
             bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class);
         }
-        bootstrap.childHandler(new ProxyServiceInitializer(proxyConfig, proxyType));
+        bootstrap.childHandler(new ServiceInitializer(proxyConfig, proxyType));
         try {
             Channel ch = bootstrap.bind(proxyConfig.getAddress(), proxyType==ProxyType.http_server?proxyConfig.getHttpPort():proxyConfig.getPort()).sync().channel();
             log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyType==ProxyType.http_server?proxyConfig.getHttpPort():proxyConfig.getPort(), proxyConfig.getAddress(), proxyType);

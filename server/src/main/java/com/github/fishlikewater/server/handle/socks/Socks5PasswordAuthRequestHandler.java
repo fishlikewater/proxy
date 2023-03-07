@@ -16,6 +16,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * @author fishl
+ */
 @Slf4j
 public class Socks5PasswordAuthRequestHandler extends SimpleChannelInboundHandler<DefaultSocks5PasswordAuthRequest> {
 
@@ -28,7 +31,6 @@ public class Socks5PasswordAuthRequestHandler extends SimpleChannelInboundHandle
 		log.debug("用户名密码 : " + msg.username() + "," + msg.password());
 		final String pass = Socks5Contans.getAccountMap().get(msg.username());
 		if (StrUtil.isNotBlank(pass) && StrUtil.equals(pass, msg.password())){
-			//log.info("目标机器验证成功");
 			Socks5PasswordAuthResponse passwordAuthResponse = new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.SUCCESS);
 			ctx.writeAndFlush(passwordAuthResponse);
 			ctx.channel().attr(Socks5Contans.ACCOUNT).set(msg.username());

@@ -13,8 +13,8 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2022年10月23日 15:35
+ * @author fishlikewater@126.com
+ * @since 2022年10月23日 15:35
  **/
 public class Socks5Contans {
 
