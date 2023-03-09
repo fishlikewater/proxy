@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author <p><a>fishlikewater@126.com</a></p>
+ * @author fishlikewater@126.com
  * @since 2019年08月24日 22:04
- **/
+ */
 public class ChannelKit {
 
     public final static AttributeKey<Long> LOCAL_INFO = AttributeKey.newInstance("LOCAL_INFO");
@@ -23,10 +23,11 @@ public class ChannelKit {
 
     @Setter
     @Getter
-    public static Channel channel = null; //通信 通道
+    private static Channel channel = null;
 
     @Setter
     @Getter
-    public static Channel dataChannel = null; //代理数据通道
+    //代理数据通道
+    private static Channel dataChannel = null;
 
 }

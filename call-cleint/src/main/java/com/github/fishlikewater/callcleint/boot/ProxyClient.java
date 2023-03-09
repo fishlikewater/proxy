@@ -24,8 +24,9 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
 /**
+ * @author fishlikewater@126.com
  * @version V1.0
- * @date: 2018年12月25日 14:21
+ * @since 2018年12月25日 14:21
  **/
 @Slf4j
 @Accessors(chain = true)
@@ -36,7 +37,7 @@ public class ProxyClient{
      * 处理连接
      */
     private EventLoopGroup bossGroup;
-    private Bootstrap clientstrap;
+    private Bootstrap bootstrap;
     @Getter
     private Channel channel;
     @Getter
@@ -58,30 +59,32 @@ public class ProxyClient{
      * 连接配置初始化
      */
     void bootstrapConfig() {
-        if (clientstrap == null) clientstrap = new Bootstrap();
-        clientstrap.option(ChannelOption.SO_REUSEADDR, true);
-        clientstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2 * 60 * 1000);
-        clientstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
-        clientstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-        clientstrap.option(ChannelOption.TCP_NODELAY, true);
-        if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
+        if (bootstrap == null) {
+            bootstrap = new Bootstrap();
+        }
+        bootstrap.option(ChannelOption.SO_REUSEADDR, true);
+        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2 * 60 * 1000);
+        bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
+        bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        bootstrap.option(ChannelOption.TCP_NODELAY, true);
+        if (EpollKit.epollIsAvailable()) {
             bossGroup = new EpollEventLoopGroup(0, new NamedThreadFactory("client-epoll-boss@"));
-            clientstrap.group(bossGroup).channel(EpollSocketChannel.class);
+            bootstrap.group(bossGroup).channel(EpollSocketChannel.class);
         } else {
             bossGroup = new NioEventLoopGroup(0, new NamedThreadFactory("client-nio-boss@"));
-            clientstrap.group(bossGroup).channel(NioSocketChannel.class);
+            bootstrap.group(bossGroup).channel(NioSocketChannel.class);
         }
-        clientstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.proxy_client, this));
+        bootstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.proxy_client, this));
     }
 
     /**
      * 开始连接
      */
     public void start() {
-        clientstrap.remoteAddress(new InetSocketAddress(proxyConfig.getAddress(), proxyConfig.getPort()));
+        bootstrap.remoteAddress(new InetSocketAddress(proxyConfig.getAddress(), proxyConfig.getPort()));
         log.info("start {} this port:{} and adress:{}", ProxyType.proxy_client, proxyConfig.getPort(), proxyConfig.getAddress());
         try {
-            ChannelFuture future = clientstrap.connect().addListener(connectionListener).sync();
+            ChannelFuture future = bootstrap.connect().addListener(connectionListener).sync();
             this.channel = future.channel();
 
             afterConnectionSuccessful(channel);
@@ -97,7 +100,7 @@ public class ProxyClient{
      */
     void afterConnectionSuccessful(Channel channel) {
         /* 发送首先发送验证信息*/
-        final long requestId = IdUtil.id();//调用方标识
+        final long requestId = IdUtil.id();
         final MessageProtocol messageProtocol = new MessageProtocol();
         messageProtocol
                 .setId(requestId)

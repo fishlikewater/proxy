@@ -27,8 +27,8 @@ import static com.github.fishlikewater.server.kit.ChannelGroupKit.DATA_CHANNEL;
  *
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2022年11月19日 14:25
+ * @author fishlikewater@126.com
+ * @since 2022年11月19日 14:25
  **/
 @RequiredArgsConstructor
 public class AuthHandler extends SimpleChannelInboundHandler<MessageProtocol> {

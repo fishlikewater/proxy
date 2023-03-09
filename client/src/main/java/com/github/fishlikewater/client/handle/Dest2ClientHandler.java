@@ -12,8 +12,8 @@ import java.io.IOException;
  *
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2022年10月18日 22:16
+ * @author fishlikewater@126.com
+ * @since 2022年10月18日 22:16
  */
 @Slf4j
 public class Dest2ClientHandler extends SimpleChannelInboundHandler<byte[]> {

@@ -12,8 +12,8 @@ import static com.github.fishlikewater.server.kit.ChannelGroupKit.DATA_CHANNEL;
  *
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2022年11月22日 21:34
+ * @author fishlikewater@126.com
+ * @since 2022年11月22日 21:34
  **/
 public class DataTransferHandler extends SimpleChannelInboundHandler<byte[]> {
 

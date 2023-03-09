@@ -18,8 +18,8 @@ import java.util.Map;
 
 /**
  *
- * @since: 2022年08月20日 22:51
- * @author: fishlikewater@126.com
+ * @since 2022年08月20日 22:51
+ * @author fishlikewater@126.com
  **/
 @Slf4j
 @Component

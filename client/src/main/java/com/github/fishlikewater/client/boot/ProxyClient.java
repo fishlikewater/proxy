@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @version V1.0
- * @date: 2018年12月25日 14:21
+ * @since 2018年12月25日 14:21
  **/
 @Slf4j
 @Accessors(chain = true)
@@ -100,7 +100,7 @@ public class ProxyClient {
     /**
      * @description:
      * @param: channel
-     * @date: 2022/7/18 14:43
+     * @since 2022/7/18 14:43
      * @Return: void
      */
     void afterConnectionSuccessful(Channel channel) {

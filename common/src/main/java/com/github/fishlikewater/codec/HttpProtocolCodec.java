@@ -13,8 +13,8 @@ import java.util.Objects;
  *
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2023年02月07日 11:05
+ * @author fishlikewater@126.com
+ * @since 2023年02月07日 11:05
  **/
 public class HttpProtocolCodec extends ByteToMessageCodec<HttpProtocol> {
     @Override

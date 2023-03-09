@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author zhangx
  * @version V1.0
- * @date: 2018年12月25日 15:05
+ * @since 2018年12月25日 15:05
  **/
 public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
 

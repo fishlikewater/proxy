@@ -8,12 +8,9 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * @author zhangx
+ * @author fishlikewater@126.com
  * @version V1.0
- * @mail fishlikewater@126.com
- * @ClassName ProxyConfig
- * @Description
- * @since: 2019年03月05日 15:55
+ * @since 2019年03月05日 15:55
  **/
 @ConfigurationProperties("proxy")
 @Data

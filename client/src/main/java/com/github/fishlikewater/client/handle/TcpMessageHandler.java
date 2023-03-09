@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
  *
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2022年11月19日 13:03
+ * @author fishlikewater@126.com
+ * @since 2022年11月19日 13:03
  **/
 @Slf4j
 public class TcpMessageHandler extends SimpleChannelInboundHandler<MessageProtocol> {

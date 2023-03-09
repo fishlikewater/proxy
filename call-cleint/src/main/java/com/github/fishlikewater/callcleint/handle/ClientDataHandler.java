@@ -20,13 +20,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author zhangx
  * @version V1.0
- * @since: 2018年12月26日 10:52
+ * @since 2018年12月26日 10:52
  **/
 @Slf4j
 public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtocol> {
 
 
-    //channelActive方法中将ctx保留为全局变量
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
@@ -47,7 +46,7 @@ public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtoc
             case DATA_CHANNEL_ACK:
                 log.info(new String(msg.getBytes(), StandardCharsets.UTF_8));
                 ChannelKit.setDataChannel(ctx.channel());
-                ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>());
+                ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>(16));
                 break;
             case HEALTH:
                 log.debug("get health info");
@@ -83,6 +82,7 @@ public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtoc
                     ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().remove(requestId);
                 }
                 break;
+            default:
         }
 
     }

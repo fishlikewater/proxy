@@ -12,8 +12,8 @@ import java.util.List;
  *  自定义消息编解码器
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2022年11月18日 17:41
+ * @author fishlikewater@126.com
+ * @since 2022年11月18日 17:41
  **/
 public class MyByteToMessageCodec extends ByteToMessageCodec<MessageProtocol> {
 

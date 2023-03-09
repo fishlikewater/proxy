@@ -13,8 +13,8 @@ import java.io.Serializable;
  *
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2022年11月18日 17:07
+ * @author fishlikewater@126.com
+ * @since 2022年11月18日 17:07
  **/
 @Data
 @Accessors(chain = true)

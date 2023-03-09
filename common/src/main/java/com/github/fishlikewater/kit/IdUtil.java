@@ -6,7 +6,7 @@ import com.github.fishlikewater.kit.idwork.IdWorkerFactory;
 
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
- * @since: 2019年07月01日 13:23
+ * @since 2019年07月01日 13:23
  **/
 public class IdUtil {
 

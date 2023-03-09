@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author zhangx
  * @version V1.0
- * @since: 2018年12月26日 10:52
+ * @since 2018年12月26日 10:52
  **/
 @Slf4j
 public class ClientMessageHandler extends SimpleChannelInboundHandler<MessageProtocol> {

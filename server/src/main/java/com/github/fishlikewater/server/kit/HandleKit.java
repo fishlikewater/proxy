@@ -14,8 +14,8 @@ import lombok.extern.slf4j.Slf4j;
  *
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2022年10月01日 16:37
+ * @author fishlikewater@126.com
+ * @since 2022年10月01日 16:37
  **/
 @Slf4j
 public class HandleKit {

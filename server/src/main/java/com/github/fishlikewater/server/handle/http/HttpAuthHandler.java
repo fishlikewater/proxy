@@ -14,8 +14,8 @@ import java.nio.charset.StandardCharsets;
  *  验证器
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2022年11月19日 14:25
+ * @author fishlikewater@126.com
+ * @since 2022年11月19日 14:25
  **/
 @RequiredArgsConstructor
 public class HttpAuthHandler extends SimpleChannelInboundHandler<HttpProtocol> {

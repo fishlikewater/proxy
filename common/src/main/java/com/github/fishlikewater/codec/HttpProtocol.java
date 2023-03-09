@@ -13,8 +13,8 @@ import java.util.Map;
  *  专为http消息穿透设计
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2023年02月07日 10:52
+ * @author fishlikewater@126.com
+ * @since 2023年02月07日 10:52
  **/
 @Data
 @Accessors(chain = true)

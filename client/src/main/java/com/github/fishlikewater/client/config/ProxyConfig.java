@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * @author zhangx
  * @version V1.0
- * @since: 2019年03月05日 15:55
+ * @since 2019年03月05日 15:55
  **/
 @ConfigurationProperties("proxy")
 @Data

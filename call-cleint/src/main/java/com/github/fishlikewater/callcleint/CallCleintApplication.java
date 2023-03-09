@@ -2,7 +2,7 @@ package com.github.fishlikewater.callcleint;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.github.fishlikewater.callcleint.boot.ProxyClient;
-import com.github.fishlikewater.callcleint.boot.SocksServerBoot;
+import com.github.fishlikewater.callcleint.boot.SocksAbstractServerBoot;
 import com.github.fishlikewater.callcleint.config.ProxyConfig;
 import com.github.fishlikewater.callcleint.handle.ChannelKit;
 import com.github.fishlikewater.config.ProxyType;
@@ -21,7 +21,7 @@ public class CallCleintApplication implements CommandLineRunner, DisposableBean 
     private final ProxyConfig proxyConfig;
 
     private ProxyClient proxyClient;
-    private SocksServerBoot socksServerBoot;
+    private SocksAbstractServerBoot socksServerBoot;
 
     public static void main(String[] args) {
         SpringApplication.run(CallCleintApplication.class, args);
@@ -39,7 +39,7 @@ public class CallCleintApplication implements CommandLineRunner, DisposableBean 
         proxyClient.run();
         final ProxyConfig proxyConfig2 = BeanUtil.toBean(this.proxyConfig, ProxyConfig.class);
         proxyConfig2.setProxyType(ProxyType.socks);
-        socksServerBoot = new SocksServerBoot(proxyConfig2);
+        socksServerBoot = new SocksAbstractServerBoot(proxyConfig2);
         socksServerBoot.start();
     }
 

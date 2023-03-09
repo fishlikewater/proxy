@@ -19,8 +19,8 @@ import java.util.concurrent.TimeUnit;
  *
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2022年11月20日 14:40
+ * @author fishlikewater@126.com
+ * @since 2022年11月20日 14:40
  **/
 @Slf4j
 public class HandleKit {

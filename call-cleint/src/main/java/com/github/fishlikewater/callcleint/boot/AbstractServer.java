@@ -18,11 +18,11 @@ import lombok.extern.slf4j.Slf4j;
  *     启动类
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2022年10月18日 16:06
+ * @author fishlikewater@126.com
+ * @since 2022年10月18日 16:06
  **/
 @Slf4j
-public abstract class Server {
+public abstract class AbstractServer {
 
     /**
      * 处理连接
@@ -61,7 +61,7 @@ public abstract class Server {
 
 
     protected void config(ServerBootstrap serverBootstrap){
-        if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
+        if (EpollKit.epollIsAvailable()) {
             setBossGroup(new EpollEventLoopGroup(0, new NamedThreadFactory("epoll-boss@")));
             setWorkerGroup(new EpollEventLoopGroup(0, new NamedThreadFactory("epoll-worker@")));
             serverBootstrap.group(getBossGroup(), getWorkerGroup()).channel(EpollServerSocketChannel.class);

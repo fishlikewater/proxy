@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author zhangx
  * @version V1.0
- * @date: 2019年02月26日 21:47
+ * @since 2019年02月26日 21:47
  **/
 @Slf4j
 public class ServiceInitializer extends ChannelInitializer<Channel> {

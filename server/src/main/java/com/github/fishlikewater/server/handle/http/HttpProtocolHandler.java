@@ -19,8 +19,8 @@ import java.nio.charset.StandardCharsets;
  *    处理客户端返回的数据
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2023年02月07日 11:39
+ * @author fishlikewater@126.com
+ * @since 2023年02月07日 11:39
  **/
 @Slf4j
 public class HttpProtocolHandler extends SimpleChannelInboundHandler<HttpProtocol> {

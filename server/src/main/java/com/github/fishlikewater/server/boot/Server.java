@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * @author zhangx
  * @version V1.0
- * @since: 2019年02月26日 21:45
+ * @since 2019年02月26日 21:45
  **/
 @Slf4j
 public class Server {

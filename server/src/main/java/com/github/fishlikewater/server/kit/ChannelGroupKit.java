@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
- * @since: 2019年07月09日 17:16
+ * @since 2019年07月09日 17:16
  **/
 @Slf4j
 public class ChannelGroupKit {

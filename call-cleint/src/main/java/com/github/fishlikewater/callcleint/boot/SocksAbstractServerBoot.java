@@ -8,17 +8,17 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * <p>
- *
+ *  socks 启动类
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2022年10月18日 16:01
+ * @author fishlikewater@126.com
+ * @since 2022年10月18日 16:01
  **/
 @Slf4j
-public class SocksServerBoot extends Server{
+public class SocksAbstractServerBoot extends AbstractServer {
 
 
-    public SocksServerBoot(ProxyConfig proxyConfig) {
+    public SocksAbstractServerBoot(ProxyConfig proxyConfig) {
         setProxyConfig(proxyConfig);
     }
 

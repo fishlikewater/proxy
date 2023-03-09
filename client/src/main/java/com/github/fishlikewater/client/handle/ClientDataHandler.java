@@ -22,8 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * </p>
  *
- * @author: fishlikewater@126.com
- * @since: 2022年11月22日 18:59
+ * @author fishlikewater@126.com
+ * @since 2022年11月22日 18:59
  **/
 @Slf4j
 public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtocol> {

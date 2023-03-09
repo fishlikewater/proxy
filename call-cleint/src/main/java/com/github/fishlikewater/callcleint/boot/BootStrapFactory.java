@@ -28,7 +28,7 @@ public class BootStrapFactory {
         bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.option(ChannelOption.TCP_NODELAY, true);
-        if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
+        if (EpollKit.epollIsAvailable()) {
             bootstrap.channel(EpollSocketChannel.class);
         } else {
             bootstrap.channel(NioSocketChannel.class);
