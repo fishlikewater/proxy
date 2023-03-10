@@ -12,9 +12,8 @@
     <modules>
         <module>common</module>
         <module>server</module>
-        <module>call-cleint</module>
+        <module>call-client</module>
         <module>client</module>
-        <module>proxy-p2p</module>
     </modules>
 
     <properties>

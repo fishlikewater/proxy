@@ -38,7 +38,7 @@ public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtoc
             case DATA_CHANNEL_ACK:
                 ChannelKit.channelGroup.add(ctx.channel());
                 log.info(new String(msg.getBytes(), StandardCharsets.UTF_8));
-                ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>());
+                ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>(16));
                 break;
             case CLOSE:
                 channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(requestId);

@@ -1,7 +1,7 @@
 package com.github.fishlikewater.server.kit;
 
 /**
- * @author zhangx
+ * @author fishlikewater@126.com
  * @version V1.0
  * @mail fishlikewater@126.com
  * @ClassName ConnectionValidate

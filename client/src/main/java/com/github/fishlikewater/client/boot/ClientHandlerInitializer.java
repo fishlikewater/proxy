@@ -3,10 +3,7 @@ package com.github.fishlikewater.client.boot;
 
 import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.client.handle.ClientHeartBeatHandler;
-import com.github.fishlikewater.client.handle.HttpMessageHandler;
-import com.github.fishlikewater.client.handle.TcpMessageHandler;
-import com.github.fishlikewater.client.handle.TcpClientHeartBeatHandler;
-import com.github.fishlikewater.codec.HttpProtocolCodec;
+import com.github.fishlikewater.client.handle.ClientMessageHandler;
 import com.github.fishlikewater.codec.MyByteToMessageCodec;
 import com.github.fishlikewater.config.ProxyType;
 import io.netty.channel.Channel;
@@ -19,7 +16,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author zhangx
+ * @author fishlikewater@126.com
  * @version V1.0
  * @since 2018年12月25日 15:05
  **/
@@ -44,23 +41,14 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
         if (proxyConfig != null && proxyConfig.isLogging()) {
             pipeline.addLast(new LoggingHandler());
         }
-        if (proxyType == ProxyType.http) {
-            assert proxyConfig != null;
-            pipeline
-                    .addLast(new LengthFieldBasedFrameDecoder(5*1024 * 1024, 0, 4))
-                    .addLast(new HttpProtocolCodec())
-                    .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
-                    .addLast(new ClientHeartBeatHandler())
-                    .addLast(new HttpMessageHandler(client));
-        }
         if (proxyType ==  ProxyType.proxy_client){
             assert proxyConfig != null;
             pipeline
                     .addLast(new LengthFieldBasedFrameDecoder(5*1024 * 1024, 0, 4))
                     .addLast(new MyByteToMessageCodec())
                     .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
-                    .addLast(new TcpClientHeartBeatHandler())
-                    .addLast(new TcpMessageHandler(client));
+                    .addLast(new ClientHeartBeatHandler())
+                    .addLast(new ClientMessageHandler(client));
         }
 
     }

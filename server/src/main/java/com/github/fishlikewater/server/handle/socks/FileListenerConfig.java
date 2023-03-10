@@ -35,7 +35,7 @@ public class FileListenerConfig implements CommandLineRunner {
                 log.warn("账户文件修改");
                 try {
                     final Map<String, String> map = JSON.parseObject(new FileInputStream(file),  Map.class);
-                    Socks5Contans.setAccountMap(map);
+                    Socks5Constant.setAccountMap(map);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

@@ -7,8 +7,10 @@ import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @description: 用于检测channel的心跳handler
+ * 用于检测channel的心跳handler
  * 继承ChannelInboundHandlerAdapter，从而不需要实现channelRead0方法
+ * @author fishlikewater@126.com
+ * @since 2022年10月23日 14:52
  */
 @Slf4j
 public class ServerHeartBeatHandler extends ChannelInboundHandlerAdapter {

@@ -17,7 +17,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @author zhangx
+ * @author fishlikewater@126.com
  * @version V1.0
  * @since 2019年02月26日 21:45
  **/
@@ -63,8 +63,8 @@ public class Server {
         }
         bootstrap.childHandler(new ServiceInitializer(proxyConfig, proxyType));
         try {
-            Channel ch = bootstrap.bind(proxyConfig.getAddress(), proxyType==ProxyType.http_server?proxyConfig.getHttpPort():proxyConfig.getPort()).sync().channel();
-            log.info("⬢ start server this port:{} and adress:{} proxy type:{}", proxyType==ProxyType.http_server?proxyConfig.getHttpPort():proxyConfig.getPort(), proxyConfig.getAddress(), proxyType);
+            Channel ch = bootstrap.bind(proxyConfig.getAddress(), proxyConfig.getPort()).sync().channel();
+            log.info("⬢ start server this port:{} and address:{} proxy type:{}", proxyConfig.getPort(), proxyConfig.getAddress(), proxyType);
             ch.closeFuture().addListener(t -> log.info("⬢  {}服务开始关闭", proxyType));
         } catch (InterruptedException e) {
             log.error("⬢ start server fail", e);

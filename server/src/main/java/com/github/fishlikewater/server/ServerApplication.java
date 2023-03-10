@@ -5,7 +5,7 @@ import com.alibaba.fastjson2.JSON;
 import com.github.fishlikewater.config.ProxyType;
 import com.github.fishlikewater.server.boot.Server;
 import com.github.fishlikewater.server.config.ProxyConfig;
-import com.github.fishlikewater.server.handle.socks.Socks5Contans;
+import com.github.fishlikewater.server.handle.socks.Socks5Constant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.CommandLineRunner;
@@ -39,7 +39,7 @@ public class ServerApplication implements CommandLineRunner, DisposableBean {
         for (ProxyType proxyType : type) {
             if (proxyType == ProxyType.socks) {
                 final Map<String, String> map = JSON.parseObject(new FileInputStream(FileUtil.file("account.json")), Map.class);
-                Socks5Contans.setAccountMap(map);
+                Socks5Constant.setAccountMap(map);
             }
             final Server proxyServer = new Server(proxyConfig, proxyType);
             proxyServer.start();

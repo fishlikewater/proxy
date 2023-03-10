@@ -1,6 +1,6 @@
 package com.github.fishlikewater.server.handle;
 
-import com.github.fishlikewater.server.handle.socks.Socks5Contans;
+import com.github.fishlikewater.server.handle.socks.Socks5Constant;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -45,14 +45,14 @@ public class StatisticsHandler extends ChannelDuplexHandler {
     }
 
     private void flow(ChannelHandlerContext ctx, ByteBuf msg) {
-        final String account = ctx.attr(Socks5Contans.ACCOUNT).get();
+        final String account = ctx.channel().attr(Socks5Constant.ACCOUNT).get();
         if (account != null){
-            final AtomicLong atomicLong = Socks5Contans.accountFlow.get(account);
+            final AtomicLong atomicLong = Socks5Constant.accountFlow.get(account);
             if (atomicLong != null){
                 atomicLong.addAndGet(msg.readableBytes());
             }else {
                 final AtomicLong atomicLong1 = new AtomicLong(msg.readableBytes());
-                Socks5Contans.accountFlow.put(account, atomicLong1);
+                Socks5Constant.accountFlow.put(account, atomicLong1);
             }
         }
     }

@@ -9,6 +9,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+/**
+ *
+ * @since 2022年08月20日 22:51
+ * @author fishlikewater@126.com
+ **/
 
 @Slf4j
 @RequiredArgsConstructor
@@ -99,13 +104,13 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
         }
 
         @Override
-        public void channelRead(ChannelHandlerContext ctx2, Object destMsg) throws Exception {
+        public void channelRead(ChannelHandlerContext ctx2, Object destMsg) {
             log.trace("将目标服务器信息转发给客户端");
             clientChannelContext.writeAndFlush(destMsg);
         }
 
         @Override
-        public void channelInactive(ChannelHandlerContext ctx2) throws Exception {
+        public void channelInactive(ChannelHandlerContext ctx2) {
             log.trace("目标服务器断开连接");
             clientChannelContext.channel().close();
         }
@@ -145,13 +150,13 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 
 
 		@Override
-		public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+		public void channelRead(ChannelHandlerContext ctx, Object msg) {
 			log.trace("将客户端的消息转发给目标服务器端");
 			destChannelFuture.channel().writeAndFlush(msg);
 		}
 
 		@Override
-		public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+		public void channelInactive(ChannelHandlerContext ctx) {
 			log.trace("客户端断开连接");
 			destChannelFuture.channel().close();
 		}

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 
 /**
- * @author zhangx
+ * @author fishlikewater@126.com
  * @version V1.0
  * @since 2019年03月05日 15:55
  **/
@@ -19,13 +19,7 @@ public class ProxyConfig {
 
     private int next = 0;
 
-    /** 验证用户名*/
-    private String username;
-
-    /** 验证密码*/
-    private String password;
-
-    /** 代理类型*/
+    /** 服务启动列表*/
     private ProxyType[] type;
 
     /** 监控地址*/
@@ -34,10 +28,7 @@ public class ProxyConfig {
     /** 监控端口*/
     private int port;
 
-    /** 服务端 http开放端口*/
-    private int httpPort;
-
-    /** token(http 及内网穿透代理)*/
+    /** token */
     private String token;
 
     /** 心跳检测间隔*/
@@ -49,49 +40,15 @@ public class ProxyConfig {
     /** 是否开启验证*/
     private boolean auth;
 
-    /** 内网穿透代理路劲*/
+    /** 代理路劲*/
     private String proxyPath;
 
-    /** 客户端 http 映射端口*/
-    private int localPort = 8081;
 
     private int[] localPorts;
 
+    /** 是否固定本地链接远程使用的端口*/
     private boolean useLocalPorts;
 
-    /** 客户端 http 映射地址*/
-    private String localAddress = "127.0.0.1";
-
-    /** 打开内存泄漏检测*/
-    private boolean isOpenCheckMemoryLeak = false;
-
-    /** 是否开启全局流量限制*/
-    private boolean isOpenGlobalTrafficLimit = false;
-
-    /** 写限制*/
-    private long writeLimit = 256*1024;
-
-    /** 读限制*/
-    private long readLimit = 256*1024;
-
-
-    public boolean getIsOpenCheckMemoryLeak() {
-        return isOpenCheckMemoryLeak;
-    }
-
-    public ProxyConfig setIsOpenCheckMemoryLeak(boolean openCheckMemoryLeak) {
-        isOpenCheckMemoryLeak = openCheckMemoryLeak;
-        return this;
-    }
-
-    public boolean getIsOpenGlobalTrafficLimit() {
-        return isOpenGlobalTrafficLimit;
-    }
-
-    public ProxyConfig setIsOpenGlobalTrafficLimit(boolean openGlobalTrafficLimit) {
-        isOpenGlobalTrafficLimit = openGlobalTrafficLimit;
-        return this;
-    }
 
     public int getOneLocalPort(){
         if (Objects.isNull(localPorts)){

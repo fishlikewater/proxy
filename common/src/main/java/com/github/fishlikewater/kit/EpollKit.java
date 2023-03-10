@@ -3,7 +3,7 @@ package com.github.fishlikewater.kit;
 import io.netty.channel.epoll.Epoll;
 
 /**
- * @author zhangx
+ * @author fishlikewater@126.com
  * @version V1.0
  **/
 public class EpollKit {

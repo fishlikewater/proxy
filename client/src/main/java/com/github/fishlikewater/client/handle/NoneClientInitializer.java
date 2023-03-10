@@ -4,7 +4,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 
 /**
- * @author zhangx
+ * @author fishlikewater@126.com
  * @version V1.0
  **/
 public class NoneClientInitializer extends ChannelInitializer<Channel> {
