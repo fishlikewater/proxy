@@ -104,9 +104,6 @@ proxy.timeout=30
 #系统日志
 logging.config=classpath:logback.xml
 
-proxy.mapping=true
-proxy.proxy-mappings[0].domain=www.fishlikewater.com
-proxy.proxy-mappings[0].ip=192.168.5.221
 ```
 ***
 > _call-client 会默认开启一个socks5 代理，通过proxy.socks-port 指定端口,可以通过socks代理软件拦截本地流量转发到该端口。_
