@@ -5,7 +5,6 @@ import com.github.fishlikewater.callclient.config.ProxyConfig;
 import com.github.fishlikewater.callclient.handle.ChannelKit;
 import com.github.fishlikewater.callclient.handle.ClientHandlerInitializer;
 import com.github.fishlikewater.codec.MessageProtocol;
-import com.github.fishlikewater.config.ProxyType;
 import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.IdUtil;
 import com.github.fishlikewater.kit.NamedThreadFactory;
@@ -62,8 +61,8 @@ public class ProxyClient{
         if (bootstrap == null) {
             bootstrap = new Bootstrap();
         }
-        bootstrap.option(ChannelOption.SO_REUSEADDR, true);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2 * 60 * 1000);
+        bootstrap.option(ChannelOption.SO_REUSEADDR, true);
         bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.option(ChannelOption.TCP_NODELAY, true);
@@ -74,7 +73,7 @@ public class ProxyClient{
             bossGroup = new NioEventLoopGroup(0, new NamedThreadFactory("client-nio-boss@"));
             bootstrap.group(bossGroup).channel(NioSocketChannel.class);
         }
-        bootstrap.handler(new ClientHandlerInitializer(proxyConfig, ProxyType.proxy_client, this));
+        bootstrap.handler(new ClientHandlerInitializer(proxyConfig, this));
     }
 
     /**
@@ -82,7 +81,7 @@ public class ProxyClient{
      */
     public void start() {
         bootstrap.remoteAddress(new InetSocketAddress(proxyConfig.getAddress(), proxyConfig.getPort()));
-        log.info("start {} this port:{} and adress:{}", ProxyType.proxy_client, proxyConfig.getPort(), proxyConfig.getAddress());
+        log.info("start call-client this port:{} and address:{}", proxyConfig.getPort(), proxyConfig.getAddress());
         try {
             ChannelFuture future = bootstrap.connect().addListener(connectionListener).sync();
             this.channel = future.channel();
@@ -91,7 +90,7 @@ public class ProxyClient{
             ChannelKit.setChannel(this.channel);
 
         } catch (Exception e) {
-            log.error("start {} server fail", ProxyType.proxy_client);
+            log.error("start call-client server fail");
         }
     }
 
@@ -115,16 +114,16 @@ public class ProxyClient{
      * 关闭服务
      */
     public void stop() {
-        log.info("⬢ {} shutdown ...", ProxyType.proxy_client);
+        log.info("⬢ {call-client shutdown ...");
         try {
             if (this.bossGroup != null) {
                 this.bossGroup.shutdownGracefully().addListener(f -> {
 
                 });
             }
-            log.info("⬢ {} shutdown successful", ProxyType.proxy_client);
+            log.info("⬢ call-client shutdown successful");
         } catch (Exception e) {
-            log.error("⬢ {} shutdown error", ProxyType.proxy_client);
+            log.error("⬢ call-client shutdown error", e);
         }
     }
 }

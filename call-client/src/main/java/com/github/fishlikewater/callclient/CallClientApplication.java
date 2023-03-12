@@ -35,11 +35,12 @@ public class CallClientApplication implements CommandLineRunner, DisposableBean 
     @Override
     public void run(String... args) {
 
-        final List<ProxyConfig.ProxyMapping> proxyMappings = proxyConfig.getProxyMappings();
-        for (ProxyConfig.ProxyMapping proxyMapping : proxyMappings) {
-            ChannelKit.getPROXY_MAPPING_MAP().put(proxyMapping.getDomain(), proxyMapping.getIp());
+        if (proxyConfig.isMapping()){
+            final List<ProxyConfig.ProxyMapping> proxyMappings = proxyConfig.getProxyMappings();
+            for (ProxyConfig.ProxyMapping proxyMapping : proxyMappings) {
+                ChannelKit.getPROXY_MAPPING_MAP().put(proxyMapping.getDomain(), proxyMapping.getIp());
+            }
         }
-        proxyConfig.setProxyType(ProxyType.proxy_client);
         proxyClient = new ProxyClient(proxyConfig);
         proxyClient.run();
         final ProxyConfig proxyConfig2 = BeanUtil.toBean(this.proxyConfig, ProxyConfig.class);

@@ -5,7 +5,6 @@ import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.client.handle.ClientHeartBeatHandler;
 import com.github.fishlikewater.client.handle.ClientMessageHandler;
 import com.github.fishlikewater.codec.MyByteToMessageCodec;
-import com.github.fishlikewater.config.ProxyType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -24,13 +23,11 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
 
     private final ProxyConfig proxyConfig;
 
-    private final ProxyType proxyType;
     private final ProxyClient client;
 
 
-    public ClientHandlerInitializer(ProxyConfig proxyConfig, ProxyType proxyType, ProxyClient client) {
+    public ClientHandlerInitializer(ProxyConfig proxyConfig, ProxyClient client) {
         this.proxyConfig = proxyConfig;
-        this.proxyType = proxyType;
         this.client = client;
     }
 
@@ -41,15 +38,15 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
         if (proxyConfig != null && proxyConfig.isLogging()) {
             pipeline.addLast(new LoggingHandler());
         }
-        if (proxyType ==  ProxyType.proxy_client){
-            assert proxyConfig != null;
-            pipeline
-                    .addLast(new LengthFieldBasedFrameDecoder(5*1024 * 1024, 0, 4))
-                    .addLast(new MyByteToMessageCodec())
-                    .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
-                    .addLast(new ClientHeartBeatHandler())
-                    .addLast(new ClientMessageHandler(client));
-        }
+
+        assert proxyConfig != null;
+        pipeline
+                .addLast(new LengthFieldBasedFrameDecoder(5 * 1024 * 1024, 0, 4))
+                .addLast(new MyByteToMessageCodec())
+                .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
+                .addLast(new ClientHeartBeatHandler())
+                .addLast(new ClientMessageHandler(client));
+
 
     }
 }
