@@ -37,7 +37,7 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
         log.debug("目标服务器  : " + msg.type() + "," + msg.dstAddr() + "," + msg.dstPort());
         if (msg.type().equals(Socks5CommandType.CONNECT)) {
             final Long requestId = IdUtil.id();
-            ctx.channel().attr(ChannelKit.LOCAL_INFO).set(requestId);
+            ctx.channel().attr(Socks5Kit.LOCAL_INFO).set(requestId);
             final MessageProtocol.Dst dst = new MessageProtocol.Dst();
             dst.setDstAddress(msg.dstAddr());
             dst.setDstPort(msg.dstPort());
@@ -47,7 +47,7 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                     .setId(requestId)
                     .setDst(dst)
                     .setProtocol(MessageProtocol.ProtocolEnum.SOCKS);
-            channel.attr(ChannelKit.CHANNELS_LOCAL).get().put(requestId, ctx.channel());
+            channel.attr(Socks5Kit.CHANNELS_SOCKS).get().put(requestId, ctx.channel());
             channel.writeAndFlush(message).addListener((ChannelFutureListener) channelFuture -> {
                 if (channelFuture.isSuccess()) {
                     if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
@@ -116,9 +116,9 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 
         @Override
         public void channelInactive(ChannelHandlerContext ctx) {
-            final Long requestId = ctx.channel().attr(ChannelKit.LOCAL_INFO).get();
+            final Long requestId = ctx.channel().attr(Socks5Kit.LOCAL_INFO).get();
             if (ObjectUtil.isNotNull(requestId)) {
-                channel.attr(ChannelKit.CHANNELS_LOCAL).get().remove(requestId);
+                channel.attr(Socks5Kit.CHANNELS_SOCKS).get().remove(requestId);
             }
             log.debug("客户端断开连接");
             final MessageProtocol message = new MessageProtocol();
