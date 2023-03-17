@@ -14,24 +14,25 @@
         <module>server</module>
         <module>call-client</module>
         <module>client</module>
+        <module>socks5</module>
     </modules>
 
     <properties>
         <proxy.version>1.0.1</proxy.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <slf4j-api-version>1.7.25</slf4j-api-version>
+        <slf4j-api-version>1.7.36</slf4j-api-version>
         <spring.boot.version>2.7.4</spring.boot.version>
         <java.version>1.8</java.version>
         <netty-version>4.1.31.Final</netty-version>
         <lombok-version>1.18.14</lombok-version>
         <protobuf.version>3.9.0</protobuf.version>
         <fastjson>2.0.18</fastjson>
-        <hutool.version>5.8.8</hutool.version>
+        <hutool.version>5.8.15</hutool.version>
         <jetcache.version>2.7.1</jetcache.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kryo.version>5.4.0</kryo.version>
-        <jnetpcap.version>1.5.r1457-1i</jnetpcap.version>
+        <jnetpcap.version>1.4.r1425-1g</jnetpcap.version>
     </properties>
 
     <dependencies>

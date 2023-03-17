@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+ com.github.fishlikewater.socks5.config.Socks5Config
+

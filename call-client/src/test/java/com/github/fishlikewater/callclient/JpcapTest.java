@@ -3,7 +3,6 @@ package com.github.fishlikewater.callclient;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringApplication;
 
 import java.util.ArrayList;
 import java.util.List;

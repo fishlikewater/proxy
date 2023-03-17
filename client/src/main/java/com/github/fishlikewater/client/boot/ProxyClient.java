@@ -7,6 +7,8 @@ import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.IdUtil;
 import com.github.fishlikewater.kit.NamedThreadFactory;
+import com.github.fishlikewater.socks5.boot.SocksServerBoot;
+import com.github.fishlikewater.socks5.config.Socks5Config;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -20,8 +22,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
+ * @author fishl
  * @version V1.0
  * @since 2018年12月25日 14:21
  **/
@@ -32,30 +36,28 @@ public class ProxyClient {
     private final ConnectionListener connectionListener = new ConnectionListener(this);
     @Getter
     private final ProxyConfig proxyConfig;
+    private final Socks5Config socks5Config;
     /**
      * 处理连接
      */
     private EventLoopGroup bossGroup;
     private Bootstrap bootstrap;
+    private SocksServerBoot socksServerBoot;
     @Getter
     private Channel channel;
 
-    public ProxyClient(ProxyConfig proxyConfig) {
+    public ProxyClient(ProxyConfig proxyConfig, Socks5Config socks5Config) {
         this.proxyConfig = proxyConfig;
+        this.socks5Config = socks5Config;
 
     }
 
-    /**
-     * 首次初始化连接
-     */
     public void run() {
         bootstrapConfig();
         start();
     }
 
-    /**
-     * 连接配置初始化
-     */
+
     void bootstrapConfig() {
         if (bootstrap == null) {
             bootstrap = new Bootstrap();
@@ -65,7 +67,7 @@ public class ProxyClient {
             bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
             bootstrap.option(ChannelOption.TCP_NODELAY, true);
             bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-            if (EpollKit.epollIsAvailable()) {//linux系统下使用epoll
+            if (EpollKit.epollIsAvailable()) {
                 bossGroup = new EpollEventLoopGroup(0, new NamedThreadFactory("client-epoll-boss@"));
                 bootstrap.group(bossGroup).channel(EpollSocketChannel.class);
             } else {
@@ -76,9 +78,7 @@ public class ProxyClient {
         }
     }
 
-    /**
-     * 开始连接
-     */
+
     public void start() {
 
         bootstrap.remoteAddress(new InetSocketAddress(proxyConfig.getAddress(), proxyConfig.getPort()));
@@ -88,18 +88,17 @@ public class ProxyClient {
             this.channel = future.channel();
             afterConnectionSuccessful(channel);
             ChannelKit.setChannel(this.channel);
+            if(Objects.isNull(socksServerBoot)){
+                socksServerBoot = new SocksServerBoot(socks5Config);
+                socksServerBoot.start(this.channel);
+            }
 
         } catch (Exception e) {
             log.error("start client server fail", e);
         }
     }
 
-    /**
-     * @description:
-     * @param: channel
-     * @since 2022/7/18 14:43
-     * @Return: void
-     */
+
     void afterConnectionSuccessful(Channel channel) {
         final long requestId = IdUtil.id();
         final MessageProtocol messageProtocol = new MessageProtocol();
@@ -112,11 +111,8 @@ public class ProxyClient {
 
     }
 
-
-    /**
-     * 关闭服务
-     */
     public void stop() {
+        socksServerBoot.stop();
         log.info("⬢ client shutdown ...");
         try {
             if (this.bossGroup != null) {

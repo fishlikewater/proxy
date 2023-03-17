@@ -1,4 +1,4 @@
-package com.github.fishlikewater.callclient.handle;
+package com.github.fishlikewater.socks5.handle;
 
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
@@ -13,6 +13,7 @@ import java.util.Map;
  */
 public class ChannelKit {
 
+    public final static AttributeKey<Long> LOCAL_INFO = AttributeKey.newInstance("LOCAL_INFO");
     public final static AttributeKey<Map<Long, Channel>> CHANNELS_LOCAL = AttributeKey.newInstance("CHANNELS_LOCAL");
 
     @Setter

@@ -43,11 +43,16 @@ public class ProxyConfig {
     /** 代理路劲*/
     private String proxyPath;
 
+    /** 启动模式*/
+    private BootModel bootModel = BootModel.ONE_TO_ONE;
+
 
     private int[] localPorts;
 
     /** 是否固定本地链接远程使用的端口*/
     private boolean useLocalPorts;
+
+    private String ipPrefix = "192.168.12.";
 
 
     public int getOneLocalPort(){

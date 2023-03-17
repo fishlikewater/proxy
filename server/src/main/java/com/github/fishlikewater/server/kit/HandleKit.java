@@ -1,13 +1,12 @@
 package com.github.fishlikewater.server.kit;
 
-import com.github.fishlikewater.kit.MessageProbuf;
+import cn.hutool.core.util.StrUtil;
+import com.github.fishlikewater.codec.MessageProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
 import lombok.extern.slf4j.Slf4j;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * <p>
@@ -20,29 +19,41 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HandleKit {
 
-    public static void handleHttp(ChannelHandlerContext ctx, MessageProbuf.Message msg, MessageProbuf.MessageType type) {
-        switch (type) {
-            case RESPONSE:
-                Long requested = msg.getRequestId();
-                Channel channel = CacheUtil.get(requested);
-                if (channel != null && channel.isActive()) {
-                    FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST);
-                    MessageProbuf.Response response = msg.getResponse();
-                    response.getHeaderMap().forEach((key, value) -> resp.headers().set(key, value));
-                    resp.content().writeBytes(response.getBody().toByteArray());
-                    resp.setStatus(HttpResponseStatus.valueOf(response.getCode()));
-                    channel.writeAndFlush(resp).addListener(t -> {
-                    });
-                    CacheUtil.remove(requested);
-                }
-                break;
-            case HEALTH:
-                break;
-            case CLOSE:
-                ctx.close();
-            default:
-                log.info("接收到不支持的消息类型");
-                break;
+    public static boolean checkRegisterName(ChannelHandlerContext ctx, String registerName, long requestId) {
+        if (StrUtil.isBlank(registerName)) {
+            final MessageProtocol failMsg = new MessageProtocol();
+            failMsg
+                    .setId(requestId)
+                    .setCmd(MessageProtocol.CmdEnum.REGISTER)
+                    .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                    .setState((byte) 0)
+                    .setBytes("请配置路由".getBytes(StandardCharsets.UTF_8));
+            ctx.writeAndFlush(failMsg).addListener(future -> ctx.close());
+            return false;
         }
+        return true;
+    }
+
+
+    public static boolean checkRegisterNameIsUse(String registerName, long requestId, ChannelHandlerContext ctx){
+        final Channel channel = ChannelGroupKit.find(registerName);
+        if (channel != null && channel.isActive()) {
+            final MessageProtocol failMsg = new MessageProtocol();
+            failMsg
+                    .setId(requestId)
+                    .setCmd(MessageProtocol.CmdEnum.REGISTER)
+                    .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                    .setState((byte) 0)
+                    .setBytes("该注册名已被使用, 请更改注册名后重新连接".getBytes(StandardCharsets.UTF_8));
+            ctx.writeAndFlush(failMsg).addListener(future -> ctx.close());
+            return false;
+        }
+        // 如果 存在已注册 但不是活动连接 清理掉该连接
+        if (channel != null && !channel.isActive()) {
+            ChannelGroupKit.remove(registerName);
+            channel.close();
+            return false;
+        }
+        return true;
     }
 }

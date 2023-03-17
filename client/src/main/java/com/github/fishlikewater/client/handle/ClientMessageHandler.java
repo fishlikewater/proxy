@@ -65,13 +65,18 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 }
                 break;
             case REGISTER:
-                log.info(new String(msg.getBytes(), StandardCharsets.UTF_8));
+                log.info("本机分配的虚拟ip为: " + new String(msg.getBytes(), StandardCharsets.UTF_8));
                 break;
             case DATA_CHANNEL:
                 HandleKit.createDataChannel(ctx, client.getProxyConfig(), new String(msg.getBytes(), StandardCharsets.UTF_8));
                 break;
             case HEALTH:
                 log.debug("get health info");
+                break;
+            case REQUEST:
+
+                break;
+            case RESPONSE:
                 break;
             default:
         }

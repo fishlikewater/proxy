@@ -26,10 +26,6 @@ public class ProxyConfig {
     /** 服务器端口*/
     private int port;
 
-    private int socksPort;
-
-    private String socksAddress;
-
     /** token */
     private String token;
 
@@ -41,15 +37,6 @@ public class ProxyConfig {
 
     /** 匹配目标机*/
     private String proxyPath;
-
-    /** 验证用户名(客户端用户名) */
-    private String username;
-
-    /** 验证密码*/
-    private String password;
-
-    /** 是否开启验证*/
-    private boolean auth;
 
     private boolean mapping;
 

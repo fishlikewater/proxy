@@ -2,6 +2,7 @@ package com.github.fishlikewater.client;
 
 import com.github.fishlikewater.client.boot.ProxyClient;
 import com.github.fishlikewater.client.config.ProxyConfig;
+import com.github.fishlikewater.socks5.config.Socks5Config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.CommandLineRunner;
@@ -18,6 +19,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ClientApplication implements CommandLineRunner, DisposableBean {
 
     private final ProxyConfig proxyConfig;
+    private final Socks5Config socks5Config;
 
     private ProxyClient proxyClient;
 
@@ -27,7 +29,7 @@ public class ClientApplication implements CommandLineRunner, DisposableBean {
 
     @Override
     public void run(String... args) {
-        proxyClient = new ProxyClient(proxyConfig);
+        proxyClient = new ProxyClient(proxyConfig, socks5Config);
         proxyClient.run();
 
     }

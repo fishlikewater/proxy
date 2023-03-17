@@ -1,6 +1,8 @@
 package com.github.fishlikewater.callclient.boot;
 
 
+import com.github.fishlikewater.socks5.boot.SocksServerBoot;
+import com.github.fishlikewater.socks5.config.Socks5Config;
 import com.github.fishlikewater.callclient.config.ProxyConfig;
 import com.github.fishlikewater.callclient.handle.ChannelKit;
 import com.github.fishlikewater.callclient.handle.ClientHandlerInitializer;
@@ -21,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * @author fishlikewater@126.com
@@ -37,13 +40,16 @@ public class ProxyClient{
      */
     private EventLoopGroup bossGroup;
     private Bootstrap bootstrap;
+    private SocksServerBoot socksServerBoot;
     @Getter
     private Channel channel;
     @Getter
     private final ProxyConfig proxyConfig;
+    private final Socks5Config socks5Config;
 
-    public ProxyClient(ProxyConfig proxyConfig) {
+    public ProxyClient(ProxyConfig proxyConfig, Socks5Config socks5Config) {
         this.proxyConfig = proxyConfig;
+        this.socks5Config = socks5Config;
     }
 
     /**
@@ -88,7 +94,10 @@ public class ProxyClient{
 
             afterConnectionSuccessful(channel);
             ChannelKit.setChannel(this.channel);
-
+            if(Objects.isNull(socksServerBoot)){
+                socksServerBoot = new SocksServerBoot(socks5Config);
+                socksServerBoot.start(this.channel);
+            }
         } catch (Exception e) {
             log.error("start call-client server fail");
         }
@@ -114,6 +123,7 @@ public class ProxyClient{
      * 关闭服务
      */
     public void stop() {
+        socksServerBoot.stop();
         log.info("⬢ {call-client shutdown ...");
         try {
             if (this.bossGroup != null) {

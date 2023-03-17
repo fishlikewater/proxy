@@ -1,11 +1,7 @@
 package com.github.fishlikewater.server.kit;
 
-import com.github.fishlikewater.kit.MessageProbuf;
 import io.netty.channel.Channel;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.AttributeKey;
-import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,34 +14,35 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class ChannelGroupKit {
 
-    //http服务器 标记本次请求
-    public final static AttributeKey<Long> CHANNELS_LOCAL = AttributeKey.newInstance("CHANNELS_LOCAL");
 
-    //目标机路径属性
+    /**目标机路径属性 */
     public static final AttributeKey<String> CLIENT_PATH = AttributeKey.valueOf("client_path");
 
     public static final AttributeKey<Channel> DATA_CHANNEL = AttributeKey.valueOf("data_channel");
 
-    //请求机绑定目标机属性
+    /**请求机绑定目标机属性*/
     public static final AttributeKey<Channel> CALL_REMOTE_CLIENT = AttributeKey.valueOf("call_remote_client");
 
-    //目标主机绑定请求机
+    /**目标主机绑定请求机*/
     public static final AttributeKey<Channel> CALL_REQUEST_CLIENT = AttributeKey.valueOf("call_request_client");
 
-    //客户端类型属性
+    /**客户端类型属性*/
     public static final AttributeKey<String> CLIENT_TYPE = AttributeKey.valueOf("client_type");
 
+    /**连接分配的虚拟ip */
+    public static final AttributeKey<String> VIRT_IP = AttributeKey.valueOf("virt_ip");
+
     @Getter
-    private static final ConcurrentHashMap<String, Channel> clientChannelMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Channel> CLIENT_CHANNEL_MAP = new ConcurrentHashMap<>();
 
     public static void add(String path, Channel channel){
-        clientChannelMap.put(path, channel);
+        CLIENT_CHANNEL_MAP.put(path, channel);
     }
     public static void remove(String path){
-        clientChannelMap.remove(path);
+        CLIENT_CHANNEL_MAP.remove(path);
     }
     public static Channel find(String path){
-        return clientChannelMap.get(path);
+        return CLIENT_CHANNEL_MAP.get(path);
     }
 
 }

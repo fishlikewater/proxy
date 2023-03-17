@@ -24,7 +24,7 @@ import static com.github.fishlikewater.server.kit.ChannelGroupKit.DATA_CHANNEL;
 
 /**
  * <p>
- *
+ *  token验证处理器
  * </p>
  *
  * @author fishlikewater@126.com
@@ -43,9 +43,9 @@ public class AuthHandler extends SimpleChannelInboundHandler<MessageProtocol> {
             //处理 建立数据通道的请求
             //1、先验证主连接
             //请求机
+            final String mainChannelId = new String(msg.getBytes(), StandardCharsets.UTF_8);
+            final Channel channel = ChannelGroupKit.find(mainChannelId);
             if (msg.getState() == 0){
-                final String mainChannelId = new String(msg.getBytes(), StandardCharsets.UTF_8);
-                final Channel channel = ChannelGroupKit.find(mainChannelId);
                 if (Objects.nonNull(channel) && channel.isActive()) {
                     final Channel dstChannel = channel.attr(CALL_REMOTE_CLIENT).get();
                     //发送消息 让目标机 建立一条新的连接用于数据交互
@@ -59,8 +59,6 @@ public class AuthHandler extends SimpleChannelInboundHandler<MessageProtocol> {
                     channel.attr(DATA_CHANNEL).set(ctx.channel());
                 }
             }else {
-                final String mainChannelId = new String(msg.getBytes(), StandardCharsets.UTF_8);
-                final Channel channel = ChannelGroupKit.find(mainChannelId);
                 if (Objects.nonNull(channel) && channel.isActive()) {
                     final Channel requestDataChannel = channel.attr(DATA_CHANNEL).get();
                     requestDataChannel.attr(DATA_CHANNEL).set(ctx.channel());

@@ -2,7 +2,9 @@ package com.github.fishlikewater.server.handle.myprotocol;
 
 import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.codec.MessageProtocol;
+import com.github.fishlikewater.server.config.Constant;
 import com.github.fishlikewater.server.kit.ChannelGroupKit;
+import com.github.fishlikewater.server.kit.HandleKit;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -23,54 +25,35 @@ import java.nio.charset.StandardCharsets;
 public class RegisterHandler  extends SimpleChannelInboundHandler<MessageProtocol> {
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) {
         final MessageProtocol.CmdEnum cmd = msg.getCmd();
         if (cmd ==  MessageProtocol.CmdEnum.REGISTER){
             final byte[] bytes = msg.getBytes();
             final String registerName = new String(bytes, StandardCharsets.UTF_8);
             final byte registerType = msg.getState();
             // 未提供注册名(注册名对于受控制机全局唯一，为方便使用端 采用自定义设置)
-            if (StrUtil.isBlank(registerName)) {
-                final MessageProtocol failMsg = new MessageProtocol();
-                failMsg
-                        .setId(msg.getId())
-                        .setCmd(MessageProtocol.CmdEnum.REGISTER)
-                        .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                        .setState((byte) 0)
-                        .setBytes("请配置路由".getBytes(StandardCharsets.UTF_8));
-                ctx.writeAndFlush(failMsg).addListener(future -> ctx.close());
+            final boolean checkRegisterName = HandleKit.checkRegisterName(ctx, registerName, msg.getId());
+            if (!checkRegisterName){
+                return;
             }
             // 受控制注册
             if (registerType == 1) {
                 // 查询 注册名是否已经被使用
-                final Channel channel = ChannelGroupKit.find(registerName);
-                if (channel != null && channel.isActive()) {
-                    final MessageProtocol failMsg = new MessageProtocol();
-                    failMsg
+                final boolean b = HandleKit.checkRegisterNameIsUse(registerName, msg.getId(), ctx);
+                if (b){
+                    ctx.channel().attr(ChannelGroupKit.CLIENT_PATH).set(registerName);
+                    ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).set("client");
+                    ChannelGroupKit.add(registerName, ctx.channel());
+                    final MessageProtocol successMsg = new MessageProtocol();
+                    successMsg
                             .setId(msg.getId())
                             .setCmd(MessageProtocol.CmdEnum.REGISTER)
                             .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                            .setState((byte) 0)
-                            .setBytes("该注册名已被使用, 请更改注册名后重新连接".getBytes(StandardCharsets.UTF_8));
-                    ctx.writeAndFlush(failMsg).addListener(future -> ctx.close());
+                            .setState((byte) 1)
+                            .setBytes("注册成功".getBytes(StandardCharsets.UTF_8));
+                    ctx.writeAndFlush(successMsg);
+                    log.info("register client path {} successful", registerName);
                 }
-                // 如果 存在已注册 但不是活动连接 清理掉该连接
-                if (channel != null && !channel.isActive()) {
-                    ChannelGroupKit.remove(registerName);
-                    channel.close();
-                }
-                ctx.channel().attr(ChannelGroupKit.CLIENT_PATH).set(registerName);
-                ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).set("client");
-                ChannelGroupKit.add(registerName, ctx.channel());
-                final MessageProtocol successMsg = new MessageProtocol();
-                successMsg
-                        .setId(msg.getId())
-                        .setCmd(MessageProtocol.CmdEnum.REGISTER)
-                        .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                        .setState((byte) 1)
-                        .setBytes("注册成功".getBytes(StandardCharsets.UTF_8));
-                ctx.writeAndFlush(successMsg);
-                log.info("register client path {} successful", registerName);
             } else { // 呼叫机注册
                 ChannelGroupKit.add(ctx.channel().id().asLongText(), ctx.channel());
                 Channel channel = ChannelGroupKit.find(registerName);
@@ -108,7 +91,7 @@ public class RegisterHandler  extends SimpleChannelInboundHandler<MessageProtoco
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         final String type = ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).get();
-        if (type != null && type.equals("client")) {
+        if (Constant.CLIENT.equals(type)) {
             log.info("受控制机断开连接");
             Attribute<String> attr = ctx.channel().attr(ChannelGroupKit.CLIENT_PATH);
             if (attr != null) {
@@ -120,7 +103,7 @@ public class RegisterHandler  extends SimpleChannelInboundHandler<MessageProtoco
                 }
             }
         }
-        if (type != null && type.equals("call")) {
+        if (Constant.CALL.equals(type)) {
             log.info("呼叫机断开连接");
         }
         super.handlerRemoved(ctx);
