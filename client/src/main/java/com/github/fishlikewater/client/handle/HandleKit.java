@@ -2,15 +2,18 @@ package com.github.fishlikewater.client.handle;
 
 import com.github.fishlikewater.client.boot.BootStrapFactory;
 import com.github.fishlikewater.client.config.ProxyConfig;
+import com.github.fishlikewater.codec.ByteArrayCodec;
 import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.codec.MyByteToMessageCodec;
 import com.github.fishlikewater.kit.IdUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * <p>
@@ -54,5 +57,70 @@ public class HandleKit {
         });
     }
 
+    public static void handlerConnection(MessageProtocol msg, ChannelHandlerContext ctx, ProxyConfig proxyConfig){
+        final MessageProtocol.Dst dst = msg.getDst();
+        Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
+        bootstrap.handler(new NoneClientInitializer());
+        if (Objects.nonNull(proxyConfig)){
+            bootstrap.remoteAddress("127.0.0.1", dst.getDstPort());
+        }else {
+            bootstrap.remoteAddress(dst.getDstAddress(), dst.getDstPort());
+        }
+        bootstrap.connect().addListener((ChannelFutureListener) future -> {
+            if (future.isSuccess()) {
+                ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().put(msg.getId(), future.channel());
+                future.channel().pipeline().addLast(new ByteArrayCodec());
+                future.channel().pipeline().addLast(new ChunkedWriteHandler());
+                future.channel().pipeline().addLast(new Dest2ClientHandler(ctx, msg.getId()));
+                log.debug("连接成功");
+                final MessageProtocol successMsg = new MessageProtocol();
+                successMsg
+                        .setCmd(MessageProtocol.CmdEnum.ACK)
+                        .setId(msg.getId())
+                        .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                        .setState((byte)1);
+                ctx.channel().writeAndFlush(successMsg);
+            } else {
+                log.debug("连接失败");
+                final MessageProtocol failMsg = new MessageProtocol();
+                failMsg
+                        .setCmd(MessageProtocol.CmdEnum.ACK)
+                        .setId(msg.getId())
+                        .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                        .setState((byte)0);
+                ctx.channel().writeAndFlush(failMsg);
+            }
+        });
+    }
+
+
+    public static void handlerRequest(MessageProtocol msg, ChannelHandlerContext ctx, ProxyConfig proxyConfig){
+        final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(msg.getId());
+        if (Objects.nonNull(channel) && channel.isActive()) {
+            channel.writeAndFlush(msg.getBytes());
+        }else {
+            Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
+            final MessageProtocol.Dst dst = msg.getDst();
+            bootstrap.handler(new NoneClientInitializer());
+            if (Objects.nonNull(proxyConfig)){
+                bootstrap.remoteAddress("127.0.0.1", dst.getDstPort());
+            }else {
+                bootstrap.remoteAddress(dst.getDstAddress(), dst.getDstPort());
+            }
+            bootstrap.connect().addListener((ChannelFutureListener) future -> {
+                if (future.isSuccess()) {
+                    ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().put(msg.getId(), future.channel());
+                    future.channel().pipeline().addLast(new ByteArrayCodec());
+                    future.channel().pipeline().addLast(new ChunkedWriteHandler());
+                    future.channel().pipeline().addLast(new Dest2ClientHandler(ctx, msg.getId()));
+                    future.channel().writeAndFlush(msg.getBytes());
+                } else {
+                    future.channel().writeAndFlush(msg.getBytes());
+                }
+            });
+        }
+
+
+    }
 
 }

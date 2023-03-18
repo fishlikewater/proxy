@@ -6,13 +6,9 @@ import com.github.fishlikewater.kit.IdUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.socksx.v5.DefaultSocks5CommandRequest;
-import io.netty.handler.codec.socksx.v5.Socks5CommandRequestDecoder;
-import io.netty.handler.codec.socksx.v5.Socks5CommandType;
-import io.netty.handler.codec.socksx.v5.Socks5InitialRequestDecoder;
+import io.netty.handler.codec.socksx.v5.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,22 +37,17 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
             final MessageProtocol.Dst dst = new MessageProtocol.Dst();
             dst.setDstAddress(msg.dstAddr());
             dst.setDstPort(msg.dstPort());
-            final MessageProtocol message = new MessageProtocol();
-            message
-                    .setCmd(MessageProtocol.CmdEnum.CONNECTION)
-                    .setId(requestId)
-                    .setDst(dst)
-                    .setProtocol(MessageProtocol.ProtocolEnum.SOCKS);
             channel.attr(Socks5Kit.CHANNELS_SOCKS).get().put(requestId, ctx.channel());
-            channel.writeAndFlush(message).addListener((ChannelFutureListener) channelFuture -> {
-                if (channelFuture.isSuccess()) {
+            Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
+            ctx.channel().writeAndFlush(commandResponse).addListener(future -> {
+                if (future.isSuccess()) {
                     if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
                         ctx.pipeline().remove(Socks5CommandRequestHandler.class);
                     }
                     ctx.pipeline().remove(Socks5InitialAuthHandler.class);
                     ctx.pipeline().remove(Socks5InitialRequestDecoder.class);
                     ctx.pipeline().remove(Socks5CommandRequestDecoder.class);
-                    ctx.pipeline().addLast(new Client2DestHandler(channel, requestId));
+                    ctx.pipeline().addLast(new Client2DestHandler(channel, requestId, dst));
                 }
             });
         } else {
@@ -86,9 +77,12 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 
         private final Long requestId;
 
-        public Client2DestHandler(Channel channel, Long requestId) {
+        private final MessageProtocol.Dst dst;
+
+        public Client2DestHandler(Channel channel, Long requestId, MessageProtocol.Dst dst) {
             this.channel = channel;
             this.requestId = requestId;
+            this.dst = dst;
         }
 
         @Override
@@ -108,6 +102,7 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
             final MessageProtocol message = new MessageProtocol();
             message
                     .setId(requestId)
+                    .setDst(dst)
                     .setCmd(MessageProtocol.CmdEnum.REQUEST)
                     .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
                     .setBytes(ByteBufUtil.getBytes(buf));

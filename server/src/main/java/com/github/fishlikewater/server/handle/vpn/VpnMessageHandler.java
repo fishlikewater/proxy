@@ -28,7 +28,8 @@ public class VpnMessageHandler extends SimpleChannelInboundHandler<MessageProtoc
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) {
         final MessageProtocol.CmdEnum cmd = msg.getCmd();
-        if (cmd == MessageProtocol.CmdEnum.REQUEST || cmd == MessageProtocol.CmdEnum.RESPONSE){
+        if (cmd == MessageProtocol.CmdEnum.REQUEST ||
+                cmd == MessageProtocol.CmdEnum.RESPONSE){
             final MessageProtocol.Dst dst = msg.getDst();
             final String host = dst.getDstAddress();
             final Channel channel = ipMapping.getChannel(host);

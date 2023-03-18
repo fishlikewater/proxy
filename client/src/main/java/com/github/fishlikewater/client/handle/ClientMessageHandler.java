@@ -1,19 +1,17 @@
 package com.github.fishlikewater.client.handle;
 
-import com.github.fishlikewater.client.boot.BootStrapFactory;
 import com.github.fishlikewater.client.boot.ProxyClient;
-import com.github.fishlikewater.codec.ByteArrayCodec;
 import com.github.fishlikewater.codec.MessageProtocol;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFutureListener;
+import com.github.fishlikewater.socks5.handle.Socks5Kit;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoop;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.stream.ChunkedWriteHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,7 +38,6 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        ChannelKit.channelGroup.close();
         final EventLoop loop = ctx.channel().eventLoop();
         loop.schedule(client::start, 30, TimeUnit.SECONDS);
         super.channelInactive(ctx);
@@ -79,40 +76,13 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 log.debug("get health info");
                 break;
             case REQUEST:
-
+                HandleKit.handlerRequest(msg, ctx, client.getProxyConfig());
                 break;
             case RESPONSE:
-                break;
-            case CONNECTION:
-                final MessageProtocol.Dst dst = msg.getDst();
-                Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
-                bootstrap.handler(new NoneClientInitializer());
-                bootstrap.remoteAddress(dst.getDstAddress(), dst.getDstPort());
-                bootstrap.connect().addListener((ChannelFutureListener) future -> {
-                    if (future.isSuccess()) {
-                        ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().put(requestId, future.channel());
-                        future.channel().pipeline().addLast(new ByteArrayCodec());
-                        future.channel().pipeline().addLast(new ChunkedWriteHandler());
-                        future.channel().pipeline().addLast(new Dest2ClientHandler(ctx, requestId));
-                        log.debug("连接成功");
-                        final MessageProtocol successMsg = new MessageProtocol();
-                        successMsg
-                                .setCmd(MessageProtocol.CmdEnum.ACK)
-                                .setId(requestId)
-                                .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                                .setState((byte)1);
-                        ctx.channel().writeAndFlush(successMsg);
-                    } else {
-                        log.debug("连接失败");
-                        final MessageProtocol failMsg = new MessageProtocol();
-                        failMsg
-                                .setCmd(MessageProtocol.CmdEnum.ACK)
-                                .setId(requestId)
-                                .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                                .setState((byte)0);
-                        ctx.channel().writeAndFlush(failMsg);
-                    }
-                });
+                final Channel socksChannel = ctx.channel().attr(Socks5Kit.CHANNELS_SOCKS).get().get(msg.getId());
+                if (Objects.nonNull(socksChannel) && socksChannel.isActive()) {
+                    socksChannel.writeAndFlush(msg.getBytes());
+                }
                 break;
             default:
         }

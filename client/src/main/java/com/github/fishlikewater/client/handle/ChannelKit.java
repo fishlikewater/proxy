@@ -16,8 +16,6 @@ import java.util.Map;
  **/
 public class ChannelKit {
 
-    public final static ChannelGroup channelGroup =  new DefaultChannelGroup((GlobalEventExecutor.INSTANCE));
-
     public final static AttributeKey<Map<Long, Channel>> CHANNELS_LOCAL = AttributeKey.newInstance("CHANNELS_LOCAL");
 
 

@@ -2,8 +2,6 @@ package com.github.fishlikewater.socks5.handle;
 
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Map;
 
@@ -15,13 +13,5 @@ public class Socks5Kit {
 
     public final static AttributeKey<Long> LOCAL_INFO = AttributeKey.newInstance("LOCAL_INFO");
     public final static AttributeKey<Map<Long, Channel>> CHANNELS_SOCKS = AttributeKey.newInstance("CHANNELS_SOCKS");
-
-    @Setter
-    @Getter
-    private static Channel channel = null;
-
-    @Setter
-    @Getter
-    private static Channel dataChannel = null;
 
 }

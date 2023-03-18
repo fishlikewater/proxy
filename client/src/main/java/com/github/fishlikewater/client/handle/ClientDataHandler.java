@@ -1,14 +1,9 @@
 package com.github.fishlikewater.client.handle;
 
-import com.github.fishlikewater.client.boot.BootStrapFactory;
-import com.github.fishlikewater.codec.ByteArrayCodec;
 import com.github.fishlikewater.codec.MessageProtocol;
-import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.stream.ChunkedWriteHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -36,7 +31,6 @@ public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtoc
                 log.debug("get health info");
                 break;
             case DATA_CHANNEL_ACK:
-                ChannelKit.channelGroup.add(ctx.channel());
                 log.info(new String(msg.getBytes(), StandardCharsets.UTF_8));
                 ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>(16));
                 break;
@@ -54,35 +48,7 @@ public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtoc
                 }
                 break;
             case CONNECTION:
-                final MessageProtocol.Dst dst = msg.getDst();
-                Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
-                bootstrap.handler(new NoneClientInitializer());
-                bootstrap.remoteAddress(dst.getDstAddress(), dst.getDstPort());
-                bootstrap.connect().addListener((ChannelFutureListener) future -> {
-                    if (future.isSuccess()) {
-                        ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().put(requestId, future.channel());
-                        future.channel().pipeline().addLast(new ByteArrayCodec());
-                        future.channel().pipeline().addLast(new ChunkedWriteHandler());
-                        future.channel().pipeline().addLast(new Dest2ClientHandler(ctx, requestId));
-                        log.debug("连接成功");
-                        final MessageProtocol successMsg = new MessageProtocol();
-                        successMsg
-                                .setCmd(MessageProtocol.CmdEnum.ACK)
-                                .setId(requestId)
-                                .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                                .setState((byte)1);
-                        ctx.channel().writeAndFlush(successMsg);
-                    } else {
-                        log.debug("连接失败");
-                        final MessageProtocol failMsg = new MessageProtocol();
-                        failMsg
-                                .setCmd(MessageProtocol.CmdEnum.ACK)
-                                .setId(requestId)
-                                .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                                .setState((byte)0);
-                        ctx.channel().writeAndFlush(failMsg);
-                    }
-                });
+                HandleKit.handlerConnection(msg, ctx, null);
                 break;
             default:
         }
