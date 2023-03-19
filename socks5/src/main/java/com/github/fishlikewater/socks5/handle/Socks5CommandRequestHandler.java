@@ -39,17 +39,20 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
             dst.setDstPort(msg.dstPort());
             channel.attr(Socks5Kit.CHANNELS_SOCKS).get().put(requestId, ctx.channel());
             Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
-            ctx.channel().writeAndFlush(commandResponse).addListener(future -> {
-                if (future.isSuccess()) {
-                    if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
-                        ctx.pipeline().remove(Socks5CommandRequestHandler.class);
-                    }
-                    ctx.pipeline().remove(Socks5InitialAuthHandler.class);
-                    ctx.pipeline().remove(Socks5InitialRequestDecoder.class);
-                    ctx.pipeline().remove(Socks5CommandRequestDecoder.class);
-                    ctx.pipeline().addLast(new Client2DestHandler(channel, requestId, dst));
-                }
-            });
+            ctx.pipeline().remove(Socks5InitialAuthHandler.class);
+            ctx.pipeline().remove(Socks5InitialRequestDecoder.class);
+            ctx.pipeline().remove(Socks5CommandRequestDecoder.class);
+            ctx.pipeline().addLast(new Client2DestHandler(channel, requestId, dst));
+            if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
+                ctx.pipeline().remove(Socks5CommandRequestHandler.class);
+            }
+            if (ctx.pipeline().get(Socks5PasswordAuthRequestHandler.class) != null) {
+                ctx.pipeline().remove(Socks5PasswordAuthRequestHandler.class);
+            }
+            if (ctx.pipeline().get(Socks5PasswordAuthRequestDecoder.class) != null) {
+                ctx.pipeline().remove(Socks5PasswordAuthRequestDecoder.class);
+            }
+            ctx.channel().writeAndFlush(commandResponse);
         } else {
             ctx.fireChannelRead(msg);
         }
