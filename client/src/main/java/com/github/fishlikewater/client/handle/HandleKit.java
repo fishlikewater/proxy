@@ -71,7 +71,7 @@ public class HandleKit {
                 ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().put(msg.getId(), future.channel());
                 future.channel().pipeline().addLast(new ByteArrayCodec());
                 future.channel().pipeline().addLast(new ChunkedWriteHandler());
-                future.channel().pipeline().addLast(new Dest2ClientHandler(ctx, msg.getId()));
+                future.channel().pipeline().addLast(new Dest2ClientHandler(ctx, msg.getId(), msg.getDst()));
                 log.debug("连接成功");
                 final MessageProtocol successMsg = new MessageProtocol();
                 successMsg
@@ -112,7 +112,7 @@ public class HandleKit {
                     ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().put(msg.getId(), future.channel());
                     future.channel().pipeline().addLast(new ByteArrayCodec());
                     future.channel().pipeline().addLast(new ChunkedWriteHandler());
-                    future.channel().pipeline().addLast(new Dest2ClientHandler(ctx, msg.getId()));
+                    future.channel().pipeline().addLast(new Dest2ClientHandler(ctx, msg.getId(), msg.getDst()));
                     future.channel().writeAndFlush(msg.getBytes());
                 } else {
                     future.channel().writeAndFlush(msg.getBytes());

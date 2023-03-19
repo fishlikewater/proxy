@@ -3,7 +3,7 @@ package com.github.fishlikewater.server.boot;
 import cn.hutool.core.util.ServiceLoaderUtil;
 import com.github.fishlikewater.codec.MyByteToMessageCodec;
 import com.github.fishlikewater.config.ProxyType;
-import com.github.fishlikewater.server.config.BootModel;
+import com.github.fishlikewater.config.BootModel;
 import com.github.fishlikewater.server.config.ProxyConfig;
 import com.github.fishlikewater.server.handle.ServerHeartBeatHandler;
 import com.github.fishlikewater.server.handle.myprotocol.AuthHandler;

@@ -29,7 +29,7 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
     private final ProxyConfig proxyConfig;
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) {
+    protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) throws Exception{
         final MessageProtocol.CmdEnum cmd = msg.getCmd();
         if (cmd == MessageProtocol.CmdEnum.REGISTER) {
             final Integer ip = ipPool.getIp();
@@ -45,6 +45,7 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
                     .setBytes(ipStr.getBytes(StandardCharsets.UTF_8));
             ctx.writeAndFlush(successMsg);
         }
+        ctx.fireChannelRead(msg);
     }
 
     @Override

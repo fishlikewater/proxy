@@ -1,5 +1,6 @@
 package com.github.fishlikewater.client.config;
 
+import com.github.fishlikewater.config.BootModel;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,9 @@ public class ProxyConfig {
     private boolean logging;
 
     private String proxyPath;
+
+    /** 启动模式*/
+    private BootModel bootModel = BootModel.ONE_TO_ONE;
 
 
 }

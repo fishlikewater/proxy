@@ -2,7 +2,10 @@ package com.github.fishlikewater.client.handle;
 
 import com.github.fishlikewater.client.boot.ProxyClient;
 import com.github.fishlikewater.codec.MessageProtocol;
+import com.github.fishlikewater.config.BootModel;
 import com.github.fishlikewater.socks5.handle.Socks5Kit;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoop;
@@ -12,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -62,12 +66,17 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                             .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
                             .setBytes(client.getProxyConfig().getProxyPath().getBytes(StandardCharsets.UTF_8));
                     ctx.writeAndFlush(messageProtocol).addListener(f -> log.info("发送注册信息成功"));
+                    ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>(16));
                 } else {
                     log.info(new String(msg.getBytes(), StandardCharsets.UTF_8));
                 }
                 break;
             case REGISTER:
-                log.info("本机分配的虚拟ip为: " + new String(msg.getBytes(), StandardCharsets.UTF_8));
+                if (client.getProxyConfig().getBootModel() == BootModel.VPN){
+                    log.info("本机分配的虚拟ip为: " + new String(msg.getBytes(), StandardCharsets.UTF_8));
+                }else {
+                    log.info(new String(msg.getBytes(), StandardCharsets.UTF_8));
+                }
                 break;
             case DATA_CHANNEL:
                 HandleKit.createDataChannel(ctx, client.getProxyConfig(), new String(msg.getBytes(), StandardCharsets.UTF_8));
@@ -81,7 +90,9 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
             case RESPONSE:
                 final Channel socksChannel = ctx.channel().attr(Socks5Kit.CHANNELS_SOCKS).get().get(msg.getId());
                 if (Objects.nonNull(socksChannel) && socksChannel.isActive()) {
-                    socksChannel.writeAndFlush(msg.getBytes());
+                    ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(msg.getBytes().length);
+                    buf.writeBytes(msg.getBytes());
+                    socksChannel.writeAndFlush(buf);
                 }
                 break;
             default:

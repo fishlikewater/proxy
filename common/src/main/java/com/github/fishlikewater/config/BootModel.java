@@ -1,4 +1,4 @@
-package com.github.fishlikewater.server.config;
+package com.github.fishlikewater.config;
 
 /**
  *  <p>启动模式:</p>

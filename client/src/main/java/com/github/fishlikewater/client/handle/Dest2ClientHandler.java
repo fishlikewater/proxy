@@ -20,10 +20,12 @@ public class Dest2ClientHandler extends SimpleChannelInboundHandler<byte[]> {
 
     private final ChannelHandlerContext clientChannelContext;
     private final Long requestId;
+    private final MessageProtocol.Dst dst;
 
-    public Dest2ClientHandler(ChannelHandlerContext clientChannelContext, Long requestId) {
+    public Dest2ClientHandler(ChannelHandlerContext clientChannelContext, Long requestId, MessageProtocol.Dst dst) {
         this.clientChannelContext = clientChannelContext;
         this.requestId = requestId;
+        this.dst = dst;
     }
 
     @Override
@@ -40,6 +42,7 @@ public class Dest2ClientHandler extends SimpleChannelInboundHandler<byte[]> {
         final MessageProtocol messageProtocol = new MessageProtocol();
         messageProtocol
                 .setId(requestId)
+                .setDst(dst)
                 .setCmd(MessageProtocol.CmdEnum.RESPONSE)
                 .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
                 .setBytes(destMsg);

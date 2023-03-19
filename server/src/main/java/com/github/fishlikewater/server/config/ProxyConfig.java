@@ -1,5 +1,6 @@
 package com.github.fishlikewater.server.config;
 
+import com.github.fishlikewater.config.BootModel;
 import com.github.fishlikewater.config.ProxyType;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

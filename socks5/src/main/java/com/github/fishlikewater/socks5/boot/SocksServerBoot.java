@@ -4,6 +4,7 @@ import com.github.fishlikewater.socks5.config.Socks5Config;
 import com.github.fishlikewater.socks5.handle.Socks5Initializer;
 import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.NamedThreadFactory;
+import com.github.fishlikewater.socks5.handle.Socks5Kit;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
@@ -15,6 +16,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p>
@@ -62,7 +65,11 @@ public class SocksServerBoot{
         config(serverBootstrap);
         serverBootstrap.childHandler(new Socks5Initializer(socks5Config, channel));
         try {
-            Channel ch = serverBootstrap.bind(socks5Config.getAddress(), socks5Config.getPort()).sync().channel();
+            Channel ch = serverBootstrap.bind(socks5Config.getAddress(), socks5Config.getPort()).addListener(future -> {
+                if (future.isSuccess()){
+                    channel.attr(Socks5Kit.CHANNELS_SOCKS).set(new ConcurrentHashMap<>(16));
+                }
+            }).sync().channel();
             log.info("⬢ start server this port:{} and address:{} proxy type: socks5",socks5Config.getPort(), socks5Config.getAddress());
             ch.closeFuture().addListener(t -> log.info("⬢  socks5服务开始关闭"));
         } catch (InterruptedException e) {

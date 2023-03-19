@@ -34,7 +34,7 @@ public class VpnMessageHandler extends SimpleChannelInboundHandler<MessageProtoc
             final String host = dst.getDstAddress();
             final Channel channel = ipMapping.getChannel(host);
             if (Objects.nonNull(channel) && channel.isActive()){
-                final String virIp = channel.attr(ChannelGroupKit.VIRT_IP).get();
+                final String virIp = ctx.channel().attr(ChannelGroupKit.VIRT_IP).get();
                 dst.setDstAddress(virIp);
                 channel.writeAndFlush(msg);
             }
