@@ -27,4 +27,13 @@ public interface IpPool {
      */
     void retrieve(int ip);
 
+
+    /**
+     *  删除ip
+     * @author fishlikewater@126.com
+     * @param ip 地址
+     * @since 2023/3/17 11:01
+     */
+    void remove(int ip);
+
 }

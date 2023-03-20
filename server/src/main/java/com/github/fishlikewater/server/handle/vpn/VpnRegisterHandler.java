@@ -5,12 +5,14 @@ import com.github.fishlikewater.server.config.ProxyConfig;
 import com.github.fishlikewater.server.kit.ChannelGroupKit;
 import com.github.fishlikewater.server.kit.IpMapping;
 import com.github.fishlikewater.server.kit.IpPool;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * <p>
@@ -29,23 +31,58 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
     private final ProxyConfig proxyConfig;
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) throws Exception{
+    protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) {
         final MessageProtocol.CmdEnum cmd = msg.getCmd();
         if (cmd == MessageProtocol.CmdEnum.REGISTER) {
-            final Integer ip = ipPool.getIp();
-            String ipStr = proxyConfig.getIpPrefix() + ip;
-            ipMapping.put(ipStr, ctx.channel());
-            ctx.channel().attr(ChannelGroupKit.VIRT_IP).set(ipStr);
-            final MessageProtocol successMsg = new MessageProtocol();
-            successMsg
-                    .setId(msg.getId())
-                    .setCmd(MessageProtocol.CmdEnum.REGISTER)
-                    .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                    .setState((byte) 1)
-                    .setBytes(ipStr.getBytes(StandardCharsets.UTF_8));
-            ctx.writeAndFlush(successMsg);
+            //当客户端固定ip时
+            if (Objects.nonNull(msg.getBytes())){
+                final String clientIp = new String(msg.getBytes(), StandardCharsets.UTF_8);
+                if (!clientIp.startsWith(proxyConfig.getIpPrefix())){
+                    final MessageProtocol failMsg = new MessageProtocol();
+                    failMsg
+                            .setId(msg.getId())
+                            .setCmd(MessageProtocol.CmdEnum.REGISTER)
+                            .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                            .setState((byte) 0)
+                            .setBytes("ip设置不合规".getBytes(StandardCharsets.UTF_8));
+                    ctx.writeAndFlush(failMsg);
+                    return;
+                }
+                final Channel channel = ipMapping.getChannel(clientIp);
+                if (Objects.nonNull(channel)){
+                    final MessageProtocol failMsg = new MessageProtocol();
+                    failMsg
+                            .setId(msg.getId())
+                            .setCmd(MessageProtocol.CmdEnum.REGISTER)
+                            .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                            .setState((byte) 0)
+                            .setBytes("ip已被使用,请更换".getBytes(StandardCharsets.UTF_8));
+                    ctx.writeAndFlush(failMsg);
+                    return;
+                }
+                mappingIp(ctx, msg, clientIp);
+                final int ip = Integer.parseInt(clientIp.replaceAll(proxyConfig.getIpPrefix(), ""));
+                ipPool.remove(ip);
+            }else {
+                final Integer ip = ipPool.getIp();
+                String ipStr = proxyConfig.getIpPrefix() + ip;
+                mappingIp(ctx, msg, ipStr);
+            }
         }
         ctx.fireChannelRead(msg);
+    }
+
+    private void mappingIp(ChannelHandlerContext ctx, MessageProtocol msg, String clientIp) {
+        ipMapping.put(clientIp, ctx.channel());
+        ctx.channel().attr(ChannelGroupKit.VIRT_IP).set(clientIp);
+        final MessageProtocol successMsg = new MessageProtocol();
+        successMsg
+                .setId(msg.getId())
+                .setCmd(MessageProtocol.CmdEnum.REGISTER)
+                .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                .setState((byte) 1)
+                .setBytes(clientIp.getBytes(StandardCharsets.UTF_8));
+        ctx.writeAndFlush(successMsg);
     }
 
     @Override

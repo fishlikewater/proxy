@@ -32,6 +32,9 @@ public class ProxyConfig {
 
     private String proxyPath;
 
+    /** 固定ip 需要以服务端设置前缀为前缀*/
+    private String fixedIp;
+
     /** 启动模式*/
     private BootModel bootModel = BootModel.ONE_TO_ONE;
 

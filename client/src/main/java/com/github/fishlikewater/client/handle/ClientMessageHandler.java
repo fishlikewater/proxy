@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -50,29 +49,14 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) throws InterruptedException {
-        final long requestId = msg.getId();
         final MessageProtocol.CmdEnum cmd = msg.getCmd();
         switch (cmd) {
             case AUTH:
                 //验证成功
-                if (msg.getState() == 1)
-                {
-                    log.info("验证成功, 开始注册....");
-                    final MessageProtocol messageProtocol = new MessageProtocol();
-                    messageProtocol
-                            .setId(requestId)
-                            .setCmd(MessageProtocol.CmdEnum.REGISTER)
-                            .setState((byte) 1)
-                            .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                            .setBytes(client.getProxyConfig().getProxyPath().getBytes(StandardCharsets.UTF_8));
-                    ctx.writeAndFlush(messageProtocol).addListener(f -> log.info("发送注册信息成功"));
-                    ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>(16));
-                } else {
-                    log.info(new String(msg.getBytes(), StandardCharsets.UTF_8));
-                }
+                HandleKit.toRegister(msg, ctx, client.getProxyConfig());
                 break;
             case REGISTER:
-                if (client.getProxyConfig().getBootModel() == BootModel.VPN){
+                if (client.getProxyConfig().getBootModel() == BootModel.VPN && msg.getState() == 1){
                     log.info("本机分配的虚拟ip为: " + new String(msg.getBytes(), StandardCharsets.UTF_8));
                 }else {
                     log.info(new String(msg.getBytes(), StandardCharsets.UTF_8));

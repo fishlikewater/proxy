@@ -48,7 +48,7 @@ public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtoc
                 }
                 break;
             case CONNECTION:
-                HandleKit.handlerConnection(msg, ctx, null);
+                HandleKit.handlerConnection(msg, ctx);
                 break;
             default:
         }

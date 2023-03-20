@@ -31,5 +31,10 @@ public class LocalIpPool implements IpPool{
         IP_POOL.add(ip);
     }
 
+    @Override
+    public void remove(int ip) {
+        IP_POOL.remove(ip);
+    }
+
 
 }
