@@ -35,6 +35,8 @@ public class ProxyConfig {
     /** 固定ip 需要以服务端设置前缀为前缀*/
     private String fixedIp;
 
+    private boolean openSocks5;
+
     /** 启动模式*/
     private BootModel bootModel = BootModel.ONE_TO_ONE;
 

@@ -89,7 +89,8 @@ public class ProxyClient {
             this.channel = future.channel();
             afterConnectionSuccessful(channel);
             ChannelKit.setChannel(this.channel);
-            if(Objects.isNull(socksServerBoot) && proxyConfig.getBootModel() == BootModel.VPN){
+            if (Objects.isNull(socksServerBoot) &&
+                    proxyConfig.getBootModel() == BootModel.VPN && proxyConfig.isOpenSocks5()) {
                 socksServerBoot = new SocksServerBoot(socks5Config);
                 socksServerBoot.start(this.channel);
             }
@@ -113,7 +114,9 @@ public class ProxyClient {
     }
 
     public void stop() {
-        socksServerBoot.stop();
+        if (Objects.nonNull(socksServerBoot)){
+            socksServerBoot.stop();
+        }
         log.info("⬢ client shutdown ...");
         try {
             if (this.bossGroup != null) {

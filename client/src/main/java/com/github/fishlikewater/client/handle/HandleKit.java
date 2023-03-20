@@ -41,7 +41,10 @@ public class HandleKit {
             if (proxyConfig.getBootModel() == BootModel.ONE_TO_ONE) {
                 messageProtocol.setBytes(proxyConfig.getProxyPath().getBytes(StandardCharsets.UTF_8));
             }else {
-                messageProtocol.setBytes(proxyConfig.getFixedIp().getBytes(StandardCharsets.UTF_8));
+                final String fixedIp = proxyConfig.getFixedIp();
+                if(Objects.nonNull(fixedIp)){
+                    messageProtocol.setBytes(fixedIp.getBytes(StandardCharsets.UTF_8));
+                }
             }
             ctx.writeAndFlush(messageProtocol).addListener(f -> log.info("发送注册信息成功"));
             ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>(16));
