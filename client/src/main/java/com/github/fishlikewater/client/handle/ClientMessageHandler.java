@@ -52,14 +52,18 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
         final MessageProtocol.CmdEnum cmd = msg.getCmd();
         switch (cmd) {
             case AUTH:
-                //验证成功
                 HandleKit.toRegister(msg, ctx, client.getProxyConfig());
                 break;
             case REGISTER:
                 if (client.getProxyConfig().getBootModel() == BootModel.VPN && msg.getState() == 1){
                     log.info("本机分配的虚拟ip为: " + new String(msg.getBytes(), StandardCharsets.UTF_8));
                 }else {
-                    log.info(new String(msg.getBytes(), StandardCharsets.UTF_8));
+                    if (client.getProxyConfig().getBootModel() == BootModel.ONE_TO_ONE && msg.getState() == 1){
+                        //注册成功, 去建立数据传输通道
+                        //HandleKit.createDataChannel(ctx, client.getProxyConfig(), registerInfo);
+                    }else {
+                        log.info(new String(msg.getBytes(), StandardCharsets.UTF_8));
+                    }
                 }
                 break;
             case DATA_CHANNEL:

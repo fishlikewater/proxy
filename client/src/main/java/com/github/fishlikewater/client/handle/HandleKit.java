@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p>
- *
+ *  数据处理器
  * </p>
  *
  * @author fishlikewater@126.com
@@ -39,7 +39,7 @@ public class HandleKit {
                     .setState((byte) 1)
                     .setProtocol(MessageProtocol.ProtocolEnum.SOCKS);
             if (proxyConfig.getBootModel() == BootModel.ONE_TO_ONE) {
-                messageProtocol.setBytes(proxyConfig.getProxyPath().getBytes(StandardCharsets.UTF_8));
+                messageProtocol.setBytes(proxyConfig.getProxyName().getBytes(StandardCharsets.UTF_8));
             }else {
                 final String fixedIp = proxyConfig.getFixedIp();
                 if(Objects.nonNull(fixedIp)){

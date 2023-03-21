@@ -21,7 +21,7 @@ public class ProxyConfig {
     /** 服务器端口*/
     private int port;
 
-    /** token(http 及内网穿透代理)*/
+    /** 连接服务器的验证*/
     private String token;
 
     /** 心跳检测间隔*/
@@ -30,11 +30,16 @@ public class ProxyConfig {
     /** 是否使用netty日志处理器*/
     private boolean logging;
 
-    private String proxyPath;
+    /** 向服务器注册得资源名称*/
+    private String proxyName;
 
-    /** 固定ip 需要以服务端设置前缀为前缀*/
+    /** ONE_TO_ONE 模式下 连接得受控机注册名*/
+    private String linkName;
+
+    /** 类vpn模式下 固定ip 需要以服务端设置前缀为前缀*/
     private String fixedIp;
 
+    /** 是否开启socks5服务(当只作为被调用的资源注册时 不需要开启socks5服务)*/
     private boolean openSocks5;
 
     /** 启动模式*/
