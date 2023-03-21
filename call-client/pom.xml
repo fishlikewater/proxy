@@ -21,15 +21,6 @@
         </dependency>
 
         <dependency>
-            <groupId>jnetpcap</groupId>
-            <artifactId>jnetpcap</artifactId>
-            <version>${jnetpcap.version}</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jnetpcap-1.4.r1425-1g.jar</systemPath>
-        </dependency>
-
-
-        <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
             <version>${netty-version}</version>
@@ -121,7 +112,7 @@
                             <addClasspath>true</addClasspath>
                         </manifest>
                         <manifestEntries>
-                            <Class-Path>resources/ lib/jnetpcap-1.4.r1425-1g.jar</Class-Path>
+                            <Class-Path>resources/ lib/jpcap.jar</Class-Path>
                         </manifestEntries>
                     </archive>
                 </configuration>
