@@ -120,7 +120,7 @@ public class HandleKit {
             final MessageProtocol.Dst dst = msg.getDst();
             bootstrap.handler(new NoneClientInitializer());
             if (Objects.nonNull(proxyConfig)) {
-                bootstrap.remoteAddress("127.0.0.1", dst.getDstPort());
+                bootstrap.remoteAddress("localhost", dst.getDstPort());
             } else {
                 bootstrap.remoteAddress(dst.getDstAddress(), dst.getDstPort());
             }
@@ -129,7 +129,7 @@ public class HandleKit {
                     connectionSuccessAfter(msg, ctx, future);
                     future.channel().writeAndFlush(msg.getBytes());
                 } else {
-                    future.channel().writeAndFlush(msg.getBytes());
+                    log.warn("connect fail...");
                 }
             });
         }
