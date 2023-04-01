@@ -33,9 +33,6 @@ public class ProxyConfig {
     /** 向服务器注册得资源名称*/
     private String proxyName;
 
-    /** ONE_TO_ONE 模式下 连接得受控机注册名*/
-    private String linkName;
-
     /** 类vpn模式下 固定ip 需要以服务端设置前缀为前缀*/
     private String fixedIp;
 
