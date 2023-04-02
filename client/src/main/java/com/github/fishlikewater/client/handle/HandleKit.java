@@ -111,7 +111,38 @@ public class HandleKit {
     }
 
 
-    public static void handlerRequest(MessageProtocol msg, ChannelHandlerContext ctx, ProxyConfig proxyConfig) {
+    public static void handlerConnection2(MessageProtocol msg, ChannelHandlerContext ctx) {
+        final MessageProtocol.Dst dst = msg.getDst();
+        Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
+        bootstrap.handler(new NoneClientInitializer());
+        bootstrap.remoteAddress("localhost", dst.getDstPort());
+        bootstrap.connect().addListener((ChannelFutureListener) future -> {
+            if (future.isSuccess()) {
+                connectionSuccessAfter(msg, ctx, future);
+                final MessageProtocol successMsg = new MessageProtocol();
+                successMsg
+                        .setCmd(MessageProtocol.CmdEnum.ACK)
+                        .setId(msg.getId())
+                        .setDst(dst)
+                        .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                        .setState((byte) 1);
+                ctx.channel().writeAndFlush(successMsg);
+            } else {
+                log.debug("连接失败");
+                final MessageProtocol failMsg = new MessageProtocol();
+                failMsg
+                        .setCmd(MessageProtocol.CmdEnum.ACK)
+                        .setId(msg.getId())
+                        .setDst(dst)
+                        .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                        .setState((byte) 0);
+                ctx.channel().writeAndFlush(failMsg);
+            }
+        });
+    }
+
+
+    public static void handlerRequest(MessageProtocol msg, ChannelHandlerContext ctx) {
         final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(msg.getId());
         if (Objects.nonNull(channel) && channel.isActive()) {
             channel.writeAndFlush(msg.getBytes());
@@ -119,11 +150,7 @@ public class HandleKit {
             Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
             final MessageProtocol.Dst dst = msg.getDst();
             bootstrap.handler(new NoneClientInitializer());
-            if (Objects.nonNull(proxyConfig)) {
-                bootstrap.remoteAddress("localhost", dst.getDstPort());
-            } else {
-                bootstrap.remoteAddress(dst.getDstAddress(), dst.getDstPort());
-            }
+            bootstrap.remoteAddress("localhost", dst.getDstPort());
             bootstrap.connect().addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
                     connectionSuccessAfter(msg, ctx, future);
