@@ -55,15 +55,15 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                         if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
                             ctx.pipeline().remove(Socks5CommandRequestHandler.class);
                         }
-                        ctx.pipeline().remove(Socks5InitialAuthHandler.class);
-                        ctx.pipeline().remove(Socks5InitialRequestDecoder.class);
-                        ctx.pipeline().remove(Socks5CommandRequestDecoder.class);
-                        ctx.pipeline().addLast(new Client2DestHandler(channel, requestId, dst));
+                        pipeline.remove(Socks5InitialAuthHandler.class);
+                        pipeline.remove(Socks5InitialRequestDecoder.class);
+                        pipeline.remove(Socks5CommandRequestDecoder.class);
+                        pipeline.addLast(new Client2DestHandler(channel, requestId, dst));
                         if (ctx.pipeline().get(Socks5PasswordAuthRequestHandler.class) != null) {
-                            ctx.pipeline().remove(Socks5PasswordAuthRequestHandler.class);
+                            pipeline.remove(Socks5PasswordAuthRequestHandler.class);
                         }
-                        if (ctx.pipeline().get(Socks5PasswordAuthRequestDecoder.class) != null) {
-                            ctx.pipeline().remove(Socks5PasswordAuthRequestDecoder.class);
+                        if (pipeline.get(Socks5PasswordAuthRequestDecoder.class) != null) {
+                            pipeline.remove(Socks5PasswordAuthRequestDecoder.class);
                         }
                     }else {
                         log.info("无法连接目标");
@@ -71,9 +71,6 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                 });
             }else {
                 Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
-                if (pipeline.get(Socks5CommandRequestHandler.class) != null) {
-                    pipeline.remove(Socks5CommandRequestHandler.class);
-                }
                 pipeline.remove(Socks5InitialAuthHandler.class);
                 pipeline.remove(Socks5InitialRequestDecoder.class);
                 pipeline.remove(Socks5CommandRequestDecoder.class);
@@ -83,6 +80,9 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                 }
                 if (ctx.pipeline().get(Socks5PasswordAuthRequestDecoder.class) != null) {
                     ctx.pipeline().remove(Socks5PasswordAuthRequestDecoder.class);
+                }
+                if (pipeline.get(Socks5CommandRequestHandler.class) != null) {
+                    pipeline.remove(Socks5CommandRequestHandler.class);
                 }
                 ctx.channel().writeAndFlush(commandResponse);
             }
