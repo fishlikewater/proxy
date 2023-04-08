@@ -1,13 +1,14 @@
 package com.github.fishlikewater.cutpackets;
 
+import com.github.fishlikewater.codec.MessageProtocol;
+import com.github.fishlikewater.kit.IdUtil;
+import io.netty.channel.Channel;
 import jpcap.JpcapCaptor;
 import jpcap.JpcapSender;
 import jpcap.NetworkInterface;
 import jpcap.packet.Packet;
 import jpcap.packet.TCPPacket;
-
 import java.io.IOException;
-import java.nio.channels.Channel;
 import java.util.Scanner;
 
 /**
@@ -45,11 +46,24 @@ public class CutPacketsHelper {
                     final TCPPacket tcpPacket = (TCPPacket) packet;
                     final boolean syn = tcpPacket.syn;
                     final boolean ack = tcpPacket.ack;
+                    long requestId = 0;
                     if (syn && !ack){
-
+                        requestId = IdUtil.id();
                     }
-                    final String hostAddress = tcpPacket.src_ip.getHostAddress();
-                    System.out.println(hostAddress);
+                    final String srcIp = tcpPacket.src_ip.getHostAddress();
+                    final int srcPort = tcpPacket.src_port;
+                    final String dstIp = tcpPacket.dst_ip.getHostAddress();
+                    final int dstPort = tcpPacket.dst_port;
+                    final byte[] data = tcpPacket.data;
+                    final MessageProtocol.Dst dst = new MessageProtocol.Dst().setDstAddress(dstIp).setDstPort(dstPort);
+                    final MessageProtocol message = new MessageProtocol();
+                    message
+                            .setId(requestId)
+                            .setDst(dst)
+                            .setCmd(MessageProtocol.CmdEnum.REQUEST)
+                            .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                            .setBytes(data);
+                    channel.writeAndFlush(message);
                 }
             });
         } catch (IOException e) {
