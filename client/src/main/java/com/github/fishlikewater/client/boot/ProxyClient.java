@@ -10,6 +10,7 @@ import com.github.fishlikewater.kit.IdUtil;
 import com.github.fishlikewater.kit.NamedThreadFactory;
 import com.github.fishlikewater.socks5.boot.SocksServerBoot;
 import com.github.fishlikewater.socks5.config.Socks5Config;
+import com.github.fishlikewater.socks5.handle.Socks5Kit;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -89,10 +90,11 @@ public class ProxyClient {
             this.channel = future.channel();
             afterConnectionSuccessful(channel);
             ChannelKit.setChannel(this.channel);
+            Socks5Kit.setChannel(this.channel);
             if (Objects.isNull(socksServerBoot) &&
                     proxyConfig.getBootModel() == BootModel.VPN && proxyConfig.isOpenSocks5()) {
                 socksServerBoot = new SocksServerBoot(socks5Config);
-                socksServerBoot.start(this.channel);
+                socksServerBoot.start();
             }
 
         } catch (Exception e) {

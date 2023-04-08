@@ -10,6 +10,7 @@ import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.IdUtil;
 import com.github.fishlikewater.kit.NamedThreadFactory;
+import com.github.fishlikewater.socks5.handle.Socks5Kit;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -94,9 +95,10 @@ public class ProxyClient{
 
             afterConnectionSuccessful(channel);
             ChannelKit.setChannel(this.channel);
+            Socks5Kit.setChannel(this.channel);
             if(Objects.isNull(socksServerBoot)){
                 socksServerBoot = new SocksServerBoot(socks5Config);
-                socksServerBoot.start(this.channel);
+                socksServerBoot.start();
             }
         } catch (Exception e) {
             log.error("start call-client server fail");

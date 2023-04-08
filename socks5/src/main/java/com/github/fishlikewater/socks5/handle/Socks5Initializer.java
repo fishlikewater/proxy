@@ -20,12 +20,10 @@ public class Socks5Initializer extends ChannelInitializer<Channel> {
 
 
     private final Socks5Config socks5Config;
-    private final Channel channelClient;
 
-    public Socks5Initializer(Socks5Config socks5Config, Channel channelClient) {
+    public Socks5Initializer(Socks5Config socks5Config) {
         log.info("init handler");
         this.socks5Config = socks5Config;
-        this.channelClient = channelClient;
     }
 
     @Override
@@ -42,7 +40,7 @@ public class Socks5Initializer extends ChannelInitializer<Channel> {
         p.addFirst(Socks5ServerEncoder.DEFAULT);
         p.addFirst(new Socks5InitialRequestDecoder());
         /* Socks connection handler */
-        p.addLast(new Socks5CommandRequestHandler(channelClient, socks5Config.isCheckConnect()));
+        p.addLast(new Socks5CommandRequestHandler(socks5Config.isCheckConnect()));
 
 
     }

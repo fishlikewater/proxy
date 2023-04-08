@@ -1,9 +1,9 @@
 package com.github.fishlikewater.socks5.boot;
 
-import com.github.fishlikewater.socks5.config.Socks5Config;
-import com.github.fishlikewater.socks5.handle.Socks5Initializer;
 import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.NamedThreadFactory;
+import com.github.fishlikewater.socks5.config.Socks5Config;
+import com.github.fishlikewater.socks5.handle.Socks5Initializer;
 import com.github.fishlikewater.socks5.handle.Socks5Kit;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -60,14 +60,14 @@ public class SocksServerBoot{
         }
     }
 
-    public void start(Channel channel) {
+    public void start() {
         final ServerBootstrap serverBootstrap = BootStrapFactory.getServerBootstrap();
         config(serverBootstrap);
-        serverBootstrap.childHandler(new Socks5Initializer(socks5Config, channel));
+        serverBootstrap.childHandler(new Socks5Initializer(socks5Config));
         try {
             Channel ch = serverBootstrap.bind(socks5Config.getAddress(), socks5Config.getPort()).addListener(future -> {
                 if (future.isSuccess()){
-                    channel.attr(Socks5Kit.CHANNELS_SOCKS).set(new ConcurrentHashMap<>(16));
+                    Socks5Kit.channel.attr(Socks5Kit.CHANNELS_SOCKS).set(new ConcurrentHashMap<>(16));
                 }
             }).sync().channel();
             log.info("⬢ start server this port:{} and address:{} proxy type: socks5",socks5Config.getPort(), socks5Config.getAddress());
