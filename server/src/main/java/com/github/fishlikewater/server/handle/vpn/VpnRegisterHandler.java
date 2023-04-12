@@ -50,23 +50,29 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
                 }
                 final Channel channel = ipMapping.getChannel(clientIp);
                 if (Objects.nonNull(channel)){
-                    final MessageProtocol failMsg = new MessageProtocol();
-                    failMsg
-                            .setId(msg.getId())
-                            .setCmd(MessageProtocol.CmdEnum.REGISTER)
-                            .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                            .setState((byte) 0)
-                            .setBytes("ip已被使用,请更换".getBytes(StandardCharsets.UTF_8));
-                    ctx.writeAndFlush(failMsg);
-                    return;
+                    if (channel.isActive()){
+                        final MessageProtocol failMsg = new MessageProtocol();
+                        failMsg
+                                .setId(msg.getId())
+                                .setCmd(MessageProtocol.CmdEnum.REGISTER)
+                                .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                                .setState((byte) 0)
+                                .setBytes("ip已被使用,请更换".getBytes(StandardCharsets.UTF_8));
+                        ctx.writeAndFlush(failMsg);
+                        return;
+                    }else {
+                        ipMapping.remove(clientIp);
+                    }
                 }
                 mappingIp(ctx, msg, clientIp);
                 final int ip = Integer.parseInt(clientIp.replaceAll(proxyConfig.getIpPrefix(), ""));
                 ipPool.remove(ip);
+                return;
             }else {
                 final Integer ip = ipPool.getIp();
                 String ipStr = proxyConfig.getIpPrefix() + ip;
                 mappingIp(ctx, msg, ipStr);
+                return;
             }
         }
         ctx.fireChannelRead(msg);
@@ -89,6 +95,7 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         final String ipStr = ctx.channel().attr(ChannelGroupKit.VIRT_IP).get();
         final int ip = Integer.parseInt(ipStr.replaceAll(proxyConfig.getIpPrefix(), ""));
+        ipMapping.remove(ipStr);
         ipPool.retrieve(ip);
         super.channelInactive(ctx);
     }
