@@ -91,9 +91,12 @@ public class ProxyClient {
             afterConnectionSuccessful(channel);
             ChannelKit.setChannel(this.channel);
             Socks5Kit.setChannel(this.channel);
-            if (Objects.isNull(socksServerBoot) &&
-                    proxyConfig.getBootModel() == BootModel.VPN && proxyConfig.isOpenSocks5()) {
-                socksServerBoot = new SocksServerBoot(socks5Config);
+            if (proxyConfig.getBootModel() == BootModel.VPN && proxyConfig.isOpenSocks5()) {
+                if (Objects.nonNull(socksServerBoot)){
+                    socksServerBoot.stop();
+                }else {
+                    socksServerBoot = new SocksServerBoot(socks5Config);
+                }
                 socksServerBoot.start();
             }
 
