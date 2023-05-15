@@ -1,0 +1,27 @@
+<service>
+
+     <id>client</id>
+
+     <name> client </name>
+
+     <description>自建vpn代理</description>
+
+     <!-- java环境变量 -->
+
+    <env name="JAVA_HOME" value="%JAVA_HOME%"/>
+
+    <executable>java</executable>
+
+    <arguments>-jar  -Xms256m -Xmx256m -Xmn128m -XX:MetaspaceSize=64 -XX:MaxMetaspaceSize=128m -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=logs/java_heapdump.hprof -Dfile.encoding=utf-8 client.jar</arguments>
+
+     <!-- 开机启动 -->
+
+     <startmode>Automatic</startmode>
+
+     <!-- 日志配置 -->
+
+     <logpath>%BASE%\logs</logpath>
+
+     <logmode>rotate</logmode>
+
+ </service>
