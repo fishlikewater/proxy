@@ -5,6 +5,7 @@ import com.github.fishlikewater.config.ProxyType;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.util.unit.DataSize;
 
 import java.util.Objects;
 
@@ -47,6 +48,8 @@ public class ProxyConfig {
     /** 启动模式*/
     private BootModel bootModel = BootModel.ONE_TO_ONE;
 
+    /** 每一帧最大字节 */
+    private DataSize maxFrameLength = DataSize.ofBytes(5*1024 * 1024);
 
     private int[] localPorts;
 

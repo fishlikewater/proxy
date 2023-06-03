@@ -4,6 +4,7 @@ import com.github.fishlikewater.config.ProxyType;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.util.unit.DataSize;
 
 import java.util.List;
 
@@ -39,6 +40,9 @@ public class ProxyConfig {
     private String proxyPath;
 
     private boolean mapping;
+
+    /** 每一帧最大字节 */
+    private DataSize maxFrameLength = DataSize.ofBytes(5*1024 * 1024);
 
     private List<ProxyMapping> proxyMappings;
 
