@@ -111,8 +111,9 @@ public class HandleKit {
     }
 
 
-    public static void handlerConnection2(MessageProtocol msg, ChannelHandlerContext ctx) {
+    public static void handlerConnection2(MessageProtocol msg, ChannelHandlerContext ctx, ProxyConfig proxyConfig) {
         final MessageProtocol.Dst dst = msg.getDst();
+        if (isAllow(proxyConfig, dst, msg, ctx)) return;
         Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
         bootstrap.handler(new NoneClientInitializer());
         bootstrap.remoteAddress("localhost", dst.getDstPort());
@@ -128,7 +129,7 @@ public class HandleKit {
                         .setState((byte) 1);
                 ctx.channel().writeAndFlush(successMsg);
             } else {
-                log.debug("连接失败");
+                log.info("连接失败");
                 final MessageProtocol failMsg = new MessageProtocol();
                 failMsg
                         .setCmd(MessageProtocol.CmdEnum.ACK)
@@ -142,13 +143,14 @@ public class HandleKit {
     }
 
 
-    public static void handlerRequest(MessageProtocol msg, ChannelHandlerContext ctx) {
+    public static void handlerRequest(MessageProtocol msg, ChannelHandlerContext ctx, ProxyConfig proxyConfig) {
         final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(msg.getId());
         if (Objects.nonNull(channel) && channel.isActive()) {
             channel.writeAndFlush(msg.getBytes());
         } else {
             Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
             final MessageProtocol.Dst dst = msg.getDst();
+            if (isAllow(proxyConfig, dst, msg, ctx)) return;
             bootstrap.handler(new NoneClientInitializer());
             bootstrap.remoteAddress("localhost", dst.getDstPort());
             bootstrap.connect().addListener((ChannelFutureListener) future -> {
@@ -160,6 +162,31 @@ public class HandleKit {
                 }
             });
         }
+    }
+
+    private static boolean isAllow(ProxyConfig proxyConfig, MessageProtocol.Dst dst, MessageProtocol msg, ChannelHandlerContext ctx) {
+        if (Objects.nonNull(proxyConfig.getLocalPorts()) && proxyConfig.getLocalPorts().length>0){
+            boolean find = false;
+            for (int localPort : proxyConfig.getLocalPorts()) {
+                if (dst.getDstPort() == localPort){
+                    find = true;
+                    break;
+                }
+            }
+            if (!find){
+                log.info("不允许连接");
+                final MessageProtocol failMsg = new MessageProtocol();
+                failMsg
+                        .setCmd(MessageProtocol.CmdEnum.ACK)
+                        .setId(msg.getId())
+                        .setDst(dst)
+                        .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                        .setState((byte) 0);
+                ctx.channel().writeAndFlush(failMsg);
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void connectionSuccessAfter(MessageProtocol msg, ChannelHandlerContext ctx, ChannelFuture future) {

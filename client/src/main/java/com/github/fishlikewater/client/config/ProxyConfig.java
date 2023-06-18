@@ -46,6 +46,9 @@ public class ProxyConfig {
     /** 启动模式*/
     private BootModel bootModel = BootModel.ONE_TO_ONE;
 
+    /** 客户端开放端口列表,若为空 则不限制*/
+    private int[] localPorts;
+
 
 }
 

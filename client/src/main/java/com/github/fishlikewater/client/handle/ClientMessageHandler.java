@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -77,7 +78,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 log.debug("get health info");
                 break;
             case REQUEST:
-                HandleKit.handlerRequest(msg, ctx);
+                HandleKit.handlerRequest(msg, ctx, client.getProxyConfig());
                 break;
             case RESPONSE:
                 final Channel socksChannel = ctx.channel().attr(Socks5Kit.CHANNELS_SOCKS).get().get(msg.getId());
@@ -88,7 +89,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 }
                 break;
             case CONNECTION:
-                HandleKit.handlerConnection2(msg, ctx);
+                HandleKit.handlerConnection2(msg, ctx, client.getProxyConfig());
                 break;
             case ACK:
                 final Channel socksChannel1 = ctx.channel().attr(Socks5Kit.CHANNELS_SOCKS).get().get(msg.getId());
