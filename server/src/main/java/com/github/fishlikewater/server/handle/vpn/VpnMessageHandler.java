@@ -6,6 +6,7 @@ import com.github.fishlikewater.server.kit.IpMapping;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.TooLongFrameException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,5 +39,14 @@ public class VpnMessageHandler extends SimpleChannelInboundHandler<MessageProtoc
                 channel.writeAndFlush(msg);
             }
         }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        if (cause instanceof TooLongFrameException){
+            final String virIp = ctx.channel().attr(ChannelGroupKit.VIRT_IP).get();
+            log.error("报错的连接: {}", virIp == null?"":virIp);
+        }
+        super.exceptionCaught(ctx, cause);
     }
 }
