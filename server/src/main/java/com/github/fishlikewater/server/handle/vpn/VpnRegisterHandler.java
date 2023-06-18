@@ -1,5 +1,6 @@
 package com.github.fishlikewater.server.handle.vpn;
 
+import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.server.config.ProxyConfig;
 import com.github.fishlikewater.server.kit.ChannelGroupKit;
@@ -94,9 +95,11 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         final String ipStr = ctx.channel().attr(ChannelGroupKit.VIRT_IP).get();
-        final int ip = Integer.parseInt(ipStr.replaceAll(proxyConfig.getIpPrefix(), ""));
-        ipMapping.remove(ipStr);
-        ipPool.retrieve(ip);
+        if (StrUtil.isNotBlank(ipStr)){
+            final int ip = Integer.parseInt(ipStr.replaceAll(proxyConfig.getIpPrefix(), ""));
+            ipMapping.remove(ipStr);
+            ipPool.retrieve(ip);
+        }
         super.channelInactive(ctx);
     }
 }

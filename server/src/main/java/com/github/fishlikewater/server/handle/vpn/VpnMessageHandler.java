@@ -45,7 +45,7 @@ public class VpnMessageHandler extends SimpleChannelInboundHandler<MessageProtoc
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         if (cause instanceof TooLongFrameException){
             final String virIp = ctx.channel().attr(ChannelGroupKit.VIRT_IP).get();
-            log.error("报错的连接: {}", virIp == null?"":virIp);
+            log.error("报错的连接: {}", virIp == null?ctx.channel().remoteAddress().toString():virIp);
         }
         super.exceptionCaught(ctx, cause);
     }
