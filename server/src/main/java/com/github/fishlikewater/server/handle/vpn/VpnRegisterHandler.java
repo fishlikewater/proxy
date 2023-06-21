@@ -50,14 +50,14 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
                 }
                 final Channel channel = ipMapping.getChannel(clientIp);
                 if (Objects.nonNull(channel)){
-                    if (channel.isActive()){
+                    if (channel.isActive() && channel.isWritable()){
                         final MessageProtocol failMsg = new MessageProtocol();
                         failMsg
                                 .setId(msg.getId())
                                 .setCmd(MessageProtocol.CmdEnum.REGISTER)
                                 .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
                                 .setState((byte) 0)
-                                .setBytes("ip已被使用,请更换".getBytes(StandardCharsets.UTF_8));
+                                .setBytes(("ip已被使用,请更换 占用连接: "+channel.remoteAddress().toString()).getBytes(StandardCharsets.UTF_8));
                         ctx.writeAndFlush(failMsg);
                         return;
                     }else {
@@ -67,13 +67,12 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
                 mappingIp(ctx, msg, clientIp);
                 final int ip = Integer.parseInt(clientIp.replaceAll(proxyConfig.getIpPrefix(), ""));
                 ipPool.remove(ip);
-                return;
             }else {
                 final Integer ip = ipPool.getIp();
                 String ipStr = proxyConfig.getIpPrefix() + ip;
                 mappingIp(ctx, msg, ipStr);
-                return;
             }
+            return;
         }
         ctx.fireChannelRead(msg);
     }
