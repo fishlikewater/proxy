@@ -7,6 +7,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.TooLongFrameException;
+import io.netty.util.Attribute;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,8 +45,8 @@ public class VpnMessageHandler extends SimpleChannelInboundHandler<MessageProtoc
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         if (cause instanceof TooLongFrameException){
-            final String virIp = ctx.channel().attr(ChannelGroupKit.VIRT_IP).get();
-            log.error("报错的连接: {}", virIp == null?ctx.channel().remoteAddress().toString():virIp);
+            final Attribute<String> attr = ctx.channel().attr(ChannelGroupKit.VIRT_IP);
+            log.error("报错的连接: {}", attr.get() == null?ctx.channel().remoteAddress().toString():attr.get());
         }
         super.exceptionCaught(ctx, cause);
     }
