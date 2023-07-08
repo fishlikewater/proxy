@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -64,6 +63,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                     log.info("本机分配的虚拟ip为: " + new String(msg.getBytes(), StandardCharsets.UTF_8));
                 }else if (client.getProxyConfig().getBootModel() == BootModel.VPN && msg.getState() == 0){
                     final EventLoop loop = ctx.channel().eventLoop();
+                    msg.setState((byte) 1);
                     loop.schedule(() -> HandleKit.toRegister(msg, ctx, client.getProxyConfig())
                     , 30, TimeUnit.SECONDS);
                 }

@@ -52,7 +52,7 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
                 }
                 final Channel channel = ipMapping.getChannel(clientIp);
                 if (Objects.nonNull(channel)){
-                    if (channel.isActive()){
+                    if (channel.isActive() && channel.isWritable()){
                         final MessageProtocol failMsg = new MessageProtocol();
                         failMsg
                                 .setId(msg.getId())
@@ -63,19 +63,19 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
                         ctx.writeAndFlush(failMsg);
                         return;
                     }else {
+                        channel.close();
                         ipMapping.remove(clientIp);
                     }
                 }
                 mappingIp(ctx, msg, clientIp);
                 final int ip = Integer.parseInt(clientIp.replaceAll(proxyConfig.getIpPrefix(), ""));
                 ipPool.remove(ip);
-                return;
             }else {
                 final Integer ip = ipPool.getIp();
                 String ipStr = proxyConfig.getIpPrefix() + ip;
                 mappingIp(ctx, msg, ipStr);
-                return;
             }
+            return;
         }
         ctx.fireChannelRead(msg);
     }
