@@ -77,14 +77,14 @@ public class ServiceInitializer extends ChannelInitializer<Channel> {
 
         } else if (proxyType == ProxyType.proxy_server && proxyConfig.getBootModel() == BootModel.ONE_TO_ONE) {
             p
-                    .addLast(new LengthFieldBasedFrameDecoder(5*1024 * 1024, 0, 4))
+                    .addLast(new LengthFieldBasedFrameDecoder((int)proxyConfig.getMaxFrameLength().toBytes(), 0, 4))
                     .addLast(new MyByteToMessageCodec())
                     .addLast(new AuthHandler(new DefaultConnectionValidate(), proxyConfig))
                     .addLast(new RegisterHandler())
                     .addLast(new MyProtocolHandler());
         }else if (proxyType == ProxyType.proxy_server && proxyConfig.getBootModel() == BootModel.VPN){
            p
-                   .addLast(new LengthFieldBasedFrameDecoder(5*1024 * 1024, 0, 4))
+                   .addLast(new LengthFieldBasedFrameDecoder((int)proxyConfig.getMaxFrameLength().toBytes(), 0, 4))
                    .addLast(new MyByteToMessageCodec())
                    .addLast(new AuthHandler(new DefaultConnectionValidate(), proxyConfig))
                    .addLast(new VpnRegisterHandler(ipMapping, ipPool, proxyConfig))

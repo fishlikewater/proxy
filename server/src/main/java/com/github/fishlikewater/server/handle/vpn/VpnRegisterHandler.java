@@ -1,5 +1,6 @@
 package com.github.fishlikewater.server.handle.vpn;
 
+import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.server.config.ProxyConfig;
 import com.github.fishlikewater.server.kit.ChannelGroupKit;
@@ -8,6 +9,7 @@ import com.github.fishlikewater.server.kit.IpPool;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.Attribute;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,6 +63,7 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
                         ctx.writeAndFlush(failMsg);
                         return;
                     }else {
+                        channel.close();
                         ipMapping.remove(clientIp);
                     }
                 }
@@ -92,10 +95,15 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        final String ipStr = ctx.channel().attr(ChannelGroupKit.VIRT_IP).get();
-        final int ip = Integer.parseInt(ipStr.replaceAll(proxyConfig.getIpPrefix(), ""));
-        ipMapping.remove(ipStr);
-        ipPool.retrieve(ip);
+        final Attribute<String> attr = ctx.channel().attr(ChannelGroupKit.VIRT_IP);
+        if (Objects.nonNull(attr)) {
+            final String ipStr = attr.get();
+            if (StrUtil.isNotBlank(ipStr)) {
+                final int ip = Integer.parseInt(ipStr.replaceAll(proxyConfig.getIpPrefix(), ""));
+                ipMapping.remove(ipStr);
+                ipPool.retrieve(ip);
+            }
+        }
         super.channelInactive(ctx);
     }
 }

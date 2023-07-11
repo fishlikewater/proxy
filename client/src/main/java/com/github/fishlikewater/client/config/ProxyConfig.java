@@ -4,6 +4,7 @@ import com.github.fishlikewater.config.BootModel;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.util.unit.DataSize;
 
 /**
  * @author fishlikewater@126.com
@@ -39,8 +40,14 @@ public class ProxyConfig {
     /** 是否开启socks5服务(当只作为被调用的资源注册时 不需要开启socks5服务)*/
     private boolean openSocks5;
 
+    /** 每一帧最大字节 */
+    private DataSize maxFrameLength = DataSize.ofBytes(5*1024 * 1024);
+
     /** 启动模式*/
     private BootModel bootModel = BootModel.ONE_TO_ONE;
+
+    /** 客户端开放端口列表,若为空 则不限制*/
+    private int[] localPorts;
 
 
 }

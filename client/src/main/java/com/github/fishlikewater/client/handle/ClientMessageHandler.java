@@ -63,6 +63,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                     log.info("本机分配的虚拟ip为: " + new String(msg.getBytes(), StandardCharsets.UTF_8));
                 }else if (client.getProxyConfig().getBootModel() == BootModel.VPN && msg.getState() == 0){
                     final EventLoop loop = ctx.channel().eventLoop();
+                    msg.setState((byte) 1);
                     loop.schedule(() -> HandleKit.toRegister(msg, ctx, client.getProxyConfig())
                     , 30, TimeUnit.SECONDS);
                 }
@@ -77,7 +78,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 log.debug("get health info");
                 break;
             case REQUEST:
-                HandleKit.handlerRequest(msg, ctx);
+                HandleKit.handlerRequest(msg, ctx, client.getProxyConfig());
                 break;
             case RESPONSE:
                 final Channel socksChannel = ctx.channel().attr(Socks5Kit.CHANNELS_SOCKS).get().get(msg.getId());
@@ -88,7 +89,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 }
                 break;
             case CONNECTION:
-                HandleKit.handlerConnection2(msg, ctx);
+                HandleKit.handlerConnection2(msg, ctx, client.getProxyConfig());
                 break;
             case ACK:
                 final Channel socksChannel1 = ctx.channel().attr(Socks5Kit.CHANNELS_SOCKS).get().get(msg.getId());
