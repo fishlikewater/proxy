@@ -25,7 +25,6 @@
             <artifactId>socks5</artifactId>
             <version>${proxy.version}</version>
         </dependency>
-
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
