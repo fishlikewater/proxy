@@ -64,6 +64,9 @@ public class ProxyConfig {
         /** 映射端口*/
         private int mappingPort;
 
+        /** ssl*/
+        private boolean ssl = false;
+
     }
 
 
