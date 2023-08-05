@@ -6,6 +6,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.unit.DataSize;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author fishlikewater@126.com
  * @version V1.0
@@ -48,6 +51,20 @@ public class ProxyConfig {
 
     /** 客户端开放端口列表,若为空 则不限制*/
     private int[] localPorts;
+
+    private Map<Integer, Mapping> mappingMap = new HashMap<>();
+
+
+    @Data
+    public static class Mapping{
+
+        /**映射ip*/
+        private String mappingIp;
+
+        /** 映射端口*/
+        private int mappingPort;
+
+    }
 
 
 }

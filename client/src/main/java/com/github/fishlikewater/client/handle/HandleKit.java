@@ -13,7 +13,10 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -60,7 +63,7 @@ public class HandleKit {
             protected void initChannel(Channel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
                 pipeline
-                        .addLast(new LengthFieldBasedFrameDecoder(5 * 1024 * 1024, 0, 4))
+                        .addLast(new LengthFieldBasedFrameDecoder((int)proxyConfig.getMaxFrameLength().toBytes(), 0, 4))
                         .addLast(new MyByteToMessageCodec())
                         .addLast(new ClientDataHandler());
             }
@@ -114,9 +117,10 @@ public class HandleKit {
     public static void handlerConnection2(MessageProtocol msg, ChannelHandlerContext ctx, ProxyConfig proxyConfig) {
         final MessageProtocol.Dst dst = msg.getDst();
         if (isAllow(proxyConfig, dst, msg, ctx)) return;
+        SocketAddress socketAddress = getAddress(proxyConfig.getMappingMap(), dst.getDstPort());
         Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
         bootstrap.handler(new NoneClientInitializer());
-        bootstrap.remoteAddress("localhost", dst.getDstPort());
+        bootstrap.remoteAddress(socketAddress);
         bootstrap.connect().addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
                 connectionSuccessAfter(msg, ctx, future);
@@ -140,6 +144,14 @@ public class HandleKit {
                 ctx.channel().writeAndFlush(failMsg);
             }
         });
+    }
+
+    private static SocketAddress getAddress(Map<Integer, ProxyConfig.Mapping> mappingMap, int dstPort) {
+        final ProxyConfig.Mapping mapping = mappingMap.get(dstPort);
+        if (Objects.nonNull(mapping)){
+            return InetSocketAddress.createUnresolved(mapping.getMappingIp(), mapping.getMappingPort());
+        }
+        return InetSocketAddress.createUnresolved("localhost", dstPort);
     }
 
 
