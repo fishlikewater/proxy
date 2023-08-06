@@ -10,13 +10,9 @@ import com.github.fishlikewater.kit.IdUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import io.netty.handler.ssl.ClientAuth;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -91,11 +87,11 @@ public class HandleKit {
     public static void handlerConnection(MessageProtocol msg, ChannelHandlerContext ctx) {
         final MessageProtocol.Dst dst = msg.getDst();
         Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
-        bootstrap.handler(new NoneClientInitializer());
+        bootstrap.handler(new NoneClientInitializer(false));
         bootstrap.remoteAddress(dst.getDstAddress(), dst.getDstPort());
         bootstrap.connect().addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
-                connectionSuccessAfter(msg, ctx, future, false);
+                connectionSuccessAfter(msg, ctx, future);
                 final MessageProtocol successMsg = new MessageProtocol();
                 successMsg
                         .setCmd(MessageProtocol.CmdEnum.ACK)
@@ -123,11 +119,11 @@ public class HandleKit {
         final ProxyConfig.Mapping mapping = proxyConfig.getMappingMap().get(dst.getDstPort());
         SocketAddress socketAddress = getAddress(mapping, dst.getDstPort());
         Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
-        bootstrap.handler(new NoneClientInitializer());
+        bootstrap.handler(new NoneClientInitializer(mapping != null && mapping.isSsl()));
         bootstrap.remoteAddress(socketAddress);
         bootstrap.connect().addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
-                connectionSuccessAfter(msg, ctx, future, mapping.isSsl());
+                connectionSuccessAfter(msg, ctx, future);
                 final MessageProtocol successMsg = new MessageProtocol();
                 successMsg
                         .setCmd(MessageProtocol.CmdEnum.ACK)
@@ -168,11 +164,11 @@ public class HandleKit {
             if (isAllow(proxyConfig, dst, msg, ctx)) return;
             final ProxyConfig.Mapping mapping = proxyConfig.getMappingMap().get(dst.getDstPort());
             SocketAddress socketAddress = getAddress(mapping, dst.getDstPort());
-            bootstrap.handler(new NoneClientInitializer());
+            bootstrap.handler(new NoneClientInitializer(mapping != null && mapping.isSsl()));
             bootstrap.remoteAddress(socketAddress);
             bootstrap.connect().addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
-                    connectionSuccessAfter(msg, ctx, future, mapping.isSsl());
+                    connectionSuccessAfter(msg, ctx, future);
                     future.channel().writeAndFlush(msg.getBytes());
                 } else {
                     log.warn("connect fail...");
@@ -206,16 +202,8 @@ public class HandleKit {
         return false;
     }
 
-    private static void connectionSuccessAfter(MessageProtocol msg, ChannelHandlerContext ctx, ChannelFuture future, boolean ssl) {
+    private static void connectionSuccessAfter(MessageProtocol msg, ChannelHandlerContext ctx, ChannelFuture future) {
         ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().put(msg.getId(), future.channel());
-        if (ssl){
-            try {
-                final SslContext sslContext = SslContextBuilder.forClient().clientAuth(ClientAuth.NONE).build();
-                future.channel().pipeline().addLast(sslContext.newHandler(ctx.alloc()));
-            } catch (SSLException e) {
-                throw new RuntimeException(e);
-            }
-        }
         future.channel().pipeline().addLast(new ByteArrayCodec());
         future.channel().pipeline().addLast(new ChunkedWriteHandler());
         future.channel().pipeline().addLast(new Dest2ClientHandler(ctx, msg.getId(), msg.getDst()));

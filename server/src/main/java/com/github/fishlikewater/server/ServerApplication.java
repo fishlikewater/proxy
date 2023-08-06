@@ -12,8 +12,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,11 +34,11 @@ public class ServerApplication implements CommandLineRunner, DisposableBean {
     }
 
     @Override
-    public void run(String... args) throws FileNotFoundException {
+    public void run(String... args) throws IOException {
         ProxyType[] type = proxyConfig.getType();
         for (ProxyType proxyType : type) {
             if (proxyType == ProxyType.socks) {
-                final Map<String, String> map = JSON.parseObject(new FileInputStream(FileUtil.file("account.json")), Map.class);
+                final Map<String, String> map = JSON.parseObject(Files.newInputStream(FileUtil.file("account.json").toPath()), Map.class);
                 Socks5Constant.setAccountMap(map);
             }
             final Server proxyServer = new Server(proxyConfig, proxyType);
