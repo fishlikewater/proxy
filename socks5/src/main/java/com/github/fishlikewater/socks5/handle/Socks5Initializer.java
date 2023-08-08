@@ -8,6 +8,7 @@ import io.netty.handler.codec.socksx.v5.Socks5CommandRequestDecoder;
 import io.netty.handler.codec.socksx.v5.Socks5InitialRequestDecoder;
 import io.netty.handler.codec.socksx.v5.Socks5PasswordAuthRequestDecoder;
 import io.netty.handler.codec.socksx.v5.Socks5ServerEncoder;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,7 +37,6 @@ public class Socks5Initializer extends ChannelInitializer<Channel> {
             p.addFirst(new Socks5PasswordAuthRequestDecoder());
         }
         p.addFirst(new Socks5InitialAuthHandler(socks5Config.isAuth()));
-        p.addFirst(new ChunkedWriteHandler());
         p.addFirst(Socks5ServerEncoder.DEFAULT);
         p.addFirst(new Socks5InitialRequestDecoder());
         /* Socks connection handler */

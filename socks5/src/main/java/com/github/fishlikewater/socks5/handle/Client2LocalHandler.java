@@ -1,9 +1,8 @@
 package com.github.fishlikewater.socks5.handle;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelFuture;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,9 +18,9 @@ import java.io.IOException;
  **/
 @Slf4j
 @RequiredArgsConstructor
-public class Client2LocalHandler extends SimpleChannelInboundHandler<Object> {
+public class Client2LocalHandler extends ChannelInboundHandlerAdapter {
 
-    private final ChannelFuture destChannelFuture;
+    private final Channel channel;
 
 
     @Override
@@ -29,22 +28,21 @@ public class Client2LocalHandler extends SimpleChannelInboundHandler<Object> {
         boolean canWrite = ctx.channel().isWritable();
         log.debug(ctx.channel() + " 可写性：" + canWrite);
         //流量控制，不允许继续读
-        destChannelFuture.channel().config().setAutoRead(canWrite);
+        channel.config().setAutoRead(canWrite);
         super.channelWritabilityChanged(ctx);
     }
 
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, Object msg) {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
         log.debug("将客户端的消息转发给目标服务器端");
-        final ByteBuf buf = (ByteBuf) msg;
-        destChannelFuture.channel().writeAndFlush(buf);
+        channel.writeAndFlush(msg);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         log.debug("客户端断开连接");
-        destChannelFuture.channel().close();
+        channel.close();
     }
 
     @Override

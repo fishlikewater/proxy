@@ -2,6 +2,7 @@ package com.github.fishlikewater.socks5.handle;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.github.fishlikewater.codec.ByteArrayCodec;
 import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.kit.IdUtil;
 import com.github.fishlikewater.socks5.boot.BootStrapFactory;
@@ -103,8 +104,8 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                 ctx.pipeline().remove(Socks5InitialAuthHandler.class);
                 ctx.pipeline().remove(Socks5InitialRequestDecoder.class);
                 ctx.pipeline().remove(Socks5CommandRequestDecoder.class);
-                ctx.pipeline().addLast(new Client2LocalHandler(future));
-                future.channel().pipeline().addLast(new Local2ClientHandler(ctx));
+                ctx.pipeline().addLast(new Client2LocalHandler(future.channel()));
+                future.channel().pipeline().addLast(new Local2ClientHandler(ctx.channel()));
                 Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
                 ctx.writeAndFlush(commandResponse);
             } else {

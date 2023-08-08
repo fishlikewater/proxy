@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author fishlikewater@126.com
  * @since 2022年10月18日 16:01
  **/
+@Getter
 @Slf4j
 @RequiredArgsConstructor
 public class SocksServerBoot{
@@ -35,7 +36,6 @@ public class SocksServerBoot{
      * 处理连接
      */
     @Setter
-    @Getter
     private EventLoopGroup bossGroup;
     /**
      * 处理连接后的channel

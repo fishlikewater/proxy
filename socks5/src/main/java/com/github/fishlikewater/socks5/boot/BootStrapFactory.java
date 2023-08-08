@@ -1,18 +1,25 @@
 package com.github.fishlikewater.socks5.boot;
 
 import com.github.fishlikewater.kit.EpollKit;
+import com.github.fishlikewater.kit.NamedThreadFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
+import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollSocketChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+
+import java.util.Objects;
 
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
  * @since 2019年07月15日 15:50
  **/
 public class BootStrapFactory {
+
+    private static Bootstrap bootstrap;
 
 
     public static ServerBootstrap getServerBootstrap(){
@@ -30,7 +37,11 @@ public class BootStrapFactory {
     }
 
     public static Bootstrap getBootstrap(ChannelHandlerContext ctx){
-        Bootstrap bootstrap = new Bootstrap();
+        if (Objects.nonNull(bootstrap)){
+            return bootstrap;
+        }
+        bootstrap = new Bootstrap();
+        bootstrap.group(ctx.channel().eventLoop().parent());
         bootstrap.option(ChannelOption.SO_REUSEADDR, true);
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2 * 60 * 1000);
@@ -46,7 +57,6 @@ public class BootStrapFactory {
 
             }
         });
-        bootstrap.group(ctx.channel().eventLoop().parent());
         return bootstrap;
     }
 }
