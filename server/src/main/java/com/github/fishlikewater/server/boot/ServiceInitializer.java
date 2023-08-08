@@ -66,7 +66,7 @@ public class ServiceInitializer extends ChannelInitializer<Channel> {
             p.addFirst(new Socks5CommandRequestDecoder());
             if (proxyConfig.isAuth()) {
                 /* 添加验证机制*/
-                p.addFirst(new Socks5PasswordAuthRequestHandler());
+                p.addFirst(new Socks5PasswordAuthRequestHandler(proxyConfig));
                 p.addFirst(new Socks5PasswordAuthRequestDecoder());
             }
             p.addFirst(new Socks5InitialAuthHandler(proxyConfig.isAuth()));

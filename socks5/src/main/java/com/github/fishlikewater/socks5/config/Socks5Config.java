@@ -30,5 +30,8 @@ public class Socks5Config {
     /** 是否检测 能否连接(完全使用socks模式，连接前先发送到目标客户端，目标客户端连接目标地址，连接成功后返回) 如果为false则快速返回连接成功的状态*/
     private boolean checkConnect;
 
+    /** 过滤网段 如配置192.168.12 则只有192.168.12开头的ip 的请求会流转到服务端,其他ip则会本地发起请求*/
+    private String filterIp;
+
 }
 

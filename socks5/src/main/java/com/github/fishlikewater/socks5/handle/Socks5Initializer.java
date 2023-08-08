@@ -40,7 +40,7 @@ public class Socks5Initializer extends ChannelInitializer<Channel> {
         p.addFirst(Socks5ServerEncoder.DEFAULT);
         p.addFirst(new Socks5InitialRequestDecoder());
         /* Socks connection handler */
-        p.addLast(new Socks5CommandRequestHandler(socks5Config.isCheckConnect()));
+        p.addLast(new Socks5CommandRequestHandler(socks5Config));
 
 
     }

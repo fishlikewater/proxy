@@ -42,6 +42,10 @@ public class ProxyConfig {
     /** 是否开启验证*/
     private boolean auth;
 
+    private String socksName;
+
+    private String socksPassWord;
+
     /** 代理路劲*/
     private String proxyPath;
 

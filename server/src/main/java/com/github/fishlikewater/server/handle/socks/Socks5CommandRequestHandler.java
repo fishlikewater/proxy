@@ -19,10 +19,6 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<DefaultSocks5CommandRequest> {
 
-    private Bootstrap bootstrap;
-
-    private ChannelFuture future;
-
     private final ProxyConfig proxyConfig;
 
     @Override
@@ -39,18 +35,20 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
     protected void channelRead0(final ChannelHandlerContext ctx, DefaultSocks5CommandRequest msg) throws Exception {
 		log.debug("目标服务器  : " + msg.type() + "," + msg.dstAddr() + "," + msg.dstPort());
         if (msg.type().equals(Socks5CommandType.CONNECT)) {
-            if (bootstrap != null) {
-                future.await();
-                future.channel().writeAndFlush(msg);
-            }
-            bootstrap = BootStrapFactroy.bootstrapConfig(ctx);
+            Bootstrap bootstrap = BootStrapFactroy.bootstrapConfig(ctx);
+            bootstrap.handler(new ChannelInitializer<Channel>() {
+                @Override
+                protected void initChannel(Channel ch) {
+
+                }
+            });
             if (proxyConfig.isUseLocalPorts()){
                 final int oneLocalPort = proxyConfig.getOneLocalPort();
                 log.debug("本次使用本地端口:{}", oneLocalPort);
                 bootstrap.localAddress(oneLocalPort);
             }
-            future = bootstrap.connect(msg.dstAddr(), msg.dstPort());
-            future.addListener((ChannelFutureListener) future -> {
+            ChannelFuture future1 = bootstrap.connect(msg.dstAddr(), msg.dstPort());
+            future1.addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
                     log.debug("成功连接目标服务器");
                     if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {

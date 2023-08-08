@@ -1,11 +1,8 @@
 package com.github.fishlikewater.server;
 
-import cn.hutool.core.io.FileUtil;
-import com.alibaba.fastjson2.JSON;
 import com.github.fishlikewater.config.ProxyType;
 import com.github.fishlikewater.server.boot.Server;
 import com.github.fishlikewater.server.config.ProxyConfig;
-import com.github.fishlikewater.server.handle.socks.Socks5Constant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.CommandLineRunner;
@@ -13,10 +10,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author fishl
@@ -37,10 +32,6 @@ public class ServerApplication implements CommandLineRunner, DisposableBean {
     public void run(String... args) throws IOException {
         ProxyType[] type = proxyConfig.getType();
         for (ProxyType proxyType : type) {
-            if (proxyType == ProxyType.socks) {
-                final Map<String, String> map = JSON.parseObject(Files.newInputStream(FileUtil.file("account.json").toPath()), Map.class);
-                Socks5Constant.setAccountMap(map);
-            }
             final Server proxyServer = new Server(proxyConfig, proxyType);
             proxyServer.start();
             servers.add(proxyServer);
