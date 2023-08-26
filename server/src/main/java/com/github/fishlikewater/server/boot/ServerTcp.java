@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
  * @since 2019年02月26日 21:45
  **/
 @Slf4j
-public class Server {
+public class ServerTcp {
     /**
      * 处理连接
      */
@@ -36,7 +36,7 @@ public class Server {
 
     private final ProxyType proxyType;
 
-    public Server(ProxyConfig proxyConfig, ProxyType proxyType) {
+    public ServerTcp(ProxyConfig proxyConfig, ProxyType proxyType) {
         this.proxyConfig = proxyConfig;
         this.proxyType = proxyType;
     }

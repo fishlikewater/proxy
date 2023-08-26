@@ -21,6 +21,12 @@ public class ProxyConfig {
 
     private int next = 0;
 
+    /** 是否启动udp服务*/
+    private boolean isStartUdp;
+
+    /** udp服务端口*/
+    private int udpPort;
+
     /** 服务启动列表*/
     private ProxyType[] type;
 

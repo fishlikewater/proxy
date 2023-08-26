@@ -1,7 +1,7 @@
 package com.github.fishlikewater.server;
 
 import com.github.fishlikewater.config.ProxyType;
-import com.github.fishlikewater.server.boot.Server;
+import com.github.fishlikewater.server.boot.ServerTcp;
 import com.github.fishlikewater.server.config.ProxyConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.DisposableBean;
@@ -22,7 +22,7 @@ public class ServerApplication implements CommandLineRunner, DisposableBean {
 
     private final ProxyConfig proxyConfig;
 
-    private final List<Server> servers = new ArrayList<>();
+    private final List<ServerTcp> serverTcps = new ArrayList<>();
 
     public static void main(String[] args) {
         SpringApplication.run(ServerApplication.class, args);
@@ -32,14 +32,14 @@ public class ServerApplication implements CommandLineRunner, DisposableBean {
     public void run(String... args) throws IOException {
         ProxyType[] type = proxyConfig.getType();
         for (ProxyType proxyType : type) {
-            final Server proxyServer = new Server(proxyConfig, proxyType);
+            final ServerTcp proxyServer = new ServerTcp(proxyConfig, proxyType);
             proxyServer.start();
-            servers.add(proxyServer);
+            serverTcps.add(proxyServer);
         }
     }
 
     @Override
     public void destroy() {
-        servers.forEach(Server::stop);
+        serverTcps.forEach(ServerTcp::stop);
     }
 }

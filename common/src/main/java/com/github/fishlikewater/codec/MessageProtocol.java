@@ -10,7 +10,6 @@ import java.io.Serializable;
 /**
  * <p>
  *  数据传输协议
- *
  * </p>
  *
  * @author fishlikewater@126.com
@@ -68,6 +67,7 @@ public class MessageProtocol {
     }
 
 
+    @Getter
     public enum  CmdEnum implements Serializable {
 
         //验证
@@ -90,7 +90,6 @@ public class MessageProtocol {
         DATA_CHANNEL(8),
         //建立数据通道回应
         DATA_CHANNEL_ACK(9);
-        @Getter
         private final int code;
 
         CmdEnum(int code){
@@ -108,12 +107,12 @@ public class MessageProtocol {
     }
 
 
+    @Getter
     public enum  ProtocolEnum implements Serializable {
         //http消息  内网穿透
         HTTP(1),
         //类vpn模式代理
         SOCKS(2);
-        @Getter
         private final int code;
 
         ProtocolEnum(int code){
