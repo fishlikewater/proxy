@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.github.fishlikewater</groupId>
         <artifactId>proxy</artifactId>
-        <version>1.0.1</version>
+        <version>${proxy.version}</version>
         <relativePath>../pom.xml</relativePath> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.fishlikewater.github</groupId>
@@ -20,13 +20,11 @@
         <dependency>
             <groupId>com.github.fishlikewater</groupId>
             <artifactId>common</artifactId>
-            <version>${proxy.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>${netty-version}</version>
             <optional>true</optional>
         </dependency>
 
@@ -54,17 +52,7 @@
         </dependency>
     </dependencies>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-parent</artifactId>
-                <version>${spring.boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+
 
     <build>
         <resources>

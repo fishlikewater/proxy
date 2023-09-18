@@ -20,7 +20,7 @@ public class BootStrapFactory {
 
     public static Bootstrap bootstrapConfig(ChannelHandlerContext ctx){
         if(bootstrap != null){
-            return bootstrap.clone();
+            return bootstrap;
         }
         bootstrap = new Bootstrap();
         bootstrap.option(ChannelOption.SO_REUSEADDR, true);

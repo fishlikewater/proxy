@@ -5,7 +5,7 @@
   <parent>
     <artifactId>proxy</artifactId>
     <groupId>com.github.fishlikewater</groupId>
-    <version>1.0.1</version>
+    <version>${proxy.version}</version>
       <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -18,28 +18,22 @@
   </properties>
 
   <dependencies>
+
       <dependency>
           <groupId>io.netty</groupId>
           <artifactId>netty-all</artifactId>
-          <version>${netty-version}</version>
           <optional>true</optional>
       </dependency>
+
       <dependency>
           <groupId>com.google.protobuf</groupId>
           <artifactId>protobuf-java</artifactId>
-          <version>${protobuf.version}</version>
           <optional>true</optional>
       </dependency>
-      <dependency>
-          <groupId>org.projectlombok</groupId>
-          <artifactId>lombok</artifactId>
-          <version>${lombok-version}</version>
-          <optional>true</optional>
-      </dependency>
+
       <dependency>
           <groupId>com.esotericsoftware</groupId>
           <artifactId>kryo</artifactId>
-          <version>${kryo.version}</version>
       </dependency>
   </dependencies>
 
