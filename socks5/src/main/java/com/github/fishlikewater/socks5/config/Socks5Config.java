@@ -33,5 +33,18 @@ public class Socks5Config {
     /** 过滤网段 如配置192.168.12 则只有192.168.12开头的ip 的请求会流转到服务端,其他ip则会本地发起请求*/
     private String filterIp;
 
+    private Mapping[] mapping;
+
+    @Data
+    public static class Mapping{
+
+        /**映射ip*/
+        private String mappingIp;
+
+        /** 请求ip*/
+        private String requestIp;
+
+    }
+
 }
 

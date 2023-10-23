@@ -14,19 +14,33 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.socksx.v5.*;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author fishl
  */
 @Slf4j
-@RequiredArgsConstructor
 public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<DefaultSocks5CommandRequest> {
 
     private final Socks5Config socks5Config;
+
+    private final Map<String, String> ipMapping;
+
+    public Socks5CommandRequestHandler(Socks5Config socks5Config){
+        this.socks5Config = socks5Config;
+        ipMapping = new HashMap<>();
+        final Socks5Config.Mapping[] mapping = socks5Config.getMapping();
+        if (Objects.nonNull(mapping)){
+            for (Socks5Config.Mapping mapping1 : mapping) {
+                ipMapping.put(mapping1.getRequestIp(), mapping1.getMappingIp());
+            }
+        }
+    }
 
 
     @Override
@@ -41,7 +55,11 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
             final Long requestId = IdUtil.id();
             ctx.channel().attr(Socks5Kit.LOCAL_INFO).set(requestId);
             final MessageProtocol.Dst dst = new MessageProtocol.Dst();
-            final String dstAddr = msg.dstAddr();
+            String dstAddr = msg.dstAddr();
+            final String ip = ipMapping.get(dstAddr);
+            if (Objects.nonNull(ip)){
+                dstAddr = ip;
+            }
             if (!StrUtil.startWith(dstAddr, socks5Config.getFilterIp())) {
                 handlerLocal(ctx, msg);
             } else {
