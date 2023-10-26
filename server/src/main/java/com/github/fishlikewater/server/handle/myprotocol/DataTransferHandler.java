@@ -1,5 +1,6 @@
 package com.github.fishlikewater.server.handle.myprotocol;
 
+import com.github.fishlikewater.server.kit.ChannelGroupKit;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -28,6 +29,7 @@ public class DataTransferHandler extends SimpleChannelInboundHandler<byte[]> {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        ChannelGroupKit.remove(ctx.channel().id().asLongText());
         final Channel channel = ctx.channel().attr(DATA_CHANNEL).get();
         if (channel != null){
             channel.close();

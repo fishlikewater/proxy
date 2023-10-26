@@ -1,12 +1,13 @@
 package com.github.fishlikewater.client.handle;
 
+import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.client.boot.BootStrapFactory;
 import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.codec.ByteArrayCodec;
 import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.codec.MyByteToMessageCodec;
-import com.github.fishlikewater.config.BootModel;
 import com.github.fishlikewater.kit.IdUtil;
+import com.github.fishlikewater.socks5.handle.Socks5Kit;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
@@ -21,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p>
- *  数据处理器
+ * 数据处理器
  * </p>
  *
  * @author fishlikewater@126.com
@@ -40,13 +41,9 @@ public class HandleKit {
                     .setCmd(MessageProtocol.CmdEnum.REGISTER)
                     .setState((byte) 1)
                     .setProtocol(MessageProtocol.ProtocolEnum.SOCKS);
-            if (proxyConfig.getBootModel() == BootModel.ONE_TO_ONE) {
-                messageProtocol.setBytes(proxyConfig.getProxyName().getBytes(StandardCharsets.UTF_8));
-            }else {
-                final String fixedIp = proxyConfig.getFixedIp();
-                if(Objects.nonNull(fixedIp)){
-                    messageProtocol.setBytes(fixedIp.getBytes(StandardCharsets.UTF_8));
-                }
+            final String fixedIp = proxyConfig.getFixedIp();
+            if (Objects.nonNull(fixedIp)) {
+                messageProtocol.setBytes(fixedIp.getBytes(StandardCharsets.UTF_8));
             }
             ctx.writeAndFlush(messageProtocol).addListener(f -> log.info("发送注册信息成功"));
             ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).set(new ConcurrentHashMap<>(16));
@@ -56,19 +53,7 @@ public class HandleKit {
     }
 
     public static void createDataChannel(ChannelHandlerContext ctx, ProxyConfig proxyConfig, String mainChannelId) throws InterruptedException {
-        final Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
-        bootstrap.handler(new ChannelInitializer<Channel>() {
-            @Override
-            protected void initChannel(Channel ch) {
-                ChannelPipeline pipeline = ch.pipeline();
-                pipeline
-                        .addLast(new LengthFieldBasedFrameDecoder((int)proxyConfig.getMaxFrameLength().toBytes(), 0, 4))
-                        .addLast(new MyByteToMessageCodec())
-                        .addLast(new ClientDataHandler());
-            }
-        });
-        bootstrap.remoteAddress(proxyConfig.getAddress(), proxyConfig.getPort());
-        ChannelFuture future = bootstrap.connect().sync();
+        final ChannelFuture future = getChannelFuture(ctx, proxyConfig);
         //连接成功后 发送消息 表明需要建立数据通道
         final MessageProtocol messageProtocol = new MessageProtocol();
         messageProtocol
@@ -83,6 +68,46 @@ public class HandleKit {
             }
         });
     }
+
+
+    public static void afterRegister(ChannelHandlerContext ctx, ProxyConfig proxyConfig) throws InterruptedException {
+        if (StrUtil.isNotBlank(proxyConfig.getLinkIp())){
+            final ChannelFuture future = getChannelFuture(ctx, proxyConfig);
+            //连接成功后 发送消息 表明需要建立数据通道
+            final MessageProtocol messageProtocol = new MessageProtocol();
+            messageProtocol
+                    .setId(IdUtil.id())
+                    .setState((byte) 0)
+                    .setCmd(MessageProtocol.CmdEnum.DATA_CHANNEL)
+                    .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                    .setDst(new MessageProtocol.Dst().setDstAddress(proxyConfig.getLinkIp()))
+                    .setBytes(proxyConfig.getToken().getBytes(StandardCharsets.UTF_8));
+            future.channel().writeAndFlush(messageProtocol).addListener(future1 -> {
+                if (future1.isSuccess()) {
+                    Socks5Kit.setChannel(future.channel());
+                    Socks5Kit.channel.attr(Socks5Kit.CHANNELS_SOCKS).set(new ConcurrentHashMap<>(16));
+                    log.info("成功发送建立数据通道请求...");
+                }
+            });
+        }
+    }
+
+    private static ChannelFuture getChannelFuture(ChannelHandlerContext ctx, ProxyConfig proxyConfig) throws InterruptedException {
+        final Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
+        bootstrap.handler(new ChannelInitializer<Channel>() {
+            @Override
+            protected void initChannel(Channel ch) {
+                ChannelPipeline pipeline = ch.pipeline();
+                pipeline
+                        .addLast(new LengthFieldBasedFrameDecoder((int) proxyConfig.getMaxFrameLength().toBytes(), 0, 4))
+                        .addLast(new MyByteToMessageCodec())
+                        .addLast(new ClientDataHandler());
+            }
+        });
+        bootstrap.remoteAddress(proxyConfig.getAddress(), proxyConfig.getPort());
+        return bootstrap.connect().sync();
+    }
+
 
     public static void handlerConnection(MessageProtocol msg, ChannelHandlerContext ctx) {
         final MessageProtocol.Dst dst = msg.getDst();
@@ -147,7 +172,7 @@ public class HandleKit {
     }
 
     private static SocketAddress getAddress(ProxyConfig.Mapping mapping, int dstPort) {
-        if (Objects.nonNull(mapping)){
+        if (Objects.nonNull(mapping)) {
             return InetSocketAddress.createUnresolved(mapping.getMappingIp(), mapping.getMappingPort());
         }
         return InetSocketAddress.createUnresolved("localhost", dstPort);
@@ -178,15 +203,15 @@ public class HandleKit {
     }
 
     private static boolean isAllow(ProxyConfig proxyConfig, MessageProtocol.Dst dst, MessageProtocol msg, ChannelHandlerContext ctx) {
-        if (Objects.nonNull(proxyConfig.getLocalPorts()) && proxyConfig.getLocalPorts().length>0){
+        if (Objects.nonNull(proxyConfig.getLocalPorts()) && proxyConfig.getLocalPorts().length > 0) {
             boolean find = false;
             for (int localPort : proxyConfig.getLocalPorts()) {
-                if (dst.getDstPort() == localPort){
+                if (dst.getDstPort() == localPort) {
                     find = true;
                     break;
                 }
             }
-            if (!find){
+            if (!find) {
                 log.info("不允许连接");
                 final MessageProtocol failMsg = new MessageProtocol();
                 failMsg

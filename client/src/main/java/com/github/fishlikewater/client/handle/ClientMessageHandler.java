@@ -2,7 +2,6 @@ package com.github.fishlikewater.client.handle;
 
 import com.github.fishlikewater.client.boot.ProxyClient;
 import com.github.fishlikewater.codec.MessageProtocol;
-import com.github.fishlikewater.config.BootModel;
 import com.github.fishlikewater.socks5.handle.Socks5Kit;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -59,20 +58,21 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 HandleKit.toRegister(msg, ctx, client.getProxyConfig());
                 break;
             case REGISTER:
-                if (client.getProxyConfig().getBootModel() == BootModel.VPN && msg.getState() == 1){
+                if (msg.getState() == 1){
                     log.info("本机分配的虚拟ip为: " + new String(msg.getBytes(), StandardCharsets.UTF_8));
-                }else if (client.getProxyConfig().getBootModel() == BootModel.VPN && msg.getState() == 0){
+                    HandleKit.afterRegister(ctx, client.getProxyConfig());
+                }else{
                     final EventLoop loop = ctx.channel().eventLoop();
                     msg.setState((byte) 1);
                     loop.schedule(() -> HandleKit.toRegister(msg, ctx, client.getProxyConfig())
                     , 30, TimeUnit.SECONDS);
                 }
-                else {
-                    log.info(new String(msg.getBytes(), StandardCharsets.UTF_8));
-                }
                 break;
             case DATA_CHANNEL:
                 HandleKit.createDataChannel(ctx, client.getProxyConfig(), new String(msg.getBytes(), StandardCharsets.UTF_8));
+                break;
+            case DATA_CHANNEL_ACK:
+                log.info(new String(msg.getBytes(), StandardCharsets.UTF_8));
                 break;
             case HEALTH:
                 log.debug("get health info");

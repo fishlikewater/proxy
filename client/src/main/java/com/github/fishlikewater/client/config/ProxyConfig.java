@@ -1,6 +1,5 @@
 package com.github.fishlikewater.client.config;
 
-import com.github.fishlikewater.config.BootModel;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -34,20 +33,17 @@ public class ProxyConfig {
     /** 是否使用netty日志处理器*/
     private boolean logging;
 
-    /** 向服务器注册得资源名称*/
-    private String proxyName;
-
     /** 类vpn模式下 固定ip 需要以服务端设置前缀为前缀*/
     private String fixedIp;
+
+    /** 直连ip 配置该值后 对应ip主机相当与本机的影子，可以把请求全部转发到改ip主机，代替本机发起请求*/
+    private String linkIp;
 
     /** 是否开启socks5服务(当只作为被调用的资源注册时 不需要开启socks5服务)*/
     private boolean openSocks5;
 
     /** 每一帧最大字节 */
     private DataSize maxFrameLength = DataSize.ofBytes(5*1024 * 1024);
-
-    /** 启动模式*/
-    private BootModel bootModel = BootModel.ONE_TO_ONE;
 
     /** 客户端开放端口列表,若为空 则不限制*/
     private int[] localPorts;

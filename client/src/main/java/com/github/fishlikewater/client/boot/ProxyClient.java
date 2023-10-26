@@ -4,7 +4,6 @@ package com.github.fishlikewater.client.boot;
 import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.client.handle.ChannelKit;
 import com.github.fishlikewater.codec.MessageProtocol;
-import com.github.fishlikewater.config.BootModel;
 import com.github.fishlikewater.kit.EpollKit;
 import com.github.fishlikewater.kit.IdUtil;
 import com.github.fishlikewater.kit.NamedThreadFactory;
@@ -91,7 +90,7 @@ public class ProxyClient {
             afterConnectionSuccessful(channel);
             ChannelKit.setChannel(this.channel);
             Socks5Kit.setChannel(this.channel);
-            if (proxyConfig.getBootModel() == BootModel.VPN && proxyConfig.isOpenSocks5()) {
+            if (proxyConfig.isOpenSocks5()) {
                 if (Objects.nonNull(socksServerBoot)){
                     socksServerBoot.stop();
                 }else {

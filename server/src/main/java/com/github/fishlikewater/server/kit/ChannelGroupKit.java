@@ -35,14 +35,14 @@ public class ChannelGroupKit {
     @Getter
     private static final ConcurrentHashMap<String, Channel> CLIENT_CHANNEL_MAP = new ConcurrentHashMap<>();
 
-    public static void add(String path, Channel channel){
-        CLIENT_CHANNEL_MAP.put(path, channel);
+    public static void add(String id, Channel channel){
+        CLIENT_CHANNEL_MAP.put(id, channel);
     }
-    public static void remove(String path){
-        CLIENT_CHANNEL_MAP.remove(path);
+    public static void remove(String id){
+        CLIENT_CHANNEL_MAP.remove(id);
     }
-    public static Channel find(String path){
-        return CLIENT_CHANNEL_MAP.get(path);
+    public static Channel find(String id){
+        return CLIENT_CHANNEL_MAP.get(id);
     }
 
 }

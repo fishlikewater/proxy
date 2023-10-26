@@ -60,9 +60,14 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
             if (Objects.nonNull(ip)){
                 dstAddr = ip;
             }
-            if (!StrUtil.startWith(dstAddr, socks5Config.getFilterIp())) {
-                handlerLocal(ctx, msg);
-            } else {
+            final String filterIp = socks5Config.getFilterIp();
+            if (StrUtil.isNotBlank(filterIp)){
+                if (!StrUtil.startWith(dstAddr, filterIp)) {
+                    handlerLocal(ctx, msg);
+                } else {
+                    handlerProxy(ctx, msg, dst, dstAddr, requestId);
+                }
+            }else {
                 handlerProxy(ctx, msg, dst, dstAddr, requestId);
             }
         } else {
