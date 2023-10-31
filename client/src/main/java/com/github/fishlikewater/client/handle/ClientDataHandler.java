@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 @Slf4j
 public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtocol> {
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) {
         Channel channel;

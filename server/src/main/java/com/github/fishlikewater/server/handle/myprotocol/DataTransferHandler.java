@@ -16,14 +16,18 @@ import static com.github.fishlikewater.server.kit.ChannelGroupKit.DATA_CHANNEL;
  * @author fishlikewater@126.com
  * @since 2022年11月22日 21:34
  **/
-public class DataTransferHandler extends SimpleChannelInboundHandler<byte[]> {
+public class DataTransferHandler extends SimpleChannelInboundHandler<Object> {
 
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, byte[] msg) throws Exception {
-        final Channel channel = ctx.channel().attr(DATA_CHANNEL).get();
-        if (channel != null){
-            channel.writeAndFlush(msg);
+    protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+        if (msg instanceof ByteBuf) {
+            ByteBuf byteBuf = (ByteBuf) msg;
+            byteBuf.retain();
+            final Channel channel = ctx.channel().attr(DATA_CHANNEL).get();
+            if (channel != null){
+                channel.writeAndFlush(byteBuf);
+            }
         }
     }
 

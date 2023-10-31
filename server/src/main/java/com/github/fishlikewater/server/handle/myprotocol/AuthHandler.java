@@ -140,7 +140,6 @@ public class AuthHandler extends SimpleChannelInboundHandler<MessageProtocol> {
                 if (pipeline.get(AuthHandler.class) != null){
                     pipeline.remove(AuthHandler.class);
                 }
-                pipeline.addLast(new ByteArrayCodec());
                 pipeline.addLast(new DataTransferHandler());
             }
         });
