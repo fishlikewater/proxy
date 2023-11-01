@@ -9,10 +9,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoop;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.socksx.v5.DefaultSocks5CommandResponse;
-import io.netty.handler.codec.socksx.v5.Socks5AddressType;
-import io.netty.handler.codec.socksx.v5.Socks5CommandResponse;
-import io.netty.handler.codec.socksx.v5.Socks5CommandStatus;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -92,19 +88,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 HandleKit.handlerConnection2(msg, ctx, client.getProxyConfig());
                 break;
             case ACK:
-                final Channel socksChannel1 = ctx.channel().attr(Socks5Kit.CHANNELS_SOCKS).get().get(msg.getId());
-                if (Objects.nonNull(socksChannel1) && socksChannel1.isActive()) {
-                    if (msg.getState() == 1)
-                    {
-                        Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
-                        socksChannel1.writeAndFlush(commandResponse);
-                    }
-                    if (msg.getState() == 0)
-                    {
-                        Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, Socks5AddressType.IPv4);
-                        socksChannel1.writeAndFlush(commandResponse);
-                    }
-                }
+                HandleKit.handlerAck(ctx, msg);
                 break;
             default:
         }

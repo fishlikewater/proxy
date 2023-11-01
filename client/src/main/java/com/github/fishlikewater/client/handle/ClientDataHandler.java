@@ -1,6 +1,9 @@
 package com.github.fishlikewater.client.handle;
 
 import com.github.fishlikewater.codec.MessageProtocol;
+import com.github.fishlikewater.socks5.handle.Socks5Kit;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -48,8 +51,20 @@ public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtoc
                     channel.writeAndFlush(msg.getBytes());
                 }
                 break;
+            case RESPONSE:
+                final Channel socksChannel = ctx.channel().attr(Socks5Kit.CHANNELS_SOCKS).get().get(msg.getId());
+                if (socksChannel != null && socksChannel.isActive())
+                {
+                    ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(msg.getBytes().length);
+                    buf.writeBytes(msg.getBytes());
+                    socksChannel.writeAndFlush(buf);
+                }
+                break;
             case CONNECTION:
                 HandleKit.handlerConnection(msg, ctx);
+                break;
+            case ACK:
+                HandleKit.handlerAck(ctx, msg);
                 break;
             default:
         }

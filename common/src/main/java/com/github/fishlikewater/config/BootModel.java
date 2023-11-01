@@ -8,6 +8,7 @@ package com.github.fishlikewater.config;
  * @author fishlikewater@126.com
  * @since 2023年03月17日 9:46
  **/
+@Deprecated
 public enum BootModel {
     //一对一连接模式
     ONE_TO_ONE,

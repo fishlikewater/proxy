@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
  * @author fishlikewater@126.com
  * @since 2023年03月07日 15:50
  **/
+@Deprecated
 @Slf4j
 public class RegisterHandler  extends SimpleChannelInboundHandler<MessageProtocol> {
 

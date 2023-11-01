@@ -19,6 +19,7 @@ import java.io.IOException;
  * @author fishlikewater@126.com
  * @since 2022年11月19日 11:07
  **/
+@Deprecated
 @Slf4j
 public class MyProtocolHandler extends SimpleChannelInboundHandler<MessageProtocol> {
     @Override

@@ -3,12 +3,9 @@ package com.github.fishlikewater.server.boot;
 import cn.hutool.core.util.ServiceLoaderUtil;
 import com.github.fishlikewater.codec.MyByteToMessageCodec;
 import com.github.fishlikewater.config.ProxyType;
-import com.github.fishlikewater.config.BootModel;
 import com.github.fishlikewater.server.config.ProxyConfig;
 import com.github.fishlikewater.server.handle.ServerHeartBeatHandler;
 import com.github.fishlikewater.server.handle.myprotocol.AuthHandler;
-import com.github.fishlikewater.server.handle.myprotocol.MyProtocolHandler;
-import com.github.fishlikewater.server.handle.myprotocol.RegisterHandler;
 import com.github.fishlikewater.server.handle.socks.Socks5CommandRequestHandler;
 import com.github.fishlikewater.server.handle.socks.Socks5InitialAuthHandler;
 import com.github.fishlikewater.server.handle.socks.Socks5PasswordAuthRequestHandler;
@@ -75,14 +72,7 @@ public class ServiceInitializer extends ChannelInitializer<Channel> {
             /* Socks connection handler */
             p.addLast(new Socks5CommandRequestHandler(proxyConfig));
 
-        } else if (proxyType == ProxyType.proxy_server && proxyConfig.getBootModel() == BootModel.ONE_TO_ONE) {
-            p
-                    .addLast(new LengthFieldBasedFrameDecoder((int)proxyConfig.getMaxFrameLength().toBytes(), 0, 4))
-                    .addLast(new MyByteToMessageCodec())
-                    .addLast(new AuthHandler(new DefaultConnectionValidate(), proxyConfig, ipMapping))
-                    .addLast(new RegisterHandler())
-                    .addLast(new MyProtocolHandler());
-        }else if (proxyType == ProxyType.proxy_server && proxyConfig.getBootModel() == BootModel.VPN){
+        } else if (proxyType == ProxyType.proxy_server){
            p
                    .addLast(new LengthFieldBasedFrameDecoder((int)proxyConfig.getMaxFrameLength().toBytes(), 0, 4))
                    .addLast(new MyByteToMessageCodec())
