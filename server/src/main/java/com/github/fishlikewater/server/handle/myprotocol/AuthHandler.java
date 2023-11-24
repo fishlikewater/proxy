@@ -1,6 +1,5 @@
 package com.github.fishlikewater.server.handle.myprotocol;
 
-import com.github.fishlikewater.codec.ByteArrayCodec;
 import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.codec.MyByteToMessageCodec;
 import com.github.fishlikewater.kit.IdUtil;
@@ -41,90 +40,90 @@ public class AuthHandler extends SimpleChannelInboundHandler<MessageProtocol> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) {
-
-        if (msg.getCmd() == MessageProtocol.CmdEnum.DATA_CHANNEL) {
-            if (msg.getState() == 0){
-                final String token = new String(msg.getBytes(), StandardCharsets.UTF_8);
-                boolean validate = connectionValidate.validate(token, proxyConfig.getToken());
-                if (!validate) {
-                    final MessageProtocol failMsg = new MessageProtocol();
-                    failMsg
-                            .setCmd(MessageProtocol.CmdEnum.AUTH)
-                            .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                            .setId(msg.getId())
-                            .setState((byte) 0)
-                            .setBytes("验证失败".getBytes(StandardCharsets.UTF_8));
-                    ctx.writeAndFlush(failMsg);
-                    return;
-                }
-            }
-            final String id = ctx.channel().id().asLongText();
-            ChannelGroupKit.add(id, ctx.channel());
-            if (msg.getState() == 0){
-                final String linkIp = msg.getDst().getDstAddress();
-                final Channel channel = ipMapping.getChannel(linkIp);
-                if (Objects.nonNull(channel) && channel.isActive()) {
-                    //发送消息 让目标机 建立一条新的连接用于数据交互
-                    final MessageProtocol messageProtocol = new MessageProtocol();
-                    messageProtocol
-                            .setId(IdUtil.id())
-                            .setCmd(MessageProtocol.CmdEnum.DATA_CHANNEL)
-                            .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                            .setBytes(id.getBytes(StandardCharsets.UTF_8));
-                    channel.writeAndFlush(messageProtocol);
-                }
-            }else {
-                final String mainId = new String(msg.getBytes(), StandardCharsets.UTF_8);
-                final Channel mainChannel = ChannelGroupKit.find(mainId);
-                if (Objects.nonNull(mainChannel) && mainChannel.isActive()) {
-                    mainChannel.attr(DATA_CHANNEL).set(ctx.channel());
-                    ctx.channel().attr(DATA_CHANNEL).set(mainChannel);
-                    final MessageProtocol ack = new MessageProtocol();
-                    ack
-                            .setId(IdUtil.id())
-                            .setCmd(MessageProtocol.CmdEnum.DATA_CHANNEL_ACK)
-                            .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                            .setBytes("数据通道建立成功".getBytes(StandardCharsets.UTF_8));
-                    ackMsg(mainChannel, ack);
-                    ackMsg(ctx.channel(), ack);
-                }
-            }
-            return;
+        switch (msg.getCmd()){
+            case DATA_CHANNEL:
+                handleDataChannel(ctx, msg);
+                break;
+            case AUTH:
+                handleAuth(ctx, msg);
+                break;
+            default:
+                sendFailMsg(ctx, "请先验证token", msg.getId());
+                break;
         }
+    }
 
-        if (msg.getCmd() == MessageProtocol.CmdEnum.AUTH) {
-            //处理 连接安全验证
+    private void handleAuth(ChannelHandlerContext ctx, MessageProtocol msg) {
+        //处理 连接安全验证
+        final String token = new String(msg.getBytes(), StandardCharsets.UTF_8);
+        boolean validate = connectionValidate.validate(token, proxyConfig.getToken());
+        if (validate) {
+            ctx.pipeline().remove(this);
+            sendSuccessAuthMsg(ctx, msg.getId());
+        } else {
+            sendFailMsg(ctx, "验证失败", msg.getId());
+        }
+    }
+
+    private void handleDataChannel(ChannelHandlerContext ctx, MessageProtocol msg) {
+        if (msg.getState() == 0){
             final String token = new String(msg.getBytes(), StandardCharsets.UTF_8);
             boolean validate = connectionValidate.validate(token, proxyConfig.getToken());
-            if (validate) {
-                ctx.pipeline().remove(this);
-                final MessageProtocol successMsg = new MessageProtocol();
-                successMsg
-                        .setCmd(MessageProtocol.CmdEnum.AUTH)
-                        .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                        .setId(msg.getId())
-                        .setState((byte) 1);
-                ctx.writeAndFlush(successMsg);
-            } else {
-                final MessageProtocol failMsg = new MessageProtocol();
-                failMsg
-                        .setCmd(MessageProtocol.CmdEnum.AUTH)
-                        .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                        .setId(msg.getId())
-                        .setState((byte) 0)
-                        .setBytes("验证失败".getBytes(StandardCharsets.UTF_8));
-                ctx.writeAndFlush(failMsg);
+            if (!validate) {
+                sendFailMsg(ctx, "验证失败", msg.getId());
+                return;
             }
-        } else {
-            final MessageProtocol failMsg = new MessageProtocol();
-            failMsg
-                    .setCmd(MessageProtocol.CmdEnum.AUTH)
-                    .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
-                    .setId(msg.getId())
-                    .setState((byte) 0)
-                    .setBytes("请先验证token".getBytes(StandardCharsets.UTF_8));
-            ctx.writeAndFlush(failMsg);
         }
+        final String id = ctx.channel().id().asLongText();
+        ChannelGroupKit.add(id, ctx.channel());
+        if (msg.getState() == 0){
+            final String linkIp = msg.getDst().getDstAddress();
+            final Channel channel = ipMapping.getChannel(linkIp);
+            if (Objects.nonNull(channel) && channel.isActive()) {
+                //发送消息 让目标机 建立一条新的连接用于数据交互
+                MessageProtocol messageProtocol = getMsg(id, IdUtil.id(), MessageProtocol.CmdEnum.DATA_CHANNEL);
+                channel.writeAndFlush(messageProtocol);
+            }
+        }else {
+            final String mainId = new String(msg.getBytes(), StandardCharsets.UTF_8);
+            final Channel mainChannel = ChannelGroupKit.find(mainId);
+            if (Objects.nonNull(mainChannel) && mainChannel.isActive()) {
+                mainChannel.attr(DATA_CHANNEL).set(ctx.channel());
+                ctx.channel().attr(DATA_CHANNEL).set(mainChannel);
+                MessageProtocol ack = getMsg("数据通道建立成功", IdUtil.id(), MessageProtocol.CmdEnum.DATA_CHANNEL_ACK);
+                ackMsg(mainChannel, ack);
+                ackMsg(ctx.channel(), ack);
+            }
+        }
+    }
+
+    private void sendFailMsg(ChannelHandlerContext ctx, String message, Long id) {
+        final MessageProtocol failMsg = new MessageProtocol();
+        failMsg
+                .setCmd(MessageProtocol.CmdEnum.AUTH)
+                .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                .setId(id)
+                .setState((byte) 0)
+                .setBytes(message.getBytes(StandardCharsets.UTF_8));
+        ctx.writeAndFlush(failMsg);
+    }
+
+    private void sendSuccessAuthMsg(ChannelHandlerContext ctx, Long id) {
+        MessageProtocol successMsg = new MessageProtocol()
+                .setCmd(MessageProtocol.CmdEnum.AUTH)
+                .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                .setId(id)
+                .setState((byte) 1);
+        ctx.writeAndFlush(successMsg);
+    }
+
+    private MessageProtocol getMsg(String msg,  Long id, MessageProtocol.CmdEnum cmd) {
+        final MessageProtocol messageProtocol = new MessageProtocol();
+       return messageProtocol
+                .setId(id)
+                .setCmd(cmd)
+                .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
+                .setBytes(msg.getBytes(StandardCharsets.UTF_8));
     }
 
     private void ackMsg(Channel channel, MessageProtocol ack) {
