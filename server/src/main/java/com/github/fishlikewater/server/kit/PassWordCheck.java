@@ -38,7 +38,7 @@ public class PassWordCheck {
             String[] split1 = userNamePassWord.split(":", 2);
             return split1[0].equals(username) && split1[1].equals(password);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("验证异常", e);
             return false;
         }
     }

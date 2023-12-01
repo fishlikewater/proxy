@@ -1,12 +1,10 @@
 package com.github.fishlikewater.server.handle.myprotocol;
 
-import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.server.kit.ChannelGroupKit;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.util.Attribute;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
