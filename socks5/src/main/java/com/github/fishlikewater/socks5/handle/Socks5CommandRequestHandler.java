@@ -89,8 +89,9 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                     .setProtocol(MessageProtocol.ProtocolEnum.SOCKS);
             Socks5Kit.channel.writeAndFlush(message).addListener(future -> {
                 if (future.isSuccess()) {
-                    if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null)
+                    if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
                         ctx.pipeline().remove(Socks5CommandRequestHandler.class);
+                    }
                     ctx.pipeline().remove(Socks5InitialAuthHandler.class);
                     ctx.pipeline().remove(Socks5InitialRequestDecoder.class);
                     ctx.pipeline().remove(Socks5CommandRequestDecoder.class);
@@ -124,8 +125,9 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
         bootstrap.connect().addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
                 log.debug("成功连接目标服务器");
-                if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null)
+                if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
                     ctx.pipeline().remove(Socks5CommandRequestHandler.class);
+                }
                 ctx.pipeline().remove(Socks5InitialAuthHandler.class);
                 ctx.pipeline().remove(Socks5InitialRequestDecoder.class);
                 ctx.pipeline().remove(Socks5CommandRequestDecoder.class);

@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class BootStrapFactory {
 
     private static Bootstrap bootstrap;
-    private static final ReentrantLock lock = new ReentrantLock();
+    private static final ReentrantLock LOCK = new ReentrantLock();
 
 
     public static ServerBootstrap getServerBootstrap(){
@@ -40,7 +40,7 @@ public class BootStrapFactory {
             return bootstrap;
         }
         try{
-            lock.lock();
+            LOCK.lock();
             if (Objects.nonNull(bootstrap)){
                 return bootstrap;
             }
@@ -64,7 +64,7 @@ public class BootStrapFactory {
             return bootstrap;
 
         }finally {
-            lock.unlock();
+            LOCK.unlock();
         }
 
     }
