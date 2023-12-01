@@ -86,6 +86,7 @@ public class HttpProtocol implements Serializable{
     private byte[] bytes;
 
 
+    @Getter
     public enum  CmdEnum implements Serializable {
 
         //验证
@@ -100,7 +101,6 @@ public class HttpProtocol implements Serializable{
         HEALTH(4),
         //关闭
         CLOSE(5);
-        @Getter
         private final int code;
 
         CmdEnum(int code){

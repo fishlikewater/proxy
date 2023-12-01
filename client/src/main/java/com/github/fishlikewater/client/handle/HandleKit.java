@@ -159,7 +159,9 @@ public class HandleKit {
 
     public static void handlerConnection2(MessageProtocol msg, ChannelHandlerContext ctx, ProxyConfig proxyConfig) {
         final MessageProtocol.Dst dst = msg.getDst();
-        if (isAllow(proxyConfig, dst, msg, ctx)) return;
+        if (isAllow(proxyConfig, dst, msg, ctx)) {
+            return;
+        }
         final ProxyConfig.Mapping mapping = proxyConfig.getMappingMap().get(dst.getDstPort());
         SocketAddress socketAddress = getAddress(mapping, dst.getDstPort());
         Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
@@ -205,7 +207,9 @@ public class HandleKit {
         } else {
             Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
             final MessageProtocol.Dst dst = msg.getDst();
-            if (isAllow(proxyConfig, dst, msg, ctx)) return;
+            if (isAllow(proxyConfig, dst, msg, ctx)) {
+                return;
+            }
             final ProxyConfig.Mapping mapping = proxyConfig.getMappingMap().get(dst.getDstPort());
             SocketAddress socketAddress = getAddress(mapping, dst.getDstPort());
             bootstrap.handler(new NoneClientInitializer(mapping != null && mapping.isSsl()));

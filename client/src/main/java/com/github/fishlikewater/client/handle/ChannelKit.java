@@ -1,10 +1,7 @@
 package com.github.fishlikewater.client.handle;
 
 import io.netty.channel.Channel;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.AttributeKey;
-import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.Getter;
 import lombok.Setter;
 
