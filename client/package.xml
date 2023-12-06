@@ -12,23 +12,23 @@
     <fileSets>
         <fileSet>
             <directory>src/main/resources/</directory>
-            <outputDirectory>/resources</outputDirectory>
+            <outputDirectory>${file.separator}resources</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>src/main/plugins/</directory>
-            <outputDirectory>/plugins</outputDirectory>
+            <outputDirectory>${file.separator}plugins</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>bin/</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>${file.separator}</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>lib/</directory>
-            <outputDirectory>/lib</outputDirectory>
+            <outputDirectory>${file.separator}lib</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>${file.separator}</outputDirectory>
             <includes>
                 <include>*.jar</include>
             </includes>
