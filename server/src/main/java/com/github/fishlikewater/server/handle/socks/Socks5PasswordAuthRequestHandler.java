@@ -18,24 +18,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Socks5PasswordAuthRequestHandler extends SimpleChannelInboundHandler<DefaultSocks5PasswordAuthRequest> {
 
-	private final ProxyConfig proxyConfig;
+    private final ProxyConfig proxyConfig;
 
-	public Socks5PasswordAuthRequestHandler(ProxyConfig proxyConfig) {
-		this.proxyConfig = proxyConfig;
-	}
-	
-	@Override
-	protected void channelRead0(ChannelHandlerContext ctx, DefaultSocks5PasswordAuthRequest msg) {
-		if (StrUtil.equals(proxyConfig.getSocksName(), msg.username()) && StrUtil.equals(proxyConfig.getSocksPassWord(), msg.password())){
-			Socks5PasswordAuthResponse passwordAuthResponse = new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.SUCCESS);
-			ctx.writeAndFlush(passwordAuthResponse);
-			ctx.channel().attr(Socks5Constant.ACCOUNT).set(msg.username());
-		} else {
-			log.warn("验证失败");
-			Socks5PasswordAuthResponse passwordAuthResponse = new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.FAILURE);
-			//发送鉴权失败消息，完成后关闭channel
-			ctx.writeAndFlush(passwordAuthResponse).addListener(ChannelFutureListener.CLOSE);
-		}
-	}
+    public Socks5PasswordAuthRequestHandler(ProxyConfig proxyConfig) {
+        this.proxyConfig = proxyConfig;
+    }
+
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, DefaultSocks5PasswordAuthRequest msg) {
+        if (StrUtil.equals(proxyConfig.getSocksName(), msg.username()) && StrUtil.equals(proxyConfig.getSocksPassWord(), msg.password())) {
+            Socks5PasswordAuthResponse passwordAuthResponse = new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.SUCCESS);
+            ctx.writeAndFlush(passwordAuthResponse);
+            ctx.channel().attr(Socks5Constant.ACCOUNT).set(msg.username());
+        } else {
+            log.warn("验证失败");
+            Socks5PasswordAuthResponse passwordAuthResponse = new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.FAILURE);
+            //发送鉴权失败消息，完成后关闭channel
+            ctx.writeAndFlush(passwordAuthResponse).addListener(ChannelFutureListener.CLOSE);
+        }
+    }
 
 }

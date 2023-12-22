@@ -22,9 +22,9 @@ public class PassWordCheck {
 
     //basic方式登录
     public static boolean basicLogin(HttpRequest req) {
-       if(username == null || password == null){
-           return true;
-       }
+        if (username == null || password == null) {
+            return true;
+        }
         //获取请求头中的 Proxy-Authorization
         String s = req.headers().get("Proxy-Authorization");
         if (s == null) {

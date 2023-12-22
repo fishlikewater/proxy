@@ -18,8 +18,8 @@ public class BootStrapFactory {
 
     private static Bootstrap bootstrap = null;
 
-    public static Bootstrap bootstrapConfig(ChannelHandlerContext ctx){
-        if(bootstrap != null){
+    public static Bootstrap bootstrapConfig(ChannelHandlerContext ctx) {
+        if (bootstrap != null) {
             return bootstrap;
         }
         bootstrap = new Bootstrap();

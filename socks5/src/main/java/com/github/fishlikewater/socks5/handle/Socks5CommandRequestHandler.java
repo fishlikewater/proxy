@@ -31,11 +31,11 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
 
     private final Map<String, String> ipMapping;
 
-    public Socks5CommandRequestHandler(Socks5Config socks5Config){
+    public Socks5CommandRequestHandler(Socks5Config socks5Config) {
         this.socks5Config = socks5Config;
         ipMapping = new HashMap<>();
         final Socks5Config.Mapping[] mapping = socks5Config.getMapping();
-        if (Objects.nonNull(mapping)){
+        if (Objects.nonNull(mapping)) {
             for (Socks5Config.Mapping mapping1 : mapping) {
                 ipMapping.put(mapping1.getRequestIp(), mapping1.getMappingIp());
             }
@@ -57,17 +57,17 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
             final MessageProtocol.Dst dst = new MessageProtocol.Dst();
             String dstAddr = msg.dstAddr();
             final String ip = ipMapping.get(dstAddr);
-            if (Objects.nonNull(ip)){
+            if (Objects.nonNull(ip)) {
                 dstAddr = ip;
             }
             final String filterIp = socks5Config.getFilterIp();
-            if (StrUtil.isNotBlank(filterIp)){
+            if (StrUtil.isNotBlank(filterIp)) {
                 if (!StrUtil.startWith(dstAddr, filterIp)) {
                     handlerLocal(ctx, msg);
                 } else {
                     handlerProxy(ctx, msg, dst, dstAddr, requestId);
                 }
-            }else {
+            } else {
                 handlerProxy(ctx, msg, dst, dstAddr, requestId);
             }
         } else {

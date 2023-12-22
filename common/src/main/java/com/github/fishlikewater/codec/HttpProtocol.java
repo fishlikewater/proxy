@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * <p>
- *  专为http消息穿透设计
+ * 专为http消息穿透设计
  * </p>
  *
  * @author fishlikewater@126.com
@@ -19,75 +19,65 @@ import java.util.Map;
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode
-public class HttpProtocol implements Serializable{
+public class HttpProtocol implements Serializable {
 
     /**
-     *
      * 每次传输消息的id
      **/
     private long id;
 
     /**
-     *
      * 消息类型
      **/
     private HttpProtocol.CmdEnum cmd;
 
 
     /**
-     *
      * 目标服务名
      */
     private String dstServer;
 
     /**
-     *
      * 注册服务名[多服务以,分割]
      */
     private String registerName;
 
     /**
-     *
      * url
      */
     private String url;
 
     /**
-     *
      * 请求头
      */
     private Map<String, String> heads;
 
     /**
-     *
      * 请求方法
      */
     private String method;
 
 
     /**
-     *
      * http版本
      */
     private String version;
 
 
     /**
-     *
      * 响应码
      */
     private int code;
 
 
     /**
-     *
      * 消息类容
      **/
     private byte[] bytes;
 
 
     @Getter
-    public enum  CmdEnum implements Serializable {
+    public enum CmdEnum implements Serializable {
 
         //验证
         AUTH(0),
@@ -103,13 +93,13 @@ public class HttpProtocol implements Serializable{
         CLOSE(5);
         private final int code;
 
-        CmdEnum(int code){
+        CmdEnum(int code) {
             this.code = code;
         }
 
-        public static HttpProtocol.CmdEnum getInstance(int code){
+        public static HttpProtocol.CmdEnum getInstance(int code) {
             for (HttpProtocol.CmdEnum value : HttpProtocol.CmdEnum.values()) {
-                if (value.code == code){
+                if (value.code == code) {
                     return value;
                 }
             }

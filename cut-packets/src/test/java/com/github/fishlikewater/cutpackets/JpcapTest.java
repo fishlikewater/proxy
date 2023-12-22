@@ -19,7 +19,7 @@ public class JpcapTest {
 
 
     @Test
-    public void testJp(){
+    public void testJp() {
         /*-------第一步,显示网络设备列表-------- */
         // 获取网络接口列表，返回你所有的网络设备数组,一般就是网卡;
         NetworkInterface[] devices = JpcapCaptor.getDeviceList();

@@ -7,7 +7,7 @@ package com.github.fishlikewater.kit.idwork;
  **/
 public class IdWorkerFactory {
 
-    public static IdWorker create(int ... indexes) {
+    public static IdWorker create(int... indexes) {
         return new StardardIdWorker(indexes);
     }
 }

@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 用于检测channel的心跳handler
  * 继承ChannelInboundHandlerAdapter，从而不需要实现channelRead0方法
+ *
  * @author fishlikewater@126.com
  * @since 2022年11月19日 13:03
  */
@@ -28,13 +29,12 @@ public class ClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
         // 判断evt是否是IdleStateEvent（用于触发用户事件，包含 读空闲/写空闲/读写空闲 ）
         if (evt instanceof IdleStateEvent) {
             //IdleStateEvent event = (IdleStateEvent) evt;        // 强制类型转换
-            ctx.channel().writeAndFlush(HEARTBEAT_SEQUENCE)
-                    .addListener((future)->{
-                        if(!future.isSuccess()){
-                            log.warn("发送心跳包失败...");
-                        }
+            ctx.channel().writeAndFlush(HEARTBEAT_SEQUENCE).addListener((future) -> {
+                if (!future.isSuccess()) {
+                    log.warn("发送心跳包失败...");
+                }
 
-                    });//(ChannelFutureListener.CLOSE_ON_FAILURE);
+            });//(ChannelFutureListener.CLOSE_ON_FAILURE);
         } else {
             super.userEventTriggered(ctx, evt);
         }

@@ -2,41 +2,41 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <parent>
-    <artifactId>proxy</artifactId>
-    <groupId>com.github.fishlikewater</groupId>
-    <version>${proxy.version}</version>
-      <relativePath>../pom.xml</relativePath>
-  </parent>
-  <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>proxy</artifactId>
+        <groupId>com.github.fishlikewater</groupId>
+        <version>${proxy.version}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>common</artifactId>
+    <artifactId>common</artifactId>
 
-  <name>common</name>
+    <name>common</name>
 
-  <properties>
-  </properties>
+    <properties>
+    </properties>
 
-  <dependencies>
+    <dependencies>
 
-      <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-all</artifactId>
-          <optional>true</optional>
-      </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <optional>true</optional>
+        </dependency>
 
-      <dependency>
-          <groupId>com.google.protobuf</groupId>
-          <artifactId>protobuf-java</artifactId>
-          <optional>true</optional>
-      </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <optional>true</optional>
+        </dependency>
 
-      <dependency>
-          <groupId>com.esotericsoftware</groupId>
-          <artifactId>kryo</artifactId>
-      </dependency>
-  </dependencies>
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo</artifactId>
+        </dependency>
+    </dependencies>
 
-  <build>
-  </build>
+    <build>
+    </build>
 </project>

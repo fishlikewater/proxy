@@ -32,24 +32,24 @@ public class IdWorkerHandler {
         setWorkerIndexes(null);
     }
 
-    public IdWorkerHandler(int ... indexes) {
+    public IdWorkerHandler(int... indexes) {
         setWorkerIndexes(indexes);
     }
 
     //@Required
     private void setWorkerIndexes(int... workerIndexes) {
         int indexes[];
-        if(workerIndexes == null || workerIndexes.length == 0) indexes = newSequence();
+        if (workerIndexes == null || workerIndexes.length == 0) indexes = newSequence();
         else indexes = newSequence(workerIndexes);
 
         Map<Integer, IdGenerator> generatorMap = new HashMap<Integer, IdGenerator>();
 
         generators = new IdGenerator[WORKER_LENGTH];
 
-        for(int i = 0; i < WORKER_LENGTH; i++) {
+        for (int i = 0; i < WORKER_LENGTH; i++) {
             int index = indexes[i];
             IdGenerator generator = generatorMap.get(index);
-            if(generator == null) {
+            if (generator == null) {
                 generator = new IdGenerator(index);
                 generatorMap.put(index, generator);
             }
@@ -58,21 +58,22 @@ public class IdWorkerHandler {
         LOG.info("Id generator initialized");
     }
 
-    private int [] newSequence(int ... source) {
+    private int[] newSequence(int... source) {
         int x[] = new int[WORKER_LENGTH];
         int len = source.length;
-        for(int i = 0, j =0; i < WORKER_LENGTH; i++, j++) {
-            if(j >= len) j = 0;
-            if(source[j] >= WORKER_LENGTH) throw new IllegalArgumentException("Id worker index must less than " + WORKER_LENGTH + ", but got " + source[j]);
+        for (int i = 0, j = 0; i < WORKER_LENGTH; i++, j++) {
+            if (j >= len) j = 0;
+            if (source[j] >= WORKER_LENGTH)
+                throw new IllegalArgumentException("Id worker index must less than " + WORKER_LENGTH + ", but got " + source[j]);
             x[i] = source[j];
         }
         LOG.info("Using indexes:" + toString(source));
         return x;
     }
 
-    private int [] newSequence() {
+    private int[] newSequence() {
         int x[] = new int[WORKER_LENGTH];
-        for(int i = 0; i < WORKER_LENGTH; i++) x[i] = i;
+        for (int i = 0; i < WORKER_LENGTH; i++) x[i] = i;
         LOG.info("Using indexes:" + toString(x));
         return x;
     }
@@ -87,11 +88,11 @@ public class IdWorkerHandler {
     }
 
     private String toString(int array[]) {
-        if(array == null || array.length == 0) return "[]";
+        if (array == null || array.length == 0) return "[]";
         StringBuilder sb = new StringBuilder("[");
-        for(int i = 0; i < array.length; i++) {
+        for (int i = 0; i < array.length; i++) {
             sb.append(array[i]);
-            if(i < array.length - 1) sb.append(',');
+            if (i < array.length - 1) sb.append(',');
         }
         sb.append(']');
         return sb.toString();

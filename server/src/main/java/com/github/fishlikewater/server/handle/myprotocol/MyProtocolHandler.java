@@ -23,9 +23,9 @@ public class MyProtocolHandler extends SimpleChannelInboundHandler<MessageProtoc
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) {
         final MessageProtocol.CmdEnum cmd = msg.getCmd();
-        if (cmd == MessageProtocol.CmdEnum.HEALTH){
+        if (cmd == MessageProtocol.CmdEnum.HEALTH) {
             log.debug("get client health info");
-        }else {
+        } else {
             final String type = ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).get();
             if ("client".equals(type)) {
                 final Channel callChannel = ctx.channel().attr(ChannelGroupKit.CALL_REQUEST_CLIENT).get();

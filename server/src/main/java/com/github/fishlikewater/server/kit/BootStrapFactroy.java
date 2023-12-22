@@ -17,8 +17,8 @@ public class BootStrapFactroy {
 
     private static Bootstrap bootstrap = null;
 
-    public static Bootstrap bootstrapConfig(ChannelHandlerContext ctx){
-        if(bootstrap != null){
+    public static Bootstrap bootstrapConfig(ChannelHandlerContext ctx) {
+        if (bootstrap != null) {
             return bootstrap.clone();
         }
         bootstrap = new Bootstrap();

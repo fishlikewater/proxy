@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 /**
  * <p>
- *  数据传输协议
+ * 数据传输协议
  * </p>
  *
  * @author fishlikewater@126.com
@@ -21,45 +21,38 @@ import java.io.Serializable;
 public class MessageProtocol {
 
     /**
-     *
      * 每次传输消息的id
      **/
     private long id;
 
     /**
-     *
      * 消息类型
      **/
     private CmdEnum cmd;
 
     /**
-     *
      * 消息类容的协议
      **/
     private ProtocolEnum protocol;
 
     /**
-     *
      * 需要连接的目标机器
      **/
     private Dst dst;
 
     /**
-     *
      * 状态码  判断目标机器连接是否成功
      **/
     private byte state = 0;
 
     /**
-     *
      * 消息类容 不做处理 直接传输
      **/
     private byte[] bytes;
 
 
-
     @Data
-    public static class Dst implements Serializable{
+    public static class Dst implements Serializable {
 
         private String dstAddress;
 
@@ -68,7 +61,7 @@ public class MessageProtocol {
 
 
     @Getter
-    public enum  CmdEnum implements Serializable {
+    public enum CmdEnum implements Serializable {
 
         //验证
         AUTH(0),
@@ -92,13 +85,13 @@ public class MessageProtocol {
         DATA_CHANNEL_ACK(9);
         private final int code;
 
-        CmdEnum(int code){
+        CmdEnum(int code) {
             this.code = code;
         }
 
-        public static CmdEnum getInstance(int code){
+        public static CmdEnum getInstance(int code) {
             for (CmdEnum value : CmdEnum.values()) {
-                if (value.code == code){
+                if (value.code == code) {
                     return value;
                 }
             }
@@ -108,20 +101,20 @@ public class MessageProtocol {
 
 
     @Getter
-    public enum  ProtocolEnum implements Serializable {
+    public enum ProtocolEnum implements Serializable {
         //http消息  内网穿透
         HTTP(1),
         //类vpn模式代理
         SOCKS(2);
         private final int code;
 
-        ProtocolEnum(int code){
+        ProtocolEnum(int code) {
             this.code = code;
         }
 
-        public static ProtocolEnum getInstance(int code){
+        public static ProtocolEnum getInstance(int code) {
             for (ProtocolEnum value : ProtocolEnum.values()) {
-                if (value.code == code){
+                if (value.code == code) {
                     return value;
                 }
             }

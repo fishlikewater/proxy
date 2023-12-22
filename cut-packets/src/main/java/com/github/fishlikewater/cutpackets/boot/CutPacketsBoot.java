@@ -38,9 +38,7 @@ public class CutPacketsBoot {
     private EventLoopGroup workerGroup;
 
 
-
-
-    protected void config(ServerBootstrap serverBootstrap){
+    protected void config(ServerBootstrap serverBootstrap) {
         if (EpollKit.epollIsAvailable()) {
             setBossGroup(new EpollEventLoopGroup(0, new NamedThreadFactory("cut-epoll-boss@")));
             setWorkerGroup(new EpollEventLoopGroup(0, new NamedThreadFactory("cut-epoll-worker@")));
@@ -58,11 +56,11 @@ public class CutPacketsBoot {
         serverBootstrap.childHandler(new CutPacketsInitializer());
         try {
             Channel ch = serverBootstrap.bind("192.168.12.0/24", 0).addListener(future -> {
-                if (future.isSuccess()){
+                if (future.isSuccess()) {
 
                 }
             }).sync().channel();
-            log.info("⬢ start server this port:{} and address:{} proxy type: socks5","", "");
+            log.info("⬢ start server this port:{} and address:{} proxy type: socks5", "", "");
             ch.closeFuture().addListener(t -> log.info("⬢  socks5服务开始关闭"));
         } catch (InterruptedException e) {
             log.error("⬢ start server fail", e);

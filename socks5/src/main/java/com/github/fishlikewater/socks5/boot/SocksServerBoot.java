@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p>
- *  socks 启动类
+ * socks 启动类
  * </p>
  *
  * @author fishlikewater@126.com
@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Getter
 @Slf4j
 @RequiredArgsConstructor
-public class SocksServerBoot{
+public class SocksServerBoot {
 
     /**
      * 处理连接
@@ -47,8 +47,7 @@ public class SocksServerBoot{
     private final Socks5Config socks5Config;
 
 
-
-    protected void config(ServerBootstrap serverBootstrap){
+    protected void config(ServerBootstrap serverBootstrap) {
         if (EpollKit.epollIsAvailable()) {
             setBossGroup(new EpollEventLoopGroup(0, new NamedThreadFactory("socks5-epoll-boss@")));
             setWorkerGroup(new EpollEventLoopGroup(0, new NamedThreadFactory("socks5-epoll-worker@")));
@@ -66,11 +65,11 @@ public class SocksServerBoot{
         serverBootstrap.childHandler(new Socks5Initializer(socks5Config));
         try {
             Channel ch = serverBootstrap.bind(socks5Config.getAddress(), socks5Config.getPort()).addListener(future -> {
-                if (future.isSuccess()){
+                if (future.isSuccess()) {
                     Socks5Kit.channel.attr(Socks5Kit.CHANNELS_SOCKS).set(new ConcurrentHashMap<>(16));
                 }
             }).sync().channel();
-            log.info("⬢ start server this port:{} and address:{} proxy type: socks5",socks5Config.getPort(), socks5Config.getAddress());
+            log.info("⬢ start server this port:{} and address:{} proxy type: socks5", socks5Config.getPort(), socks5Config.getAddress());
             ch.closeFuture().addListener(t -> log.info("⬢  socks5服务开始关闭"));
         } catch (InterruptedException e) {
             log.error("⬢ start server fail", e);

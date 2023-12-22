@@ -25,7 +25,7 @@ public class DataTransferHandler extends SimpleChannelInboundHandler<Object> {
             ByteBuf byteBuf = (ByteBuf) msg;
             byteBuf.retain();
             final Channel channel = ctx.channel().attr(DATA_CHANNEL).get();
-            if (channel != null){
+            if (channel != null) {
                 channel.writeAndFlush(byteBuf);
             }
         }
@@ -35,7 +35,7 @@ public class DataTransferHandler extends SimpleChannelInboundHandler<Object> {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         ChannelGroupKit.remove(ctx.channel().id().asLongText());
         final Channel channel = ctx.channel().attr(DATA_CHANNEL).get();
-        if (channel != null){
+        if (channel != null) {
             channel.close();
         }
         super.channelInactive(ctx);

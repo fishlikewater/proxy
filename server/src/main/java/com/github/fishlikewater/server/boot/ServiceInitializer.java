@@ -59,7 +59,7 @@ public class ServiceInitializer extends ChannelInitializer<Channel> {
         if (proxyConfig.isLogging()) {
             p.addLast(new LoggingHandler());
         }
-       if (proxyType == ProxyType.socks) {
+        if (proxyType == ProxyType.socks) {
             p.addFirst(new Socks5CommandRequestDecoder());
             if (proxyConfig.isAuth()) {
                 /* 添加验证机制*/
@@ -72,14 +72,14 @@ public class ServiceInitializer extends ChannelInitializer<Channel> {
             /* Socks connection handler */
             p.addLast(new Socks5CommandRequestHandler(proxyConfig));
 
-        } else if (proxyType == ProxyType.proxy_server){
-           p
-                   .addLast(new LengthFieldBasedFrameDecoder((int)proxyConfig.getMaxFrameLength().toBytes(), 0, 4))
-                   .addLast(new MyByteToMessageCodec())
-                   .addLast(new AuthHandler(new DefaultConnectionValidate(), proxyConfig, ipMapping))
-                   .addLast(new VpnRegisterHandler(ipMapping, ipPool, proxyConfig))
-                   .addLast(new VpnMessageHandler(ipMapping));
-       }
+        } else if (proxyType == ProxyType.proxy_server) {
+            p
+                    .addLast(new LengthFieldBasedFrameDecoder((int) proxyConfig.getMaxFrameLength().toBytes(), 0, 4))
+                    .addLast(new MyByteToMessageCodec())
+                    .addLast(new AuthHandler(new DefaultConnectionValidate(), proxyConfig, ipMapping))
+                    .addLast(new VpnRegisterHandler(ipMapping, ipPool, proxyConfig))
+                    .addLast(new VpnMessageHandler(ipMapping));
+        }
 
 
     }

@@ -12,7 +12,7 @@ import io.netty.channel.ChannelInitializer;
  * @author fishlikewater@126.com
  * @since 2023年07月15日 6:03
  **/
-public class CutPacketsInitializer  extends ChannelInitializer<Channel> {
+public class CutPacketsInitializer extends ChannelInitializer<Channel> {
     @Override
     protected void initChannel(Channel ch) throws Exception {
         ch.pipeline().addLast(new CutPacketsHandler());

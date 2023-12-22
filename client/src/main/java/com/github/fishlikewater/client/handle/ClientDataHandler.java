@@ -53,8 +53,7 @@ public class ClientDataHandler extends SimpleChannelInboundHandler<MessageProtoc
                 break;
             case RESPONSE:
                 final Channel socksChannel = ctx.channel().attr(Socks5Kit.CHANNELS_SOCKS).get().get(msg.getId());
-                if (socksChannel != null && socksChannel.isActive())
-                {
+                if (socksChannel != null && socksChannel.isActive()) {
                     ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(msg.getBytes().length);
                     buf.writeBytes(msg.getBytes());
                     socksChannel.writeAndFlush(buf);

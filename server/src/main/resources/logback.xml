@@ -65,11 +65,13 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%red(%d{yyyy-MM-dd HH:mm:ss.SSS}) %red([%X{REQUEST_ID}]) %green([%thread]) %highlight(%-5level) %boldMagenta(%logger) - %cyan(%msg%n)</pattern>
+            <pattern>%red(%d{yyyy-MM-dd HH:mm:ss.SSS}) %red([%X{REQUEST_ID}]) %green([%thread]) %highlight(%-5level)
+                %boldMagenta(%logger) - %cyan(%msg%n)
+            </pattern>
         </encoder>
     </appender>
 
-    <logger name="com.github.fishlikewater.server" level="info" />
+    <logger name="com.github.fishlikewater.server" level="info"/>
 
 
     <!-- ===================================================================== -->
@@ -77,8 +79,8 @@
     <!-- ===================================================================== -->
     <root level="info">
         <appender-ref ref="STDOUT"/>
-        <appender-ref ref="FILE_ALL" />
-        <appender-ref ref="WARN" />
-        <appender-ref ref="FILE_ERROR" />
+        <appender-ref ref="FILE_ALL"/>
+        <appender-ref ref="WARN"/>
+        <appender-ref ref="FILE_ERROR"/>
     </root>
 </configuration>

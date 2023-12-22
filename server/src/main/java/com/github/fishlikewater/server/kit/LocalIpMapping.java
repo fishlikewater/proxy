@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p>
- *  默认ip映射关系实现
+ * 默认ip映射关系实现
  * </p>
  *
  * @author fishlikewater@126.com
@@ -19,7 +19,7 @@ public class LocalIpMapping implements IpMapping {
     @Override
     public void put(String ip, Channel channel) {
         channel.closeFuture().addListener(future -> {
-            if (future.isSuccess()){
+            if (future.isSuccess()) {
                 remove(ip);
             }
         });

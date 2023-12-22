@@ -12,7 +12,7 @@ import io.netty.channel.WriteBufferWaterMark;
 public class BootStrapFactory {
 
 
-    public static ServerBootstrap getServerBootstrap(){
+    public static ServerBootstrap getServerBootstrap() {
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.option(ChannelOption.SO_REUSEADDR, true);

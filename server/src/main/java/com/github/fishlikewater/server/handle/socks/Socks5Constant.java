@@ -21,5 +21,5 @@ public class Socks5Constant {
 
     @Setter
     @Getter
-    public static  Map<String, String> accountMap = new ConcurrentHashMap<>();
+    public static Map<String, String> accountMap = new ConcurrentHashMap<>();
 }

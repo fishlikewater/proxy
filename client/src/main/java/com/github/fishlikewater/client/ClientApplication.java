@@ -36,7 +36,7 @@ public class ClientApplication implements CommandLineRunner, DisposableBean {
 
     @Override
     public void destroy() {
-        if (proxyClient != null){
+        if (proxyClient != null) {
             proxyClient.stop();
         }
     }

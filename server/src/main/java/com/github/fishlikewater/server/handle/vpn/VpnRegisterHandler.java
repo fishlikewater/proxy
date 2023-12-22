@@ -37,9 +37,9 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
         final MessageProtocol.CmdEnum cmd = msg.getCmd();
         if (cmd == MessageProtocol.CmdEnum.REGISTER) {
             //当客户端固定ip时
-            if (Objects.nonNull(msg.getBytes())){
+            if (Objects.nonNull(msg.getBytes())) {
                 final String clientIp = new String(msg.getBytes(), StandardCharsets.UTF_8);
-                if (!clientIp.startsWith(proxyConfig.getIpPrefix())){
+                if (!clientIp.startsWith(proxyConfig.getIpPrefix())) {
                     final MessageProtocol failMsg = new MessageProtocol();
                     failMsg
                             .setId(msg.getId())
@@ -51,18 +51,18 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
                     return;
                 }
                 final Channel channel = ipMapping.getChannel(clientIp);
-                if (Objects.nonNull(channel)){
-                    if (channel.isActive() && channel.isWritable()){
+                if (Objects.nonNull(channel)) {
+                    if (channel.isActive() && channel.isWritable()) {
                         final MessageProtocol failMsg = new MessageProtocol();
                         failMsg
                                 .setId(msg.getId())
                                 .setCmd(MessageProtocol.CmdEnum.REGISTER)
                                 .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
                                 .setState((byte) 0)
-                                .setBytes(("ip已被使用,请更换 占用连接: "+channel.remoteAddress().toString()).getBytes(StandardCharsets.UTF_8));
+                                .setBytes(("ip已被使用,请更换 占用连接: " + channel.remoteAddress().toString()).getBytes(StandardCharsets.UTF_8));
                         ctx.writeAndFlush(failMsg);
                         return;
-                    }else {
+                    } else {
                         channel.close();
                         ipMapping.remove(clientIp);
                     }
@@ -70,7 +70,7 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
                 mappingIp(ctx, msg, clientIp);
                 final int ip = Integer.parseInt(clientIp.replaceAll(proxyConfig.getIpPrefix(), ""));
                 ipPool.remove(ip);
-            }else {
+            } else {
                 final Integer ip = ipPool.getIp();
                 String ipStr = proxyConfig.getIpPrefix() + ip;
                 mappingIp(ctx, msg, ipStr);

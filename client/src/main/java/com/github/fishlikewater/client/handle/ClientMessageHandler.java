@@ -54,14 +54,14 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 HandleKit.toRegister(msg, ctx, client.getProxyConfig());
                 break;
             case REGISTER:
-                if (msg.getState() == 1){
+                if (msg.getState() == 1) {
                     log.info("本机分配的虚拟ip为: " + new String(msg.getBytes(), StandardCharsets.UTF_8));
                     HandleKit.afterRegister(ctx, client.getProxyConfig());
-                }else{
+                } else {
                     final EventLoop loop = ctx.channel().eventLoop();
                     msg.setState((byte) 1);
                     loop.schedule(() -> HandleKit.toRegister(msg, ctx, client.getProxyConfig())
-                    , 30, TimeUnit.SECONDS);
+                            , 30, TimeUnit.SECONDS);
                 }
                 break;
             case DATA_CHANNEL:

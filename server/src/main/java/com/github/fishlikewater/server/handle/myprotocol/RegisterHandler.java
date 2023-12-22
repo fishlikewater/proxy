@@ -23,25 +23,25 @@ import java.nio.charset.StandardCharsets;
  **/
 @Deprecated
 @Slf4j
-public class RegisterHandler  extends SimpleChannelInboundHandler<MessageProtocol> {
+public class RegisterHandler extends SimpleChannelInboundHandler<MessageProtocol> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) {
         final MessageProtocol.CmdEnum cmd = msg.getCmd();
-        if (cmd ==  MessageProtocol.CmdEnum.REGISTER){
+        if (cmd == MessageProtocol.CmdEnum.REGISTER) {
             final byte[] bytes = msg.getBytes();
             final String registerName = new String(bytes, StandardCharsets.UTF_8);
             final byte registerType = msg.getState();
             // 未提供注册名(注册名对于受控制机全局唯一，为方便使用端 采用自定义设置)
             final boolean checkRegisterName = HandleKit.checkRegisterName(ctx, registerName, msg.getId());
-            if (!checkRegisterName){
+            if (!checkRegisterName) {
                 return;
             }
             // 受控制注册
             if (registerType == 1) {
                 // 查询 注册名是否已经被使用
                 final boolean b = HandleKit.checkRegisterNameIsUse(registerName, msg.getId(), ctx);
-                if (b){
+                if (b) {
                     ctx.channel().attr(ChannelGroupKit.CLIENT_PATH).set(registerName);
                     ctx.channel().attr(ChannelGroupKit.CLIENT_TYPE).set("client");
                     ChannelGroupKit.add(registerName, ctx.channel());

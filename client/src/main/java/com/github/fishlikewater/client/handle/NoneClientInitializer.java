@@ -17,13 +17,13 @@ public class NoneClientInitializer extends ChannelInitializer<Channel> {
 
     private final boolean ssl;
 
-    public NoneClientInitializer(boolean ssl){
+    public NoneClientInitializer(boolean ssl) {
         this.ssl = ssl;
     }
 
     @Override
     protected void initChannel(Channel ch) {
-        if (ssl){
+        if (ssl) {
             try {
                 SslContext sslContext = SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
                 ch.pipeline().addFirst(sslContext.newHandler(ByteBufAllocator.DEFAULT.buffer().alloc()));

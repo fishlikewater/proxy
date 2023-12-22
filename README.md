@@ -2,13 +2,14 @@
 
 ###### 实现主要功能有:
 
-* socks5 代理服务器  
+* socks5 代理服务器
 
 * 内网穿透 服务端及客户端
 
 > _socks5 代理服务器:_
 
 * 启动server 即可, 配置文件如下:
+
 ```properties
 #启动服务类型
 proxy.type[0]=socks
@@ -36,10 +37,10 @@ proxy.local-ports[0]=50110
 proxy.local-ports[1]=50111
 ```
 
-
->_内网穿透 通过中间服务器中转,实现远程访问内网tcp资源:_
+> _内网穿透 通过中间服务器中转,实现远程访问内网tcp资源:_
 
 1 启动服务端(server)
+
 ```properties
 #启动服务类型
 proxy.type[0]=proxy_server
@@ -58,6 +59,7 @@ logging.config=classpath:logback.xml
 ```
 
 2 资源客户端注册(client)
+
 ```properties
 proxy.port=9008
 proxy.address=127.0.0.1

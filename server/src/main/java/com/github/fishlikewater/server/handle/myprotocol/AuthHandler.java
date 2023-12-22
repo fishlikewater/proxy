@@ -25,7 +25,7 @@ import static com.github.fishlikewater.server.kit.ChannelGroupKit.DATA_CHANNEL;
 
 /**
  * <p>
- *  token验证处理器
+ * token验证处理器
  * </p>
  *
  * @author fishlikewater@126.com
@@ -40,7 +40,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<MessageProtocol> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) {
-        switch (msg.getCmd()){
+        switch (msg.getCmd()) {
             case DATA_CHANNEL:
                 handleDataChannel(ctx, msg);
                 break;
@@ -66,7 +66,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<MessageProtocol> {
     }
 
     private void handleDataChannel(ChannelHandlerContext ctx, MessageProtocol msg) {
-        if (msg.getState() == 0){
+        if (msg.getState() == 0) {
             final String token = new String(msg.getBytes(), StandardCharsets.UTF_8);
             boolean validate = connectionValidate.validate(token, proxyConfig.getToken());
             if (!validate) {
@@ -76,7 +76,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<MessageProtocol> {
         }
         final String id = ctx.channel().id().asLongText();
         ChannelGroupKit.add(id, ctx.channel());
-        if (msg.getState() == 0){
+        if (msg.getState() == 0) {
             final String linkIp = msg.getDst().getDstAddress();
             final Channel channel = ipMapping.getChannel(linkIp);
             if (Objects.nonNull(channel) && channel.isActive()) {
@@ -84,7 +84,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<MessageProtocol> {
                 MessageProtocol messageProtocol = getMsg(id, IdUtil.id(), MessageProtocol.CmdEnum.DATA_CHANNEL);
                 channel.writeAndFlush(messageProtocol);
             }
-        }else {
+        } else {
             final String mainId = new String(msg.getBytes(), StandardCharsets.UTF_8);
             final Channel mainChannel = ChannelGroupKit.find(mainId);
             if (Objects.nonNull(mainChannel) && mainChannel.isActive()) {
@@ -117,9 +117,9 @@ public class AuthHandler extends SimpleChannelInboundHandler<MessageProtocol> {
         ctx.writeAndFlush(successMsg);
     }
 
-    private MessageProtocol getMsg(String msg,  Long id, MessageProtocol.CmdEnum cmd) {
+    private MessageProtocol getMsg(String msg, Long id, MessageProtocol.CmdEnum cmd) {
         final MessageProtocol messageProtocol = new MessageProtocol();
-       return messageProtocol
+        return messageProtocol
                 .setId(id)
                 .setCmd(cmd)
                 .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
@@ -128,7 +128,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<MessageProtocol> {
 
     private void ackMsg(Channel channel, MessageProtocol ack) {
         channel.writeAndFlush(ack).addListener(future -> {
-            if (future.isSuccess()){
+            if (future.isSuccess()) {
                 final ChannelPipeline pipeline = channel.pipeline();
                 pipeline.remove(LengthFieldBasedFrameDecoder.class);
                 pipeline.remove(MyByteToMessageCodec.class);
@@ -136,7 +136,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<MessageProtocol> {
                 pipeline.remove(IdleStateHandler.class);
                 pipeline.remove(ServerHeartBeatHandler.class);
                 pipeline.remove(VpnRegisterHandler.class);
-                if (pipeline.get(AuthHandler.class) != null){
+                if (pipeline.get(AuthHandler.class) != null) {
                     pipeline.remove(AuthHandler.class);
                 }
                 pipeline.addLast(new DataTransferHandler());

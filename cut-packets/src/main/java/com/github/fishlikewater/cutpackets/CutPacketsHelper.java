@@ -6,7 +6,6 @@ import io.netty.channel.Channel;
 import jpcap.JpcapCaptor;
 import jpcap.JpcapSender;
 import jpcap.NetworkInterface;
-import jpcap.packet.Packet;
 import jpcap.packet.TCPPacket;
 
 import java.io.IOException;
@@ -16,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p>
- *  网卡数据包拦截
+ * 网卡数据包拦截
  * </p>
  *
  * @author fishlikewater@126.com
@@ -24,11 +23,11 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 public class CutPacketsHelper {
 
-    private  JpcapSender jpcapSender;
+    private JpcapSender jpcapSender;
 
     private final Map<String, Long> map = new ConcurrentHashMap<>(100);
 
-    public void startCutPackets(String ipPrefix, Channel channel){
+    public void startCutPackets(String ipPrefix, Channel channel) {
         NetworkInterface[] devices = JpcapCaptor.getDeviceList();
         int k = 0;
         for (NetworkInterface n : devices) {
@@ -47,7 +46,7 @@ public class CutPacketsHelper {
             jpcapSender = jpcap.getJpcapSenderInstance();
             jpcap.setFilter("tcp and dst net " + ipPrefix + "0/24", true);
             jpcap.loopPacket(-1, packet -> {
-                if (packet instanceof TCPPacket){
+                if (packet instanceof TCPPacket) {
                     final TCPPacket tcpPacket = (TCPPacket) packet;
                     final boolean syn = tcpPacket.syn;
                     final boolean ack = tcpPacket.ack;
@@ -58,13 +57,13 @@ public class CutPacketsHelper {
                     final int dstPort = tcpPacket.dst_port;
                     String dst = dstIp + ":" + dstPort;
                     long requestId = 0;
-                    if (syn && !ack){
+                    if (syn && !ack) {
                         requestId = IdUtil.id();
                         map.put(src + "_" + dst, requestId);
-                    }else {
+                    } else {
                         requestId = map.get(src + "_" + dst);
                     }
-                    if (requestId == 0){
+                    if (requestId == 0) {
                         requestId = IdUtil.id();
                         map.put(src + "_" + dst, requestId);
                     }
@@ -88,7 +87,7 @@ public class CutPacketsHelper {
     }
 
 
-    public void send(String srcIp, int srcPort, byte[] data){
+    public void send(String srcIp, int srcPort, byte[] data) {
         //final TCPPacket packet = new TCPPacket(srcIp, srcPort);
         //jpcapSender.sendPacket(packet);
     }

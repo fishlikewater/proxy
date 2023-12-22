@@ -38,13 +38,11 @@ public class HandleKit {
     public static void handlerAck(ChannelHandlerContext ctx, MessageProtocol msg) {
         final Channel socksChannel1 = ctx.channel().attr(Socks5Kit.CHANNELS_SOCKS).get().get(msg.getId());
         if (Objects.nonNull(socksChannel1) && socksChannel1.isActive()) {
-            if (msg.getState() == 1)
-            {
+            if (msg.getState() == 1) {
                 Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
                 socksChannel1.writeAndFlush(commandResponse);
             }
-            if (msg.getState() == 0)
-            {
+            if (msg.getState() == 0) {
                 Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, Socks5AddressType.IPv4);
                 socksChannel1.writeAndFlush(commandResponse);
             }
@@ -90,7 +88,7 @@ public class HandleKit {
 
 
     public static void afterRegister(ChannelHandlerContext ctx, ProxyConfig proxyConfig) throws InterruptedException {
-        if (StrUtil.isNotBlank(proxyConfig.getLinkIp())){
+        if (StrUtil.isNotBlank(proxyConfig.getLinkIp())) {
             final ChannelFuture future = getChannelFuture(ctx, proxyConfig);
             //连接成功后 发送消息 表明需要建立数据通道
             final MessageProtocol messageProtocol = new MessageProtocol();

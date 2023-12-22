@@ -4,16 +4,16 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
  * <p>
- *  默认ip池实现
+ * 默认ip池实现
  * </p>
  *
  * @author fishlikewater@126.com
  * @since 2023年03月17日 10:55
  **/
-public class LocalIpPool implements IpPool{
+public class LocalIpPool implements IpPool {
 
     private final static ConcurrentLinkedDeque<Integer> IP_POOL = new ConcurrentLinkedDeque<>();
-    private final static int MAX_IP =255;
+    private final static int MAX_IP = 255;
 
     static {
         for (int i = 1; i < MAX_IP; i++) {

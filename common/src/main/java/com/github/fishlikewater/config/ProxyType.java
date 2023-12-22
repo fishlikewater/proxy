@@ -6,9 +6,13 @@ package com.github.fishlikewater.config;
  * @since 2019年03月05日 16:15
  **/
 public enum ProxyType {
-    /** socks5*/
+    /**
+     * socks5
+     */
     socks,
-    /** 中转服务器*/
+    /**
+     * 中转服务器
+     */
     proxy_server,
 
 }

@@ -35,7 +35,7 @@ public class HandleKit {
     }
 
 
-    public static boolean checkRegisterNameIsUse(String registerName, long requestId, ChannelHandlerContext ctx){
+    public static boolean checkRegisterNameIsUse(String registerName, long requestId, ChannelHandlerContext ctx) {
         final Channel channel = ChannelGroupKit.find(registerName);
         if (channel != null && channel.isActive()) {
             final MessageProtocol failMsg = new MessageProtocol();

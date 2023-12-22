@@ -21,7 +21,7 @@ public class BootStrapFactory {
     private static final ReentrantLock LOCK = new ReentrantLock();
 
 
-    public static ServerBootstrap getServerBootstrap(){
+    public static ServerBootstrap getServerBootstrap() {
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.option(ChannelOption.SO_REUSEADDR, true);
@@ -35,13 +35,13 @@ public class BootStrapFactory {
         return bootstrap;
     }
 
-    public static Bootstrap getBootstrap(ChannelHandlerContext ctx){
-        if (Objects.nonNull(bootstrap)){
+    public static Bootstrap getBootstrap(ChannelHandlerContext ctx) {
+        if (Objects.nonNull(bootstrap)) {
             return bootstrap;
         }
-        try{
+        try {
             LOCK.lock();
-            if (Objects.nonNull(bootstrap)){
+            if (Objects.nonNull(bootstrap)) {
                 return bootstrap;
             }
             bootstrap = new Bootstrap();
@@ -55,15 +55,15 @@ public class BootStrapFactory {
             } else {
                 bootstrap.channel(NioSocketChannel.class);
             }
-            bootstrap.handler(new ChannelInitializer<Channel>(){
+            bootstrap.handler(new ChannelInitializer<Channel>() {
                 @Override
-                protected void initChannel(Channel ch){
+                protected void initChannel(Channel ch) {
 
                 }
             });
             return bootstrap;
 
-        }finally {
+        } finally {
             LOCK.unlock();
         }
 

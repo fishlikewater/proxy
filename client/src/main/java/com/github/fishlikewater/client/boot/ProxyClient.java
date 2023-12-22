@@ -91,9 +91,9 @@ public class ProxyClient {
             ChannelKit.setChannel(this.channel);
             Socks5Kit.setChannel(this.channel);
             if (proxyConfig.isOpenSocks5()) {
-                if (Objects.nonNull(socksServerBoot)){
+                if (Objects.nonNull(socksServerBoot)) {
                     socksServerBoot.stop();
-                }else {
+                } else {
                     socksServerBoot = new SocksServerBoot(socks5Config);
                 }
                 socksServerBoot.start();
@@ -118,7 +118,7 @@ public class ProxyClient {
     }
 
     public void stop() {
-        if (Objects.nonNull(socksServerBoot)){
+        if (Objects.nonNull(socksServerBoot)) {
             socksServerBoot.stop();
         }
         log.info("⬢ client shutdown ...");

@@ -9,9 +9,9 @@ import cn.hutool.core.util.StrUtil;
 public class DefaultConnectionValidate implements ConnectionValidate {
     @Override
     public boolean validate(String token, String verify) {
-        if(StrUtil.isEmpty(verify)){
+        if (StrUtil.isEmpty(verify)) {
             return true;
-        }else {
+        } else {
             return verify.equals(token);
         }
     }

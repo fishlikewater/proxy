@@ -26,7 +26,7 @@ public class CutPacketsApplication implements CommandLineRunner, DisposableBean 
 
     @Override
     public void destroy() throws Exception {
-        if (cutPacketsBoot != null){
+        if (cutPacketsBoot != null) {
             cutPacketsBoot.stop();
         }
     }

@@ -13,12 +13,12 @@ public class IdUtil {
     private static final IdWorker idWorker = IdWorkerFactory.create(1);
 
 
-    public static String next(){
+    public static String next() {
 
         return String.valueOf(idWorker.nextId());
     }
 
-    public static long id(){
+    public static long id() {
 
         return idWorker.nextId();
     }

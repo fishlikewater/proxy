@@ -17,7 +17,7 @@ public class ConnectionListener implements ChannelFutureListener {
 
     private final ProxyClient client;
 
-    public ConnectionListener(ProxyClient client){
+    public ConnectionListener(ProxyClient client) {
         this.client = client;
     }
 
