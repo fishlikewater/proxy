@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Socks5Initializer extends ChannelInitializer<Channel> {
 
-
     private final Socks5Config socks5Config;
 
     public Socks5Initializer(Socks5Config socks5Config) {
@@ -39,7 +38,5 @@ public class Socks5Initializer extends ChannelInitializer<Channel> {
         p.addFirst(new Socks5InitialRequestDecoder());
         /* Socks connection handler */
         p.addLast(new Socks5CommandRequestHandler(socks5Config));
-
-
     }
 }

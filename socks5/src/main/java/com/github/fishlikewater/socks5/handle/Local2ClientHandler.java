@@ -18,7 +18,6 @@ import java.io.IOException;
 @Slf4j
 public class Local2ClientHandler extends ChannelInboundHandlerAdapter {
 
-
     private final Channel channel;
 
     public Local2ClientHandler(Channel channel) {

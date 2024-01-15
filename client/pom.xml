@@ -89,7 +89,9 @@
                 <version>2.4</version>
                 <configuration>
                     <archive>
+                        <addMavenDescriptor>true</addMavenDescriptor>
                         <manifest>
+                            <useUniqueVersions>false</useUniqueVersions>
                             <mainClass>com.github.fishlikewater.client.ClientApplication</mainClass>
                             <classpathPrefix>lib/</classpathPrefix>
                             <addClasspath>true</addClasspath>

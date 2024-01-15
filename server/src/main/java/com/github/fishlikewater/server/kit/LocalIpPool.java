@@ -12,8 +12,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  **/
 public class LocalIpPool implements IpPool {
 
-    private final static ConcurrentLinkedDeque<Integer> IP_POOL = new ConcurrentLinkedDeque<>();
-    private final static int MAX_IP = 255;
+    private static final ConcurrentLinkedDeque<Integer> IP_POOL = new ConcurrentLinkedDeque<>();
+    private static final int MAX_IP = 255;
 
     static {
         for (int i = 1; i < MAX_IP; i++) {

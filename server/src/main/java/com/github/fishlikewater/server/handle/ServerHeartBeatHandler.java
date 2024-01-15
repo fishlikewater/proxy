@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ServerHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
-
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
@@ -28,7 +27,6 @@ public class ServerHeartBeatHandler extends ChannelInboundHandlerAdapter {
         } else {
             super.userEventTriggered(ctx, evt);
         }
-
     }
 
 }

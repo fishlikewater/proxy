@@ -98,9 +98,9 @@ public class ProxyClient {
                 }
                 socksServerBoot.start();
             }
-
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
             log.error("start client server fail", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -125,7 +125,6 @@ public class ProxyClient {
         try {
             if (this.bossGroup != null) {
                 this.bossGroup.shutdownGracefully().addListener(f -> {
-
                 });
             }
             log.info("⬢ client shutdown successful");

@@ -1,9 +1,11 @@
 package com.github.fishlikewater.server.kit;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.github.fishlikewater.codec.MessageProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
@@ -17,10 +19,11 @@ import java.nio.charset.StandardCharsets;
  * @since 2022年10月01日 16:37
  **/
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HandleKit {
 
     public static boolean checkRegisterName(ChannelHandlerContext ctx, String registerName, long requestId) {
-        if (StrUtil.isBlank(registerName)) {
+        if (CharSequenceUtil.isBlank(registerName)) {
             final MessageProtocol failMsg = new MessageProtocol();
             failMsg
                     .setId(requestId)
@@ -33,7 +36,6 @@ public class HandleKit {
         }
         return true;
     }
-
 
     public static boolean checkRegisterNameIsUse(String registerName, long requestId, ChannelHandlerContext ctx) {
         final Channel channel = ChannelGroupKit.find(registerName);

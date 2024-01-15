@@ -9,10 +9,10 @@ public enum ProxyType {
     /**
      * socks5
      */
-    socks,
+    SOCKS,
     /**
      * 中转服务器
      */
-    proxy_server,
+    PROXY_SERVER,
 
 }

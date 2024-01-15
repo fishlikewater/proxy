@@ -27,7 +27,6 @@ public class ConnectionListener implements ChannelFutureListener {
             log.info("connect fail, will reconnect");
             final EventLoop loop = channelFuture.channel().eventLoop();
             loop.schedule(client::start, 30, TimeUnit.SECONDS);
-
         }
     }
 }

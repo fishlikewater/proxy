@@ -18,7 +18,6 @@ import static com.github.fishlikewater.server.kit.ChannelGroupKit.DATA_CHANNEL;
  **/
 public class DataTransferHandler extends SimpleChannelInboundHandler<Object> {
 
-
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
         if (msg instanceof ByteBuf) {

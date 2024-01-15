@@ -1,6 +1,6 @@
 package com.github.fishlikewater.client.handle;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.github.fishlikewater.client.boot.BootStrapFactory;
 import com.github.fishlikewater.client.config.ProxyConfig;
 import com.github.fishlikewater.codec.ByteArrayCodec;
@@ -16,6 +16,8 @@ import io.netty.handler.codec.socksx.v5.Socks5AddressType;
 import io.netty.handler.codec.socksx.v5.Socks5CommandResponse;
 import io.netty.handler.codec.socksx.v5.Socks5CommandStatus;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
@@ -33,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 2022年11月20日 14:40
  **/
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HandleKit {
 
     public static void handlerAck(ChannelHandlerContext ctx, MessageProtocol msg) {
@@ -88,7 +91,7 @@ public class HandleKit {
 
 
     public static void afterRegister(ChannelHandlerContext ctx, ProxyConfig proxyConfig) throws InterruptedException {
-        if (StrUtil.isNotBlank(proxyConfig.getLinkIp())) {
+        if (CharSequenceUtil.isNotBlank(proxyConfig.getLinkIp())) {
             final ChannelFuture future = getChannelFuture(ctx, proxyConfig);
             //连接成功后 发送消息 表明需要建立数据通道
             final MessageProtocol messageProtocol = new MessageProtocol();
@@ -102,7 +105,7 @@ public class HandleKit {
             future.channel().writeAndFlush(messageProtocol).addListener(future1 -> {
                 if (future1.isSuccess()) {
                     Socks5Kit.setChannel(future.channel());
-                    Socks5Kit.channel.attr(Socks5Kit.CHANNELS_SOCKS).set(new ConcurrentHashMap<>(16));
+                    Socks5Kit.getChannel().attr(Socks5Kit.CHANNELS_SOCKS).set(new ConcurrentHashMap<>(16));
                     log.info("成功发送建立数据通道请求...");
                 }
             });

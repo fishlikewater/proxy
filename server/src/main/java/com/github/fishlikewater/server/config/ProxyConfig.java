@@ -77,7 +77,7 @@ public class ProxyConfig {
     /**
      * 每一帧最大字节
      */
-    private DataSize maxFrameLength = DataSize.ofBytes(5 * 1024 * 1024);
+    private DataSize maxFrameLength = DataSize.ofBytes(5 * 1024 * 1024L);
 
     private int[] localPorts;
 
@@ -96,9 +96,9 @@ public class ProxyConfig {
         if (next >= localPorts.length) {
             next = 0;
         }
-        int port = localPorts[next];
+        int localPort = localPorts[next];
         next++;
-        return port;
+        return localPort;
     }
 }
 

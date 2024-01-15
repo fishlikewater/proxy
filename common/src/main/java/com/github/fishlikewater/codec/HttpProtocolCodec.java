@@ -10,12 +10,13 @@ import java.util.Objects;
 
 /**
  * <p>
- *
+ * @deprecated
  * </p>
  *
  * @author fishlikewater@126.com
  * @since 2023年02月07日 11:05
  **/
+@Deprecated
 public class HttpProtocolCodec extends ByteToMessageCodec<HttpProtocol> {
     @Override
     protected void encode(ChannelHandlerContext ctx, HttpProtocol msg, ByteBuf out) {

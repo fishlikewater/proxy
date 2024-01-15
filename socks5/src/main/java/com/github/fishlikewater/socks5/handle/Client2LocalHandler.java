@@ -22,7 +22,6 @@ public class Client2LocalHandler extends ChannelInboundHandlerAdapter {
 
     private final Channel channel;
 
-
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
         boolean canWrite = ctx.channel().isWritable();
@@ -31,7 +30,6 @@ public class Client2LocalHandler extends ChannelInboundHandlerAdapter {
         channel.config().setAutoRead(canWrite);
         super.channelWritabilityChanged(ctx);
     }
-
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
@@ -43,11 +41,6 @@ public class Client2LocalHandler extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) {
         log.debug("客户端断开连接");
         channel.close();
-    }
-
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx);
     }
 
     @Override

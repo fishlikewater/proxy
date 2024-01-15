@@ -22,16 +22,6 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
     private final ProxyConfig proxyConfig;
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
-    }
-
-    @Override
-    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        super.handlerRemoved(ctx);
-    }
-
-    @Override
     protected void channelRead0(final ChannelHandlerContext ctx, DefaultSocks5CommandRequest msg) {
         log.debug("目标服务器  : " + msg.type() + "," + msg.dstAddr() + "," + msg.dstPort());
         if (msg.type().equals(Socks5CommandType.CONNECT)) {
@@ -39,7 +29,7 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
             bootstrap.handler(new ChannelInitializer<Channel>() {
                 @Override
                 protected void initChannel(Channel ch) {
-
+                    log.info("empty handler");
                 }
             });
             if (proxyConfig.isUseLocalPorts()) {

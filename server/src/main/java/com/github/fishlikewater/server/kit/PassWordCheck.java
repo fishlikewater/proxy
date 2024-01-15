@@ -1,6 +1,8 @@
 package com.github.fishlikewater.server.kit;
 
 import io.netty.handler.codec.http.HttpRequest;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,6 +14,7 @@ import java.util.Base64;
  * @since 2019年02月27日 12:51
  **/
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PassWordCheck {
 
     @Setter

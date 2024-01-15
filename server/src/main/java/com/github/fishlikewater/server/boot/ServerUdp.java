@@ -26,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ServerUdp {
 
-
     private final String address;
 
     private final int port;
@@ -47,7 +46,6 @@ public class ServerUdp {
                 workGroup = new NioEventLoopGroup(0, new NamedThreadFactory("udp-nio-work@"));
                 bootstrap.group(workGroup).channel(NioDatagramChannel.class);
             }
-            //bootstrap.handler(new ClientHandlerInitializer(proxyConfig, this));
         }
     }
 
@@ -57,6 +55,7 @@ public class ServerUdp {
             bootstrap.bind(address, port).sync();
         } catch (InterruptedException e) {
             log.error("udp启动失败", e);
+            Thread.currentThread().interrupt();
             stop();
         }
     }
@@ -65,7 +64,6 @@ public class ServerUdp {
         try {
             if (this.workGroup != null) {
                 this.workGroup.shutdownGracefully().addListener(f -> {
-
                 });
             }
             log.info("⬢ udp shutdown successful");

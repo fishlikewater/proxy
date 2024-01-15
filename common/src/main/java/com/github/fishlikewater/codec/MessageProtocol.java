@@ -50,7 +50,6 @@ public class MessageProtocol {
      **/
     private byte[] bytes;
 
-
     @Data
     public static class Dst implements Serializable {
 
@@ -58,7 +57,6 @@ public class MessageProtocol {
 
         private int dstPort;
     }
-
 
     @Getter
     public enum CmdEnum implements Serializable {
@@ -98,7 +96,6 @@ public class MessageProtocol {
             return null;
         }
     }
-
 
     @Getter
     public enum ProtocolEnum implements Serializable {

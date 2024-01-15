@@ -25,16 +25,13 @@ public class ClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-
         // 判断evt是否是IdleStateEvent（用于触发用户事件，包含 读空闲/写空闲/读写空闲 ）
         if (evt instanceof IdleStateEvent) {
-            //IdleStateEvent event = (IdleStateEvent) evt;        // 强制类型转换
-            ctx.channel().writeAndFlush(HEARTBEAT_SEQUENCE).addListener((future) -> {
+            ctx.channel().writeAndFlush(HEARTBEAT_SEQUENCE).addListener(future -> {
                 if (!future.isSuccess()) {
                     log.warn("发送心跳包失败...");
                 }
-
-            });//(ChannelFutureListener.CLOSE_ON_FAILURE);
+            });
         } else {
             super.userEventTriggered(ctx, evt);
         }

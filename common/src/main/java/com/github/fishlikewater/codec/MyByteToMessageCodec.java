@@ -34,7 +34,6 @@ public class MyByteToMessageCodec extends ByteToMessageCodec<MessageProtocol> {
         out.setInt(0, length - 4);
     }
 
-
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
         if (in.isReadable()) {

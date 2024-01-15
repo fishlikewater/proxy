@@ -10,6 +10,7 @@ import java.util.Map;
 
 /**
  * <p>
+ * @deprecated
  * 专为http消息穿透设计
  * </p>
  *
@@ -17,8 +18,9 @@ import java.util.Map;
  * @since 2023年02月07日 10:52
  **/
 @Data
-@Accessors(chain = true)
 @EqualsAndHashCode
+@Accessors(chain = true)
+@Deprecated
 public class HttpProtocol implements Serializable {
 
     /**
@@ -30,7 +32,6 @@ public class HttpProtocol implements Serializable {
      * 消息类型
      **/
     private HttpProtocol.CmdEnum cmd;
-
 
     /**
      * 目标服务名
@@ -57,24 +58,20 @@ public class HttpProtocol implements Serializable {
      */
     private String method;
 
-
     /**
      * http版本
      */
     private String version;
-
 
     /**
      * 响应码
      */
     private int code;
 
-
     /**
      * 消息类容
      **/
     private byte[] bytes;
-
 
     @Getter
     public enum CmdEnum implements Serializable {

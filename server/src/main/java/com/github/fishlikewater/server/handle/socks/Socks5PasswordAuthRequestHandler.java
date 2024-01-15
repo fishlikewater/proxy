@@ -1,6 +1,6 @@
 package com.github.fishlikewater.server.handle.socks;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.github.fishlikewater.server.config.ProxyConfig;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,7 +26,7 @@ public class Socks5PasswordAuthRequestHandler extends SimpleChannelInboundHandle
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DefaultSocks5PasswordAuthRequest msg) {
-        if (StrUtil.equals(proxyConfig.getSocksName(), msg.username()) && StrUtil.equals(proxyConfig.getSocksPassWord(), msg.password())) {
+        if (CharSequenceUtil.equals(proxyConfig.getSocksName(), msg.username()) && CharSequenceUtil.equals(proxyConfig.getSocksPassWord(), msg.password())) {
             Socks5PasswordAuthResponse passwordAuthResponse = new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.SUCCESS);
             ctx.writeAndFlush(passwordAuthResponse);
             ctx.channel().attr(Socks5Constant.ACCOUNT).set(msg.username());

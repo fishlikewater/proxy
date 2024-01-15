@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
  * @date 2019年07月01日 12:12
- * @since
  **/
 public class IdWorkerHandler {
 

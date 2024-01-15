@@ -2,7 +2,9 @@ package com.github.fishlikewater.server.kit;
 
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,8 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 2019年07月09日 17:16
  **/
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ChannelGroupKit {
-
 
     /**
      * 目标机路径属性

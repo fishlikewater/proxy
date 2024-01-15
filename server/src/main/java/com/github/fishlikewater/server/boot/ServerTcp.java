@@ -68,6 +68,7 @@ public class ServerTcp {
             ch.closeFuture().addListener(t -> log.info("⬢  {}服务开始关闭", proxyType));
         } catch (InterruptedException e) {
             log.error("⬢ start server fail", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -84,8 +85,9 @@ public class ServerTcp {
                 this.workerGroup.shutdownGracefully().sync();
             }
             log.info("⬢ {} shutdown successful", proxyType);
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
             log.error("⬢ {} shutdown error", proxyType, e);
+            Thread.currentThread().interrupt();
         }
     }
 

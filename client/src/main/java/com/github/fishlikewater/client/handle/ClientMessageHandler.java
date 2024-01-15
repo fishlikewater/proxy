@@ -34,11 +34,6 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx);
-    }
-
-    @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         final EventLoop loop = ctx.channel().eventLoop();
         loop.schedule(client::start, 30, TimeUnit.SECONDS);
@@ -60,8 +55,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 } else {
                     final EventLoop loop = ctx.channel().eventLoop();
                     msg.setState((byte) 1);
-                    loop.schedule(() -> HandleKit.toRegister(msg, ctx, client.getProxyConfig())
-                            , 30, TimeUnit.SECONDS);
+                    loop.schedule(() -> HandleKit.toRegister(msg, ctx, client.getProxyConfig()), 30, TimeUnit.SECONDS);
                 }
                 break;
             case DATA_CHANNEL:

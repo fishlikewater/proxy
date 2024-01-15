@@ -1,13 +1,13 @@
 package com.github.fishlikewater.kit.idwork;
 
 /**
- * StardardIdWorker
+ * @code StardardIdWorker
  *
  * @author mayanjun(5 / 1 / 16)
  */
 public class StardardIdWorker implements IdWorker {
 
-    private IdWorkerHandler handler;
+    private final IdWorkerHandler handler;
 
     public StardardIdWorker(int... indexes) {
         handler = new IdWorkerHandler(indexes);

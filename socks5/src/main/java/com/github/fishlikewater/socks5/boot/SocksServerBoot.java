@@ -66,13 +66,14 @@ public class SocksServerBoot {
         try {
             Channel ch = serverBootstrap.bind(socks5Config.getAddress(), socks5Config.getPort()).addListener(future -> {
                 if (future.isSuccess()) {
-                    Socks5Kit.channel.attr(Socks5Kit.CHANNELS_SOCKS).set(new ConcurrentHashMap<>(16));
+                    Socks5Kit.getChannel().attr(Socks5Kit.CHANNELS_SOCKS).set(new ConcurrentHashMap<>(16));
                 }
             }).sync().channel();
             log.info("⬢ start server this port:{} and address:{} proxy type: socks5", socks5Config.getPort(), socks5Config.getAddress());
             ch.closeFuture().addListener(t -> log.info("⬢  socks5服务开始关闭"));
         } catch (InterruptedException e) {
             log.error("⬢ start server fail", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -88,8 +89,9 @@ public class SocksServerBoot {
                 this.workerGroup.shutdownGracefully().sync();
             }
             log.info("⬢ shutdown socks5 successful");
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
             log.error("⬢ socks5 shutdown error", e);
+            Thread.currentThread().interrupt();
         }
     }
 

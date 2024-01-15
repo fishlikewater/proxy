@@ -3,10 +3,12 @@ package com.github.fishlikewater.kit;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 /**
@@ -17,9 +19,8 @@ import java.util.Base64;
  * @author fishlikewater@126.com
  * @since 2023年02月16日 12:02
  **/
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class KryoUtil {
-
-    private static final String DEFAULT_ENCODING = "UTF-8";
 
     private static final ThreadLocal<Kryo> KRYO_LOCAL = ThreadLocal.withInitial(() -> {
         Kryo kryo = new Kryo();
@@ -27,6 +28,10 @@ public class KryoUtil {
         kryo.setRegistrationRequired(false);
         return kryo;
     });
+
+    public static void remove() {
+        KRYO_LOCAL.remove();
+    }
 
     /**
      * 获取kryo对象
@@ -67,11 +72,7 @@ public class KryoUtil {
      * @since 2023/2/16 16:05
      */
     public static <T> String writeToString(T obj) {
-        try {
-            return new String(Base64.getEncoder().encode(writeToByteArray(obj)), DEFAULT_ENCODING);
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);
-        }
+        return new String(Base64.getEncoder().encode(writeToByteArray(obj)), StandardCharsets.UTF_8);
     }
 
 
@@ -99,11 +100,7 @@ public class KryoUtil {
      * @return 原对象
      */
     public static <T> T readFromString(String str) {
-        try {
-            return readFromByteArray(Base64.getDecoder().decode(str.getBytes(DEFAULT_ENCODING)));
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);
-        }
+        return readFromByteArray(Base64.getDecoder().decode(str.getBytes(StandardCharsets.UTF_8)));
     }
 
 
@@ -134,11 +131,7 @@ public class KryoUtil {
      * @return 序列化后的字符串
      */
     public static <T> String writeObjectToString(T obj) {
-        try {
-            return new String(Base64.getEncoder().encode(writeObjectToByteArray(obj)), DEFAULT_ENCODING);
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);
-        }
+        return new String(Base64.getEncoder().encode(writeObjectToByteArray(obj)), StandardCharsets.UTF_8);
     }
 
     /**
@@ -167,11 +160,7 @@ public class KryoUtil {
      * @return 原对象
      */
     public static <T> T readObjectFromString(String str, Class<T> clazz) {
-        try {
-            return readObjectFromByteArray(Base64.getDecoder().decode(str.getBytes(DEFAULT_ENCODING)), clazz);
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);
-        }
+        return readObjectFromByteArray(Base64.getDecoder().decode(str.getBytes(StandardCharsets.UTF_8)), clazz);
     }
 
 }

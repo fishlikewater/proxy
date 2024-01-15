@@ -3,7 +3,6 @@ package com.github.fishlikewater.kit.idwork;
 /**
  * @author <p><a>fishlikewater@126.com</a></p>
  * @date 2019年07月01日 12:11
- * @since
  **/
 public interface IdWorker {
 

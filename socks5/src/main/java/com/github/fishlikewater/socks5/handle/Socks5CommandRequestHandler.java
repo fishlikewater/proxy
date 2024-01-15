@@ -1,7 +1,7 @@
 package com.github.fishlikewater.socks5.handle;
 
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.github.fishlikewater.codec.MessageProtocol;
 import com.github.fishlikewater.kit.IdUtil;
 import com.github.fishlikewater.socks5.boot.BootStrapFactory;
@@ -42,12 +42,6 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
         }
     }
 
-
-    @Override
-    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        super.handlerRemoved(ctx);
-    }
-
     @Override
     protected void channelRead0(final ChannelHandlerContext ctx, DefaultSocks5CommandRequest msg) {
         log.debug("目标服务器  : " + msg.type() + "," + msg.dstAddr() + "," + msg.dstPort());
@@ -61,8 +55,8 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                 dstAddr = ip;
             }
             final String filterIp = socks5Config.getFilterIp();
-            if (StrUtil.isNotBlank(filterIp)) {
-                if (!StrUtil.startWith(dstAddr, filterIp)) {
+            if (CharSequenceUtil.isNotBlank(filterIp)) {
+                if (!CharSequenceUtil.startWith(dstAddr, filterIp)) {
                     handlerLocal(ctx, msg);
                 } else {
                     handlerProxy(ctx, msg, dst, dstAddr, requestId);
@@ -78,45 +72,53 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
     private void handlerProxy(ChannelHandlerContext ctx, DefaultSocks5CommandRequest msg, MessageProtocol.Dst dst, String dstAddr, Long requestId) {
         dst.setDstAddress(dstAddr);
         dst.setDstPort(msg.dstPort());
-        Socks5Kit.channel.attr(Socks5Kit.CHANNELS_SOCKS).get().put(requestId, ctx.channel());
+        Socks5Kit.getChannel().attr(Socks5Kit.CHANNELS_SOCKS).get().put(requestId, ctx.channel());
         final ChannelPipeline pipeline = ctx.channel().pipeline();
         if (socks5Config.isCheckConnect()) {
-            MessageProtocol message = new MessageProtocol();
-            message
-                    .setCmd(MessageProtocol.CmdEnum.CONNECTION)
-                    .setId(requestId)
-                    .setDst(dst)
-                    .setProtocol(MessageProtocol.ProtocolEnum.SOCKS);
-            Socks5Kit.channel.writeAndFlush(message).addListener(future -> {
-                if (future.isSuccess()) {
-                    if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
-                        ctx.pipeline().remove(Socks5CommandRequestHandler.class);
-                    }
-                    ctx.pipeline().remove(Socks5InitialAuthHandler.class);
-                    ctx.pipeline().remove(Socks5InitialRequestDecoder.class);
-                    ctx.pipeline().remove(Socks5CommandRequestDecoder.class);
-                    ctx.pipeline().addLast(new Client2DestHandler(requestId, dst));
-                } else {
-                    log.info("无法连接目标");
-                }
-            });
+            this.mustCheckConnection(ctx, dst, requestId);
         } else {
-            Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
-            pipeline.remove(Socks5InitialAuthHandler.class);
-            pipeline.remove(Socks5InitialRequestDecoder.class);
-            pipeline.remove(Socks5CommandRequestDecoder.class);
-            pipeline.addLast(new Client2DestHandler(requestId, dst));
-            if (pipeline.get(Socks5CommandRequestHandler.class) != null) {
-                pipeline.remove(Socks5CommandRequestHandler.class);
-            }
-            if (ctx.pipeline().get(Socks5PasswordAuthRequestHandler.class) != null) {
-                ctx.pipeline().remove(Socks5PasswordAuthRequestHandler.class);
-            }
-            if (ctx.pipeline().get(Socks5PasswordAuthRequestDecoder.class) != null) {
-                ctx.pipeline().remove(Socks5PasswordAuthRequestDecoder.class);
-            }
-            ctx.channel().writeAndFlush(commandResponse);
+            this.notCheckConnection(ctx, dst, requestId, pipeline);
         }
+    }
+
+    private void mustCheckConnection(ChannelHandlerContext ctx, MessageProtocol.Dst dst, Long requestId) {
+        MessageProtocol message = new MessageProtocol();
+        message
+                .setCmd(MessageProtocol.CmdEnum.CONNECTION)
+                .setId(requestId)
+                .setDst(dst)
+                .setProtocol(MessageProtocol.ProtocolEnum.SOCKS);
+        Socks5Kit.getChannel().writeAndFlush(message).addListener(future -> {
+            if (future.isSuccess()) {
+                if (ctx.pipeline().get(Socks5CommandRequestHandler.class) != null) {
+                    ctx.pipeline().remove(Socks5CommandRequestHandler.class);
+                }
+                ctx.pipeline().remove(Socks5InitialAuthHandler.class);
+                ctx.pipeline().remove(Socks5InitialRequestDecoder.class);
+                ctx.pipeline().remove(Socks5CommandRequestDecoder.class);
+                ctx.pipeline().addLast(new Client2DestHandler(requestId, dst));
+            } else {
+                log.info("无法连接目标");
+            }
+        });
+    }
+
+    private void notCheckConnection(ChannelHandlerContext ctx, MessageProtocol.Dst dst, Long requestId, ChannelPipeline pipeline) {
+        Socks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, Socks5AddressType.IPv4);
+        pipeline.remove(Socks5InitialAuthHandler.class);
+        pipeline.remove(Socks5InitialRequestDecoder.class);
+        pipeline.remove(Socks5CommandRequestDecoder.class);
+        pipeline.addLast(new Client2DestHandler(requestId, dst));
+        if (pipeline.get(Socks5CommandRequestHandler.class) != null) {
+            pipeline.remove(Socks5CommandRequestHandler.class);
+        }
+        if (ctx.pipeline().get(Socks5PasswordAuthRequestHandler.class) != null) {
+            ctx.pipeline().remove(Socks5PasswordAuthRequestHandler.class);
+        }
+        if (ctx.pipeline().get(Socks5PasswordAuthRequestDecoder.class) != null) {
+            ctx.pipeline().remove(Socks5PasswordAuthRequestDecoder.class);
+        }
+        ctx.channel().writeAndFlush(commandResponse);
     }
 
     private static void handlerLocal(ChannelHandlerContext ctx, DefaultSocks5CommandRequest msg) {
@@ -152,7 +154,6 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
         }
     }
 
-
     /**
      * 将客户端的消息转发给目标服务器端
      *
@@ -174,10 +175,9 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
             boolean canWrite = ctx.channel().isWritable();
             log.trace(ctx.channel() + " 可写性：" + canWrite);
             //流量控制，不允许继续读
-            Socks5Kit.channel.config().setAutoRead(canWrite);
+            Socks5Kit.getChannel().config().setAutoRead(canWrite);
             super.channelWritabilityChanged(ctx);
         }
-
 
         @Override
         public void channelRead0(ChannelHandlerContext ctx, Object msg) {
@@ -190,27 +190,22 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
                     .setCmd(MessageProtocol.CmdEnum.REQUEST)
                     .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
                     .setBytes(ByteBufUtil.getBytes(buf));
-            Socks5Kit.channel.writeAndFlush(message);
+            Socks5Kit.getChannel().writeAndFlush(message);
         }
 
         @Override
         public void channelInactive(ChannelHandlerContext ctx) {
-            final Long requestId = ctx.channel().attr(Socks5Kit.LOCAL_INFO).get();
+            final Long closeId = ctx.channel().attr(Socks5Kit.LOCAL_INFO).get();
             if (ObjectUtil.isNotNull(requestId)) {
-                Socks5Kit.channel.attr(Socks5Kit.CHANNELS_SOCKS).get().remove(requestId);
+                Socks5Kit.getChannel().attr(Socks5Kit.CHANNELS_SOCKS).get().remove(closeId);
             }
             log.debug("客户端断开连接");
             final MessageProtocol message = new MessageProtocol();
             message
-                    .setId(requestId)
+                    .setId(closeId)
                     .setCmd(MessageProtocol.CmdEnum.CLOSE)
                     .setProtocol(MessageProtocol.ProtocolEnum.SOCKS);
-            Socks5Kit.channel.writeAndFlush(message);
-        }
-
-        @Override
-        public void channelActive(ChannelHandlerContext ctx) throws Exception {
-            super.channelActive(ctx);
+            Socks5Kit.getChannel().writeAndFlush(message);
         }
 
         @Override

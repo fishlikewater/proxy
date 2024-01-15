@@ -7,6 +7,9 @@ import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
@@ -15,11 +18,12 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author <p><a>fishlikewater@126.com</a></p>
  * @since 2019年07月15日 15:50
  **/
+@Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BootStrapFactory {
 
     private static Bootstrap bootstrap;
     private static final ReentrantLock LOCK = new ReentrantLock();
-
 
     public static ServerBootstrap getServerBootstrap() {
         ServerBootstrap bootstrap = new ServerBootstrap();
@@ -58,7 +62,7 @@ public class BootStrapFactory {
             bootstrap.handler(new ChannelInitializer<Channel>() {
                 @Override
                 protected void initChannel(Channel ch) {
-
+                    log.info("socks empty handler");
                 }
             });
             return bootstrap;
