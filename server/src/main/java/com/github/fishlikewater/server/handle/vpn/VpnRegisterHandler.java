@@ -74,6 +74,7 @@ public class VpnRegisterHandler extends SimpleChannelInboundHandler<MessageProto
             mappingIp(ctx, msg, clientIp);
             final int ip = Integer.parseInt(clientIp.replaceAll(proxyConfig.getIpPrefix(), ""));
             ipPool.remove(ip);
+            return;
         }
         ctx.fireChannelRead(msg);
     }
