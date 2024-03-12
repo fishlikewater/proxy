@@ -104,7 +104,6 @@ public class HandleKit {
         });
     }
 
-
     public static void afterRegister(ChannelHandlerContext ctx, ProxyConfig proxyConfig) throws InterruptedException {
         if (CharSequenceUtil.isNotBlank(proxyConfig.getLinkIp())) {
             final ChannelFuture future = getChannelFuture(ctx, proxyConfig);
@@ -143,7 +142,6 @@ public class HandleKit {
         return bootstrap.connect().sync();
     }
 
-
     public static void handlerConnection(MessageProtocol msg, ChannelHandlerContext ctx) {
         final MessageProtocol.Dst dst = msg.getDst();
         Bootstrap bootstrap = BootStrapFactory.bootstrapConfig(ctx);
@@ -171,7 +169,6 @@ public class HandleKit {
             }
         });
     }
-
 
     public static void handlerConnection2(MessageProtocol msg, ChannelHandlerContext ctx, ProxyConfig proxyConfig) {
         final MessageProtocol.Dst dst = msg.getDst();
@@ -214,7 +211,6 @@ public class HandleKit {
         }
         return InetSocketAddress.createUnresolved("localhost", dstPort);
     }
-
 
     public static void handlerRequest(MessageProtocol msg, ChannelHandlerContext ctx, ProxyConfig proxyConfig) {
         final Channel channel = ctx.channel().attr(ChannelKit.CHANNELS_LOCAL).get().get(msg.getId());
@@ -271,7 +267,5 @@ public class HandleKit {
         future.channel().pipeline().addLast(new ByteArrayCodec());
         future.channel().pipeline().addLast(new ChunkedWriteHandler());
         future.channel().pipeline().addLast(new Dest2ClientHandler(ctx, msg.getId(), msg.getDst()));
-
     }
-
 }

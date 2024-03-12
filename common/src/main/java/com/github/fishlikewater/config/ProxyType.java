@@ -29,5 +29,4 @@ public enum ProxyType {
      * 中转服务器
      */
     PROXY_SERVER,
-
 }

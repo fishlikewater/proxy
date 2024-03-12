@@ -83,7 +83,6 @@ public class MyProtocolHandler extends SimpleChannelInboundHandler<MessageProtoc
         super.handlerAdded(ctx);
     }
 
-
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.info("远程发送异常");

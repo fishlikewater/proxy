@@ -55,7 +55,6 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
         super.channelInactive(ctx);
     }
 
-
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MessageProtocol msg) throws InterruptedException {
         final MessageProtocol.CmdEnum cmd = msg.getCmd();

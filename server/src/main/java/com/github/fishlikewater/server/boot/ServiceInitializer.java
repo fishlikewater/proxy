@@ -62,7 +62,6 @@ public class ServiceInitializer extends ChannelInitializer<Channel> {
         this.proxyType = proxyType;
         this.ipMapping = ServiceLoaderUtil.loadFirst(IpMapping.class);
         this.ipPool = ServiceLoaderUtil.loadFirst(IpPool.class);
-
     }
 
     @Override
@@ -95,7 +94,5 @@ public class ServiceInitializer extends ChannelInitializer<Channel> {
                     .addLast(new VpnRegisterHandler(ipMapping, ipPool, proxyConfig))
                     .addLast(new VpnMessageHandler(ipMapping));
         }
-
-
     }
 }

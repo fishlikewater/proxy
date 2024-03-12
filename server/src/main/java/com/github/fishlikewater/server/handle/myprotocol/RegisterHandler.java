@@ -99,7 +99,6 @@ public class RegisterHandler extends SimpleChannelInboundHandler<MessageProtocol
         }
     }
 
-
     /**
      * 每当从服务端收到客户端断开时，客户端的 Channel 移除 ChannelGroup 列表中，
      * 将ChannelHandler从实际上下文中删除，不再处理事件

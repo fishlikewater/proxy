@@ -32,5 +32,4 @@ public class Constant {
 
     public static final String CLIENT = "client";
     public static final String CALL = "call";
-
 }

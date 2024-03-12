@@ -75,7 +75,6 @@ public class Dest2ClientHandler extends SimpleChannelInboundHandler<byte[]> {
                 .setProtocol(MessageProtocol.ProtocolEnum.SOCKS);
         clientChannelContext.writeAndFlush(closeMsg);
         clientChannelContext.channel().attr(ChannelKit.CHANNELS_LOCAL).get().remove(requestId);
-
     }
 
     @Override

@@ -29,5 +29,4 @@ public enum BootModel {
     ONE_TO_ONE,
     //类vpn模式
     VPN
-
 }

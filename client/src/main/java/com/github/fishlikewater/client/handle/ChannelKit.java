@@ -40,5 +40,4 @@ public class ChannelKit {
     public static Channel getChannel() {
         return ChannelKit.channel;
     }
-
 }

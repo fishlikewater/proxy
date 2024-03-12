@@ -105,7 +105,5 @@ public class ProxyConfig {
         private boolean ssl = false;
 
     }
-
-
 }
 

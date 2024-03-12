@@ -46,7 +46,6 @@ public class ClientApplication implements CommandLineRunner, DisposableBean {
     public void run(String... args) {
         proxyClient = new ProxyClient(proxyConfig, socks5Config);
         proxyClient.run();
-
     }
 
     @Override

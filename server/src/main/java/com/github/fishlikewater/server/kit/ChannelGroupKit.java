@@ -73,5 +73,4 @@ public class ChannelGroupKit {
     public static Channel find(String id) {
         return CLIENT_CHANNEL_MAP.get(id);
     }
-
 }

@@ -38,7 +38,6 @@ public interface IpMapping {
      */
     void put(String ip, Channel channel);
 
-
     /**
      * 获取连接
      *
@@ -49,7 +48,6 @@ public interface IpMapping {
      */
     Channel getChannel(String ip);
 
-
     /**
      * 清除映射关系
      *
@@ -58,6 +56,4 @@ public interface IpMapping {
      * @since 2023/3/16 15:56
      */
     void remove(String ip);
-
-
 }

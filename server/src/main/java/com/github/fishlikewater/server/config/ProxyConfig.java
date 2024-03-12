@@ -103,7 +103,6 @@ public class ProxyConfig {
 
     private String ipPrefix = "192.168.12.";
 
-
     public int getOneLocalPort() {
         if (Objects.isNull(localPorts)) {
             return 0;

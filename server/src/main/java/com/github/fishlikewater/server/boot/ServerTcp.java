@@ -105,5 +105,4 @@ public class ServerTcp {
             Thread.currentThread().interrupt();
         }
     }
-
 }

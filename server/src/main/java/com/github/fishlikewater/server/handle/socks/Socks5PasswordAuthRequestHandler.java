@@ -52,5 +52,4 @@ public class Socks5PasswordAuthRequestHandler extends SimpleChannelInboundHandle
             ctx.writeAndFlush(passwordAuthResponse).addListener(ChannelFutureListener.CLOSE);
         }
     }
-
 }

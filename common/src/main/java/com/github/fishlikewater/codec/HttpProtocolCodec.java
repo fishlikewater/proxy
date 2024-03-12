@@ -69,6 +69,4 @@ public class HttpProtocolCodec extends ByteToMessageCodec<HttpProtocol> {
         }
         return null;
     }
-
-
 }

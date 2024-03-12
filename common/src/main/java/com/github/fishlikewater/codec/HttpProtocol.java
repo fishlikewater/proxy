@@ -118,6 +118,4 @@ public class HttpProtocol implements Serializable {
             return null;
         }
     }
-
-
 }

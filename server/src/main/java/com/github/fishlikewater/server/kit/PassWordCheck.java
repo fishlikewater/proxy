@@ -37,7 +37,6 @@ public class PassWordCheck {
     @Setter
     private static String password;
 
-
     //basic方式登录
     public static boolean basicLogin(HttpRequest req) {
         if (username == null || password == null) {

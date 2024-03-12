@@ -34,7 +34,6 @@ public interface IpPool {
      */
     Integer getIp();
 
-
     /**
      * 回收地址
      *
@@ -44,7 +43,6 @@ public interface IpPool {
      */
     void retrieve(int ip);
 
-
     /**
      * 删除ip
      *
@@ -53,5 +51,4 @@ public interface IpPool {
      * @since 2023/3/17 11:01
      */
     void remove(int ip);
-
 }

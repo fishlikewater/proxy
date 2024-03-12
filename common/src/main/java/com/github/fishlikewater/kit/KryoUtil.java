@@ -90,7 +90,6 @@ public class KryoUtil {
         return new String(Base64.getEncoder().encode(writeToByteArray(obj)), StandardCharsets.UTF_8);
     }
 
-
     /**
      * 将字节数组反序列化为原对象
      *
@@ -117,7 +116,6 @@ public class KryoUtil {
     public static <T> T readFromString(String str) {
         return readFromByteArray(Base64.getDecoder().decode(str.getBytes(StandardCharsets.UTF_8)));
     }
-
 
     /**
      * 将对象序列化为字节数组 不包含类型的信息
@@ -177,5 +175,4 @@ public class KryoUtil {
     public static <T> T readObjectFromString(String str, Class<T> clazz) {
         return readObjectFromByteArray(Base64.getDecoder().decode(str.getBytes(StandardCharsets.UTF_8)), clazz);
     }
-
 }

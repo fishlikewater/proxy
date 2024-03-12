@@ -55,5 +55,4 @@ public class Socks5InitialAuthHandler extends SimpleChannelInboundHandler<Defaul
             }
         }
     }
-
 }

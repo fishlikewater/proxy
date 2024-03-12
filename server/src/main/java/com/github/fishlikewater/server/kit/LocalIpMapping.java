@@ -39,7 +39,6 @@ public class LocalIpMapping implements IpMapping {
             }
         });
         ipMapping.put(ip, channel);
-
     }
 
     @Override

@@ -43,5 +43,4 @@ public class ServerHeartBeatHandler extends ChannelInboundHandlerAdapter {
             super.userEventTriggered(ctx, evt);
         }
     }
-
 }

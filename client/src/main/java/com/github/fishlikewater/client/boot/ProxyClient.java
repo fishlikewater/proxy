@@ -65,14 +65,12 @@ public class ProxyClient {
     public ProxyClient(ProxyConfig proxyConfig, Socks5Config socks5Config) {
         this.proxyConfig = proxyConfig;
         this.socks5Config = socks5Config;
-
     }
 
     public void run() {
         bootstrapConfig();
         start();
     }
-
 
     void bootstrapConfig() {
         if (bootstrap == null) {
@@ -93,7 +91,6 @@ public class ProxyClient {
             bootstrap.handler(new ClientHandlerInitializer(proxyConfig, this));
         }
     }
-
 
     public void start() {
 
@@ -119,7 +116,6 @@ public class ProxyClient {
         }
     }
 
-
     void afterConnectionSuccessful(Channel channel) {
         final long requestId = IdUtil.id();
         final MessageProtocol messageProtocol = new MessageProtocol();
@@ -129,7 +125,6 @@ public class ProxyClient {
                 .setProtocol(MessageProtocol.ProtocolEnum.SOCKS)
                 .setBytes(proxyConfig.getToken().getBytes(StandardCharsets.UTF_8));
         channel.writeAndFlush(messageProtocol).addListener(f -> log.info("发送验证信息成功"));
-
     }
 
     public void stop() {
@@ -147,5 +142,4 @@ public class ProxyClient {
             log.error("⬢ client shutdown error");
         }
     }
-
 }

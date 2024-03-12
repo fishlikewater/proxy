@@ -30,7 +30,6 @@ public class IdUtil {
 
     private static final IdWorker idWorker = IdWorkerFactory.create(1);
 
-
     public static String next() {
 
         return String.valueOf(idWorker.nextId());
@@ -40,5 +39,4 @@ public class IdUtil {
 
         return idWorker.nextId();
     }
-
 }

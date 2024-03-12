@@ -40,7 +40,6 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
 
     private final ProxyClient client;
 
-
     public ClientHandlerInitializer(ProxyConfig proxyConfig, ProxyClient client) {
         this.proxyConfig = proxyConfig;
         this.client = client;
@@ -61,7 +60,5 @@ public class ClientHandlerInitializer extends ChannelInitializer<Channel> {
                 .addLast(new IdleStateHandler(0, 0, proxyConfig.getTimeout(), TimeUnit.SECONDS))
                 .addLast(new ClientHeartBeatHandler())
                 .addLast(new ClientMessageHandler(client));
-
-
     }
 }

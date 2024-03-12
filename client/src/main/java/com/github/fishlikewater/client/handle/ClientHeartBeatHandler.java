@@ -50,7 +50,5 @@ public class ClientHeartBeatHandler extends ChannelInboundHandlerAdapter {
         } else {
             super.userEventTriggered(ctx, evt);
         }
-
     }
-
 }

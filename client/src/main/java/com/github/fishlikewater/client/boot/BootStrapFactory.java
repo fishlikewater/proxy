@@ -52,5 +52,4 @@ public class BootStrapFactory {
         bootstrap.group(ctx.channel().eventLoop().parent());
         return bootstrap;
     }
-
 }

@@ -151,7 +151,6 @@ public class Socks5CommandRequestHandler extends SimpleChannelInboundHandler<Def
             super.channelWritabilityChanged(ctx);
         }
 
-
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
             log.trace("将客户端的消息转发给目标服务器端");
